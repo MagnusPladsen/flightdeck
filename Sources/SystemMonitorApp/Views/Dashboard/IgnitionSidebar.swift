@@ -54,7 +54,7 @@ private struct PageButton: View {
                 Text(page.title).font(.system(size: 16, weight: isSelected ? .heavy : .medium)).lineLimit(1).fixedSize()
                 Spacer()
                 if count > 0 {
-                    Text("\(count)").font(.system(size: 13, weight: .semibold).monospacedDigit()).foregroundStyle(theme.muted)
+                    Text("\(count)").font(.system(size: 13, weight: .semibold).monospacedDigit()).foregroundStyle(theme.muted).fixedSize()
                 }
             }
             .padding(.horizontal, 14)

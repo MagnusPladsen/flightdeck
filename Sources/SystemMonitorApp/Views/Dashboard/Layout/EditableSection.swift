@@ -55,6 +55,7 @@ struct EditableSection<Content: View>: View {
             } label: { Image(systemName: "arrow.up.right.square") }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
+                .tint(theme.foreground.opacity(0.75))
                 .fixedSize()
                 .help("Move to another page")
             Button { editor.update { $0.hide(placement.kind) } } label: { Image(systemName: "eye.slash") }
