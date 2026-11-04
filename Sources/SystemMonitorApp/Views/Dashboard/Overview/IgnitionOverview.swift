@@ -5,7 +5,7 @@ import SwiftUI
 struct IgnitionOverview: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
-    var navigate: (DashboardSection) -> Void
+    var navigate: (DashboardPage) -> Void
 
     @State private var searchText = ""
     @State private var snoozedAgentIDs: Set<Int32> = []

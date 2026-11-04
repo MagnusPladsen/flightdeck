@@ -53,7 +53,7 @@ struct ProjectsList: View {
     @Environment(\.theme) private var theme
     var projects: [ProjectSummary]
     var totalPorts: Int
-    var navigate: (DashboardSection) -> Void
+    var navigate: (DashboardPage) -> Void
     private static let rowLimit = 8
 
     var body: some View {

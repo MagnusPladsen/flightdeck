@@ -1,9 +1,8 @@
+import MonitorCore
 import SwiftUI
 
-enum DashboardSection: String, CaseIterable, Identifiable {
-    case overview, ports, agents, processes, widgets
-
-    var id: String { rawValue }
+extension DashboardPage: Identifiable {
+    public var id: String { rawValue }
 
     var title: String {
         switch self {
@@ -30,11 +29,11 @@ struct DashboardView: View {
     static let windowID = "dashboard"
 
     @Environment(MonitorStore.self) private var store
-    @State private var selection: DashboardSection? = .overview
+    @State private var selection: DashboardPage? = .overview
 
     var body: some View {
         NavigationSplitView {
-            List(DashboardSection.allCases, selection: $selection) { section in
+            List(DashboardPage.allCases, selection: $selection) { section in
                 Label(section.title, systemImage: section.symbolName)
                     .badge(badgeCount(for: section))
             }
@@ -50,7 +49,7 @@ struct DashboardView: View {
     }
 
     @ViewBuilder
-    private func detail(for section: DashboardSection) -> some View {
+    private func detail(for section: DashboardPage) -> some View {
         switch section {
         case .overview: OverviewSection { selection = $0 }
         case .ports: PortsSection()
@@ -60,7 +59,7 @@ struct DashboardView: View {
         }
     }
 
-    private func badgeCount(for section: DashboardSection) -> Int {
+    private func badgeCount(for section: DashboardPage) -> Int {
         switch section {
         case .ports: store.devServers.count
         case .agents: store.activeAgents.count

@@ -49,7 +49,7 @@ private struct StripCell: View {
 struct ResourceSidebar: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
-    var navigate: (DashboardSection) -> Void
+    var navigate: (DashboardPage) -> Void
 
     var body: some View {
         ScrollView {

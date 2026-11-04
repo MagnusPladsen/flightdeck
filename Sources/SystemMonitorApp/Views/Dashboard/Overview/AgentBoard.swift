@@ -6,7 +6,7 @@ struct AgentBoard: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     var agents: [AgentSession]
-    var navigate: (DashboardSection) -> Void
+    var navigate: (DashboardPage) -> Void
     @State private var isCustomizing = false
 
     var body: some View {
@@ -63,7 +63,7 @@ struct AgentBoard: View {
 private struct YourTurnSection: View {
     @Environment(\.theme) private var theme
     var agents: [AgentGroup]
-    var navigate: (DashboardSection) -> Void
+    var navigate: (DashboardPage) -> Void
     private static let cardLimit = 4
 
     var body: some View {
@@ -91,7 +91,7 @@ private struct AgentColumn: View {
     @Environment(\.theme) private var theme
     var column: AgentBoardColumn
     var agents: [AgentGroup]
-    var navigate: (DashboardSection) -> Void
+    var navigate: (DashboardPage) -> Void
     private static let rowLimit = 4
 
     var body: some View {
