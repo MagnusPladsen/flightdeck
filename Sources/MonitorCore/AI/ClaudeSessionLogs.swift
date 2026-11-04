@@ -28,7 +28,9 @@ public struct ClaudeSessionLogs: Sendable {
                   let entry = try? JSONDecoder().decode(TranscriptEntry.self, from: data) else { continue }
             switch entry.type {
             case "assistant":
-                return entry.message?.stopReason == "tool_use" ? .waitingOnTool : .finished
+                guard entry.message?.stopReason == "tool_use" else { return .finished }
+                // Text or thinking written before the tool call: the call itself is still being generated
+                return entry.message?.hasToolCall == false ? .waitingOnModel : .waitingOnTool
             case "user":
                 return .waitingOnModel
             default:
@@ -134,8 +136,20 @@ public struct ClaudeSessionLogs: Sendable {
 
     private struct TranscriptEntry: Decodable {
         struct Message: Decodable {
+            struct Block: Decodable { let type: String }
+
             let stopReason: String?
-            enum CodingKeys: String, CodingKey { case stopReason = "stop_reason" }
+            /// Nil when the content is missing or plain text, as in user prompts.
+            let hasToolCall: Bool?
+
+            enum CodingKeys: String, CodingKey { case stopReason = "stop_reason", content }
+
+            init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                stopReason = try container.decodeIfPresent(String.self, forKey: .stopReason)
+                let blocks = try? container.decodeIfPresent([Block].self, forKey: .content)
+                hasToolCall = blocks.map { $0.contains { $0.type == "tool_use" } }
+            }
         }
 
         let type: String

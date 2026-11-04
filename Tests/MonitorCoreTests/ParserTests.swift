@@ -120,6 +120,13 @@ struct AgentLogTests {
         #expect(ClaudeSessionLogs.lastTurn(inTranscriptTail: #"{"type":"assistant","message":{"stop_reason":"end_turn"}}"#) == .finished)
     }
 
+    @Test func claudeTextBeforeAToolCallIsStillWorking() {
+        let textFirst = #"{"type":"assistant","message":{"stop_reason":"tool_use","content":[{"type":"text","text":"Now the tests."}]}}"#
+        let toolCall = #"{"type":"assistant","message":{"stop_reason":"tool_use","content":[{"type":"tool_use","name":"Bash"}]}}"#
+        #expect(ClaudeSessionLogs.lastTurn(inTranscriptTail: textFirst) == .waitingOnModel)
+        #expect(ClaudeSessionLogs.lastTurn(inTranscriptTail: textFirst + "\n" + toolCall) == .waitingOnTool)
+    }
+
     @Test func claudeLastActionDescribesNewestToolCallOrText() {
         let tail = """
         {"type":"assistant","message":{"content":[{"type":"text","text":"Done."}]}}
