@@ -12,7 +12,7 @@ struct AddSectionTray: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(hidden.isEmpty ? "Drop here to move a section to the end" : "Add section")
+            Text(hidden.isEmpty ? "Drop here to move a section to the end, or onto a page in the sidebar to move it there" : "Add section")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(theme.muted)
             if !hidden.isEmpty {

@@ -37,6 +37,11 @@ struct DashboardView: View {
             List(DashboardPage.allCases, selection: $selection) { section in
                 Label(section.title, systemImage: section.symbolName)
                     .badge(badgeCount(for: section))
+                    .dropDestination(for: String.self) { tokens, _ in
+                        guard layoutEditor.isEditing, let kind = tokens.first.flatMap(SectionKind.init(token:)) else { return false }
+                        layoutEditor.update { $0.move(kind, to: section) }
+                        return true
+                    }
             }
             .themedScrollBackground(useSurface: true)
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)

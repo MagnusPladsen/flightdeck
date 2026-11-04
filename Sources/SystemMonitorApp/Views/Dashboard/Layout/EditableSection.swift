@@ -48,6 +48,15 @@ struct EditableSection<Content: View>: View {
                 .help("Drag to move")
             Text(placement.kind.title(in: store.settings)).font(.system(size: 11, weight: .semibold))
             Text("\(placement.span)/\(GridPacking.columns)").font(.system(size: 11).monospacedDigit()).foregroundStyle(theme.muted)
+            Menu {
+                ForEach(DashboardPage.allCases.filter { $0 != page }) { target in
+                    Button(target.title) { editor.update { $0.move(placement.kind, to: target) } }
+                }
+            } label: { Image(systemName: "arrow.up.right.square") }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .help("Move to another page")
             Button { editor.update { $0.hide(placement.kind) } } label: { Image(systemName: "eye.slash") }
                 .buttonStyle(.borderless)
                 .help("Hide section")
