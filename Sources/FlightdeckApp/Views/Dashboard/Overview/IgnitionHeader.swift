@@ -16,6 +16,10 @@ struct IgnitionHeader: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 15))
                     .onSubmit(askClaude)
+                if !searchText.isEmpty {
+                    IconButton(systemImage: "xmark.circle.fill", help: "Clear search") { searchText = "" }
+                        .foregroundStyle(theme.muted)
+                }
                 DefaultAgentMenu()
             }
             .padding(.horizontal, 18)

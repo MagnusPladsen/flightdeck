@@ -15,7 +15,11 @@ struct IgnitionOverview: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 36) {
                     IgnitionHeader(searchText: $searchText)
-                    PageCanvas(page: .overview, context: SectionContext(navigate: navigate, searchQuery: searchText, snoozedAgentIDs: $snoozedAgentIDs))
+                    if isSearchEmpty {
+                        noMatches
+                    } else {
+                        PageCanvas(page: .overview, context: SectionContext(navigate: navigate, searchQuery: searchText, snoozedAgentIDs: $snoozedAgentIDs))
+                    }
                 }
                 .padding(32)
                 .frame(maxWidth: 1180)
@@ -29,5 +33,19 @@ struct IgnitionOverview: View {
         }
         .background(theme.background)
         .animation(.smooth(duration: 0.3), value: store.settings.resourcesInSidebar)
+    }
+
+    /// Typed text that matches no agent or project: likely a question for Claude.
+    private var isSearchEmpty: Bool {
+        !searchText.trimmingCharacters(in: .whitespaces).isEmpty
+            && store.agents(matching: searchText).isEmpty
+            && store.projects(matching: searchText).isEmpty
+    }
+
+    private var noMatches: some View {
+        (Text("Nothing matches “\(searchText)”. ") + Text("Press Return to ask Claude.").foregroundStyle(theme.accent))
+            .font(.system(size: 15))
+            .foregroundStyle(theme.muted)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
