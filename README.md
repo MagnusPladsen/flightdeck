@@ -8,7 +8,11 @@ A macOS menu bar system monitor for developers. Click the menu bar item for a qu
 - **Usage limits**: Codex 5h and weekly limits from local logs; Claude token counts from local logs, and optionally Claude limit percentages.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 
-Ships 13 themes. A theme sets the dashboard layout as well as its colours: Ignition is the default (a near-black agent board that leads with whichever agent needs you), plus Clean Dark, Clean Light, a "match system" option, Tokyo Night, Catppuccin, Dracula and other popular coding palettes. More layouts are planned. Linux support is planned; the core library already builds there.
+Ships 13 themes. A theme sets the dashboard layout as well as its colours: Ignition is the default (a near-black agent board that leads with whichever agent needs you), plus Clean Dark, Clean Light, a "match system" option, Tokyo Night, Catppuccin, Dracula and other popular coding palettes. More layouts are planned.
+
+Every dashboard page can be rearranged: click the lock button in the toolbar, then drag sections to move them (also onto another page in the sidebar), drag their right edge to resize on a 12-column grid, or hide them and add them back from the tray. Locking saves a custom version of the theme's layout, e.g. "Ignition (custom)"; Settings › Appearance resets it.
+
+Linux support is planned; the core library already builds there.
 
 ## Requirements
 
@@ -27,7 +31,7 @@ scripts/bundle.sh
 open SystemMonitor.app
 ```
 
-Launch at login only works from the bundled app.
+Launch at login only works from the bundled app. The app icon is drawn by `scripts/make-icon.swift`; run `swift scripts/make-icon.swift` to regenerate `Resources/AppIcon.icns`.
 
 ## Test
 

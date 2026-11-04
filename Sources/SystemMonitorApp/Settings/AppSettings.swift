@@ -123,6 +123,11 @@ final class AppSettings {
         customLayouts[layout.rawValue] = pages
     }
 
+    /// "Ignition", or "Ignition (custom)" once the user has rearranged it.
+    func layoutTitle(_ layout: DashboardLayout) -> String {
+        isCustomized(layout) ? "\(layout.title) (custom)" : layout.title
+    }
+
     func resetLayout(_ layout: DashboardLayout) {
         customLayouts[layout.rawValue] = nil
     }

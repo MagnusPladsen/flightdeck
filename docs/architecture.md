@@ -15,13 +15,15 @@ One Swift package with two targets.
   - `SystemMetricsReader`: mach, sysctl and IOKit on Darwin, `/proc` and `/sys` on Linux.
 - **Collectors/** — `SystemCollector` (CPU, memory, disks, network, battery, processes) and `PortCollector` (listening ports enriched with project, framework and Docker container).
 - **Projects/** — `ProjectResolver` maps a working directory to its git repo, branch and worktree; `FrameworkDetector` recognises dev servers from the command line and `package.json`.
+- **Layout/** — `PageLayouts` (which sections sit on which dashboard page, their column spans and the hidden ones), `SectionKind` and `GridPacking` (12-column row packing with spans of 3, 4, 6, 8 or 12).
 - **AI/** — `AgentCollector` finds Claude, Codex and other agent processes and derives their state from CPU and session logs. `ClaudeTokenTracker` and `CodexUsageReader` read local logs; `ClaudeLimitsClient` optionally calls Anthropic's unofficial usage endpoint.
 
 ## SystemMonitorApp
 
 - **Store/** — `MonitorEngine` owns the collectors and blocks; `MonitorStore` (`@Observable`, main actor) polls it off the main thread: system every 2s, ports and agents every 5s, usage every 60s, widgets every 5s, project cache every 30s.
 - **Settings/** — `AppSettings`, persisted to UserDefaults.
-- **Views/** — `MenuBar/` (label and the 380pt popover), `Dashboard/` (`NavigationSplitView` with Overview, Servers & Ports, AI Agents, Processes, Widgets; the Overview is drawn by the current theme's `DashboardLayout`, today Ignition), `Settings/`, and shared `Components/`.
+- **Views/** — `MenuBar/` (label and the 380pt popover), `Dashboard/` (`NavigationSplitView` with Overview, Servers & Ports, AI Agents, Processes, Widgets; every page is a `PageCanvas` of sections on a `SectionGrid`, arranged by the current theme's `DashboardLayout` or the user's custom version of it; the sidebar and menu bar panel are styled by that layout too), `Settings/`, and shared `Components/`.
+- **Editing layouts** — `LayoutEditor` holds a draft while the window is unlocked; `EditableSection` adds the drag handle, resize edge, hide and move-to-page controls; locking saves the draft to `AppSettings.customLayouts` keyed by layout. Saved layouts are sanitised on load, so deleted widgets drop out and new ones land on their home page.
 
 The app runs as an accessory (no Dock icon). `DockPresence` switches to a regular app while the dashboard window is open.
 
