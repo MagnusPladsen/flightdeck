@@ -1,6 +1,50 @@
+<div align="center">
+
+<img src="Resources/AppIcon.png" width="128" alt="Flightdeck icon">
+
 # Flightdeck
 
-Agent and system monitor for developers. Flightdeck lives in the macOS menu bar and shows which AI agents are working, which are waiting on you and where, next to your dev servers and system resources. Click the menu bar item for a quick panel, or open the full dashboard.
+**Agent and system monitor for developers.**
+
+Flightdeck lives in the macOS menu bar and shows which AI agents are working, which are waiting on you and where, next to your dev servers and system resources.
+
+[![Latest release](https://img.shields.io/github/v/release/MagnusPladsen/flightdeck?style=flat-square&color=ff7a1a&label=release)](https://github.com/MagnusPladsen/flightdeck/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/MagnusPladsen/flightdeck/total?style=flat-square&color=ff7a1a)](https://github.com/MagnusPladsen/flightdeck/releases)
+[![Stars](https://img.shields.io/github/stars/MagnusPladsen/flightdeck?style=flat-square&color=ff7a1a)](https://github.com/MagnusPladsen/flightdeck/stargazers)
+[![Release workflow](https://img.shields.io/github/actions/workflow/status/MagnusPladsen/flightdeck/release.yml?style=flat-square&label=build)](https://github.com/MagnusPladsen/flightdeck/actions/workflows/release.yml)
+<br>
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?style=flat-square&logo=apple&logoColor=white)
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white)
+![Apple Silicon and Intel](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-universal-555555?style=flat-square)
+[![Homebrew](https://img.shields.io/badge/Homebrew-magnuspladsen%2Ftap%2Fflightdeck-FBB040?style=flat-square&logo=homebrew&logoColor=white)](https://github.com/MagnusPladsen/homebrew-tap)
+
+<br>
+
+[![Download Flightdeck for macOS](https://img.shields.io/badge/Download_for_macOS-Flightdeck.zip-ff7a1a?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/MagnusPladsen/flightdeck/releases/latest/download/Flightdeck.zip)
+
+```bash
+brew install --cask magnuspladsen/tap/flightdeck
+```
+
+<br>
+
+<img src="docs/screenshots/overview.png" alt="Flightdeck overview: the agent that needs you, resources, and your-turn agents" width="860">
+
+</div>
+
+## Screenshots
+
+| Menu bar panel | AI agents and usage limits |
+|---|---|
+| <img src="docs/screenshots/menu-bar-panel.png" alt="Menu bar panel" width="300"> | <img src="docs/screenshots/agents.png" alt="AI agents page" width="520"> |
+
+| Rearrange any page | Dev servers by project |
+|---|---|
+| <img src="docs/screenshots/edit-layout.png" alt="Layout editing with the page unlocked" width="420"> | <img src="docs/screenshots/ports.png" alt="Servers and ports page" width="420"> |
+
+Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the same.
+
+## Features
 
 - **System**: CPU, memory, network and disk, with live sparklines.
 - **Dev servers**: every listening port mapped to its git project, branch and worktree, with the framework detected (e.g. "Next.js · shop · worktree checkout · :3000"). Open in browser, editor or terminal, or stop the process.

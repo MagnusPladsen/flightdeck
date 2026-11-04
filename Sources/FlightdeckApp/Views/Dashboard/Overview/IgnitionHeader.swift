@@ -32,7 +32,7 @@ struct IgnitionHeader: View {
     }
 
     private var greeting: String {
-        let firstName = NSFullUserName().split(separator: " ").first.map(String.init) ?? NSUserName()
+        let firstName = DemoData.isEnabled ? DemoData.userName : NSFullUserName().split(separator: " ").first.map(String.init) ?? NSUserName()
         let hour = Calendar.current.component(.hour, from: Date())
         let partOfDay = switch hour {
         case 5..<12: "Good morning"

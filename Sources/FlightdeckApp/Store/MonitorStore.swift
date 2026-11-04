@@ -39,6 +39,7 @@ final class MonitorStore {
 
     func start() {
         guard pollingTasks.isEmpty else { return }
+        if DemoData.isEnabled { return loadDemo() }
         pollingTasks = [
             poll(every: .seconds(2)) { await $0.refreshSystem() },
             poll(every: .seconds(5)) { await $0.refreshPortsAndAgents() },
@@ -103,6 +104,17 @@ final class MonitorStore {
             widgetLastRun[widget.id] = now
             widgetResults[widget.id] = await Task.detached { CustomWidgetResult.run(widget) }.value
         }
+    }
+
+    private func loadDemo() {
+        snapshot = DemoData.snapshot
+        ports = DemoData.ports
+        agents = DemoData.agents
+        usage = DemoData.usage
+        cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
+        memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
+        networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)
+        networkOutHistory = DemoData.history(around: 240_000, swing: 120_000)
     }
 
     private func append(_ value: Double, to history: inout [Double]) {
