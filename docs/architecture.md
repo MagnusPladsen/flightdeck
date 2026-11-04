@@ -31,4 +31,4 @@ The app runs as an accessory (no Dock icon). `DockPresence` switches to a regula
 
 ## Linux plan
 
-Reuse `MonitorCore` behind a GTK4/libadwaita shell, with a tray icon via StatusNotifierItem/AppIndicator. Not started.
+Not started. See [linux.md](linux.md) for what already works, the options and the recommended path (a headless `flightdeck` binary with a web dashboard, then a tray icon).
