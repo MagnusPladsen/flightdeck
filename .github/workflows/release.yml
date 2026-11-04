@@ -44,8 +44,8 @@ jobs:
           SWIFT_BUILD_FLAGS: --arch arm64 --arch x86_64
         run: |
           scripts/bundle.sh
-          ditto -c -k --keepParent SystemMonitor.app SystemMonitor.zip
-          codesign --verify --strict SystemMonitor.app
+          ditto -c -k --keepParent Flightdeck.app Flightdeck.zip
+          codesign --verify --strict Flightdeck.app
 
       - name: Publish the release
         if: steps.version.outputs.release == 'true'
@@ -55,7 +55,7 @@ jobs:
         run: |
           prerelease=""
           case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
-          gh release create "v$VERSION" SystemMonitor.zip \
+          gh release create "v$VERSION" Flightdeck.zip \
             --target "$GITHUB_SHA" \
             --title "$VERSION" \
             --generate-notes \
@@ -71,18 +71,18 @@ jobs:
             echo "TAP_TOKEN is not set, leaving the Homebrew cask alone"
             exit 0
           fi
-          sha=$(shasum -a 256 SystemMonitor.zip | cut -d' ' -f1)
+          sha=$(shasum -a 256 Flightdeck.zip | cut -d' ' -f1)
           git clone -q --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/MagnusPladsen/homebrew-tap.git" tap
-          if [ ! -f tap/Casks/system-monitor.rb ]; then
-            cp packaging/homebrew/system-monitor.rb tap/Casks/system-monitor.rb
+          if [ ! -f tap/Casks/flightdeck.rb ]; then
+            cp packaging/homebrew/flightdeck.rb tap/Casks/flightdeck.rb
           fi
-          sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$sha\"/" tap/Casks/system-monitor.rb
-          git -C tap add Casks/system-monitor.rb
+          sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$sha\"/" tap/Casks/flightdeck.rb
+          git -C tap add Casks/flightdeck.rb
           if git -C tap diff --cached --quiet; then
             echo "The cask already offers $VERSION"
             exit 0
           fi
           git -C tap config user.name "github-actions[bot]"
           git -C tap config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C tap commit -q -m "Update system-monitor to $VERSION"
+          git -C tap commit -q -m "Update flightdeck to $VERSION"
           git -C tap push -q

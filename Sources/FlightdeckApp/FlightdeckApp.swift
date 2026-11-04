@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct SystemMonitorApp: App {
+struct FlightdeckApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var store: MonitorStore
 

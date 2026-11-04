@@ -1,4 +1,4 @@
-# Handover: System Monitor (paused 2026-11-03)
+# Handover: Flightdeck (paused 2026-11-03)
 
 Worktree: `~/git/system-monitor/.claude/worktrees/system-monitor-app-938093`, branch `claude/system-monitor-app-938093`. Nothing committed yet.
 
@@ -20,7 +20,7 @@ Worktree: `~/git/system-monitor/.claude/worktrees/system-monitor-app-938093`, br
 
 - **Stack**: one Swift package.
   - `MonitorCore`: platform-neutral library (Foundation only). Builds on macOS and Linux.
-  - `SystemMonitorApp`: macOS-only SwiftUI shell. It is guarded with `#if os(macOS)` in `Package.swift`.
+  - `FlightdeckApp`: macOS-only SwiftUI shell. It is guarded with `#if os(macOS)` in `Package.swift`.
 - **Linux plan**: reuse `MonitorCore` and build a GTK4/libadwaita UI, either in Swift (adwaita-swift) or as a separate shell. Tray icon through StatusNotifierItem/AppIndicator; GNOME needs the AppIndicator extension. Not started.
 - **Platform split**: `Platform/PlatformInterfaces.swift` defines three protocols, each with a Darwin and a Linux implementation:
   - `ProcessInspector`: Darwin uses libproc and sysctl; Linux uses `/proc`.
@@ -50,20 +50,20 @@ Worktree: `~/git/system-monitor/.claude/worktrees/system-monitor-app-938093`, br
 
 These app files exist but have not been built:
 
-- `Sources/SystemMonitorApp/Store/MonitorEngine.swift`: wraps the collectors.
-- `Sources/SystemMonitorApp/Store/MonitorStore.swift`: `@Observable` store.
+- `Sources/FlightdeckApp/Store/MonitorEngine.swift`: wraps the collectors.
+- `Sources/FlightdeckApp/Store/MonitorStore.swift`: `@Observable` store.
   - Polls system every 2s, ports and agents every 5s, usage every 60s, widgets every 5s, project cache every 30s.
   - Actions: stop process, open in browser, reveal in Finder, open in editor (Zed, VS Code, Cursor, Xcode), open in terminal (Ghostty, kitty, iTerm, Terminal).
-- `Sources/SystemMonitorApp/Settings/AppSettings.swift`: preferences in UserDefaults.
+- `Sources/FlightdeckApp/Settings/AppSettings.swift`: preferences in UserDefaults.
   - Menu bar metrics.
   - Show system ports, show idle agents.
   - Claude limits opt-in.
   - Custom widgets.
-- `Sources/SystemMonitorApp/SystemMonitorApp.swift`: a one-line stub (`import SwiftUI`). It still needs the `@main` App.
+- `Sources/FlightdeckApp/FlightdeckApp.swift`: a one-line stub (`import SwiftUI`). It still needs the `@main` App.
 
 ## TODO (next session)
 
-1. **`@main` App** in `SystemMonitorApp.swift`:
+1. **`@main` App** in `FlightdeckApp.swift`:
    - `MenuBarExtra(...).menuBarExtraStyle(.window)`
    - `Window("Dashboard", id: "dashboard")`
    - `Settings`
@@ -85,7 +85,7 @@ These app files exist but have not been built:
    - General: menu bar metrics, launch at login via `SMAppService` (needs a bundled .app), show system ports.
    - AI: Claude limits opt-in, with a warning that the endpoint is unofficial.
    - Widgets: add, edit and remove. `CustomWidget.examples` provides starter widgets.
-6. **`scripts/bundle.sh`**: builds a release and wraps it in `SystemMonitor.app` with an Info.plist (`LSUIElement` = true, bundle id e.g. `com.magnuspladsen.SystemMonitor`).
+6. **`scripts/bundle.sh`**: builds a release and wraps it in `Flightdeck.app` with an Info.plist (`LSUIElement` = true, bundle id e.g. `com.magnuspladsen.Flightdeck`).
 7. **Verify**: build, run, screenshot the popover and dashboard, and check against the real ports and agents on this Mac.
 8. Add `.gitignore` (`.build/`, `*.app`), a README, and `docs/architecture.md` (referenced from the `Package.swift` comment).
 9. Commit via `/commit`. The repo is personal; the no-reply email is already set locally.

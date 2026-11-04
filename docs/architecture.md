@@ -5,7 +5,7 @@ One Swift package with two targets.
 | Target | Platforms | Role |
 |--------|-----------|------|
 | `MonitorCore` | macOS, Linux | Collectors, models, parsers. Foundation only. |
-| `SystemMonitorApp` | macOS | SwiftUI menu bar app and dashboard. Guarded by `#if os(macOS)` in `Package.swift`. |
+| `FlightdeckApp` | macOS | SwiftUI menu bar app and dashboard. Guarded by `#if os(macOS)` in `Package.swift`. |
 
 ## MonitorCore
 
@@ -18,7 +18,7 @@ One Swift package with two targets.
 - **Layout/** — `PageLayouts` (which sections sit on which dashboard page, their column spans and the hidden ones), `SectionKind` and `GridPacking` (12-column row packing with spans of 3, 4, 6, 8 or 12).
 - **AI/** — `AgentCollector` finds Claude, Codex and other agent processes and derives their state from CPU and session logs. `ClaudeTokenTracker` and `CodexUsageReader` read local logs; `ClaudeLimitsClient` optionally calls Anthropic's unofficial usage endpoint.
 
-## SystemMonitorApp
+## FlightdeckApp
 
 - **Store/** — `MonitorEngine` owns the collectors and blocks; `MonitorStore` (`@Observable`, main actor) polls it off the main thread: system every 2s, ports and agents every 5s, usage every 60s, widgets every 5s, project cache every 30s.
 - **Settings/** — `AppSettings`, persisted to UserDefaults.

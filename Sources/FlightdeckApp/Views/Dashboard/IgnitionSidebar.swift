@@ -12,7 +12,7 @@ struct IgnitionSidebar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Label { Text("System Monitor").font(.system(size: 15, weight: .heavy)) } icon: {
+            Label { Text("Flightdeck").font(.system(size: 15, weight: .heavy)) } icon: {
                 Image(systemName: "bolt.fill").foregroundStyle(theme.accent)
             }
             .padding(.horizontal, 14)

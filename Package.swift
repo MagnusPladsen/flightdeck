@@ -14,12 +14,12 @@ var targets: [Target] = [
 
 // The SwiftUI shell is macOS-only; Linux builds just the shared core (see docs/architecture.md).
 #if os(macOS)
-products.append(.executable(name: "SystemMonitor", targets: ["SystemMonitorApp"]))
-targets.append(.executableTarget(name: "SystemMonitorApp", dependencies: ["MonitorCore"], swiftSettings: languageMode))
+products.append(.executable(name: "Flightdeck", targets: ["FlightdeckApp"]))
+targets.append(.executableTarget(name: "FlightdeckApp", dependencies: ["MonitorCore"], swiftSettings: languageMode))
 #endif
 
 let package = Package(
-    name: "SystemMonitor",
+    name: "Flightdeck",
     platforms: [.macOS(.v14)],
     products: products,
     targets: targets

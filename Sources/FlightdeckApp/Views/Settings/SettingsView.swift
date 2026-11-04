@@ -57,7 +57,7 @@ private struct GeneralSettings: View {
             if isEnabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
             launchAtLoginError = nil
         } catch {
-            launchAtLoginError = "Could not change login item: \(error.localizedDescription). This only works from the bundled SystemMonitor.app."
+            launchAtLoginError = "Could not change login item: \(error.localizedDescription). This only works from the bundled Flightdeck.app."
         }
     }
 }

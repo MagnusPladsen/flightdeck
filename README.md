@@ -1,6 +1,6 @@
-# System Monitor
+# Flightdeck
 
-A macOS menu bar system monitor for developers. Click the menu bar item for a quick panel, or open the full dashboard.
+Agent and system monitor for developers. Flightdeck lives in the macOS menu bar and shows which AI agents are working, which are waiting on you and where, next to your dev servers and system resources. Click the menu bar item for a quick panel, or open the full dashboard.
 
 - **System**: CPU, memory, network and disk, with live sparklines.
 - **Dev servers**: every listening port mapped to its git project, branch and worktree, with the framework detected (e.g. "Next.js · shop · worktree checkout · :3000"). Open in browser, editor or terminal, or stop the process.
@@ -17,14 +17,14 @@ Linux support is planned; the core library already builds there.
 ## Install
 
 ```bash
-brew install --cask magnuspladsen/tap/system-monitor
+brew install --cask magnuspladsen/tap/flightdeck
 ```
 
-Or download `SystemMonitor.zip` from [Releases](https://github.com/MagnusPladsen/system-monitor/releases). The app is not notarized yet; if macOS blocks it, allow it under System Settings › Privacy & Security › Open Anyway.
+Or download `Flightdeck.zip` from [Releases](https://github.com/MagnusPladsen/flightdeck/releases). The app is not notarized yet; if macOS blocks it, allow it under System Settings › Privacy & Security › Open Anyway.
 
 ## Release
 
-Bump `VERSION` on `main`. `.github/workflows/release.yml` tests, builds a universal `SystemMonitor.app`, publishes it as a GitHub release and, when the `TAP_TOKEN` secret is set, updates `Casks/system-monitor.rb` in `MagnusPladsen/homebrew-tap` (first release copies `packaging/homebrew/system-monitor.rb` there).
+Bump `VERSION` on `main`. `.github/workflows/release.yml` tests, builds a universal `Flightdeck.app`, publishes it as a GitHub release and, when the `TAP_TOKEN` secret is set, updates `Casks/flightdeck.rb` in `MagnusPladsen/homebrew-tap` (first release copies `packaging/homebrew/flightdeck.rb` there).
 
 ## Requirements
 
@@ -33,14 +33,14 @@ macOS 14+, Swift 6 toolchain (Xcode 16+).
 ## Run
 
 ```bash
-swift run SystemMonitor
+swift run Flightdeck
 ```
 
 ## Build the app bundle
 
 ```bash
 scripts/bundle.sh
-open SystemMonitor.app
+open Flightdeck.app
 ```
 
 Launch at login only works from the bundled app. The app icon is drawn by `scripts/make-icon.swift`; run `swift scripts/make-icon.swift` to regenerate `Resources/AppIcon.icns`.
