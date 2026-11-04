@@ -51,11 +51,12 @@ Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the sam
 - **Dev servers**: every listening port mapped to its git project, branch and worktree, with the framework detected (e.g. "Next.js · shop · worktree checkout · :3000"). Open in browser, editor or terminal, or stop the process.
 - **AI agents**: which folders Claude Code, Codex and other agents are working in, and whether each is working, waiting for approval or waiting for you.
 - **Usage limits**: Codex 5h and weekly limits from local logs; Claude token counts from local logs, and optionally Claude limit percentages.
+- **Ask Claude**: type a question in the overview's search bar and press Return, or press ⌘K anywhere in the dashboard. The answer opens in a palette with follow-ups, and agents it names open their terminal in one click. It runs your installed `claude` CLI with read-only tools and a snapshot of what the dashboard shows.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 
 Ships 13 themes. A theme sets the dashboard layout as well as its colours: Ignition is the default (a near-black agent board that leads with whichever agent needs you), plus Clean Dark, Clean Light, a "match system" option, Tokyo Night, Catppuccin, Dracula and other popular coding palettes. More layouts are planned.
 
-A big clock sits beside the "needs you" headline on the overview; like every section it can be moved, resized or hidden.
+A big clock sits beside the "needs you" headline on the overview; like every section it can be moved, resized or hidden. Hover a "Your turn" card and click its X to clear it until that agent does something new.
 
 Every dashboard page can be rearranged: click the lock button in the toolbar, then drag sections to move them (also onto another page in the sidebar), drag their right edge to resize on a 12-column grid, or hide them and add them back from the tray. Locking saves a custom version of the theme's layout, e.g. "Ignition (custom)"; Settings › Appearance resets it.
 
