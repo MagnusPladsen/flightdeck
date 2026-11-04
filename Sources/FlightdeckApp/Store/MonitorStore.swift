@@ -23,6 +23,8 @@ final class MonitorStore {
     private let engine = MonitorEngine()
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
+    /// Agents cleared from "Your turn", with the activity time they were cleared at.
+    private var clearedTurns: [Int32: Date] = [:]
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -74,7 +76,28 @@ final class MonitorStore {
         let processes = snapshot?.processes ?? []
         async let ports = Task.detached { engine.collectPorts() }.value
         async let agents = Task.detached { engine.collectAgents(from: processes) }.value
-        (self.ports, self.agents) = await (ports, agents)
+        let collected: [AgentSession]
+        (self.ports, collected) = await (ports, agents)
+        self.agents = applyingClearedTurns(to: collected)
+    }
+
+    /// Takes an agent out of "Your turn" until it does something new.
+    func clearYourTurn(_ agent: AgentSession) {
+        for sibling in agents where sibling.state == .yourTurn && sibling.workingDirectory == agent.workingDirectory {
+            clearedTurns[sibling.pid] = sibling.lastActivity ?? .distantPast
+        }
+        agents = applyingClearedTurns(to: agents)
+    }
+
+    private func applyingClearedTurns(to agents: [AgentSession]) -> [AgentSession] {
+        let lastActivity = Dictionary(agents.map { ($0.pid, $0.lastActivity ?? .distantPast) }, uniquingKeysWith: { first, _ in first })
+        clearedTurns = clearedTurns.filter { lastActivity[$0.key] == $0.value }
+        return agents.map { agent in
+            guard agent.state == .yourTurn, clearedTurns[agent.pid] != nil else { return agent }
+            var cleared = agent
+            cleared.state = .idle
+            return cleared
+        }
     }
 
     func refreshUsage() async {

@@ -124,6 +124,11 @@ private struct AgentCard: View {
                     Button("Reply in terminal") { store.openInTerminal(agent.workingDirectory) }
                         .buttonStyle(PillButtonStyle(isProminent: true))
                     EditorButton(path: agent.project?.rootPath ?? agent.workingDirectory)
+                    if agent.state == .yourTurn {
+                        Button("Clear") { store.clearYourTurn(agent) }
+                            .buttonStyle(PillButtonStyle())
+                            .help("Remove from Your turn until this agent does something new")
+                    }
                 }
                 .padding(.top, 4)
             }
