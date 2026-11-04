@@ -117,18 +117,18 @@ private struct AgentCard: View {
                 Spacer()
                 if !isFeatured && isHovering { quickActions }
                 Text(agent.ageText()).font(.system(size: isFeatured ? 13 : 12)).foregroundStyle(theme.muted)
+                if isHovering && agent.state == .yourTurn {
+                    IconButton(systemImage: "xmark", help: "Clear from Your turn until this agent does something new") { store.clearYourTurn(agent) }
+                        .foregroundStyle(theme.muted)
+                }
             }
             fields
             if isFeatured {
                 HStack(spacing: 10) {
-                    Button("Reply in terminal") { store.openInTerminal(agent.workingDirectory) }
+                    Button("Reply") { store.openInTerminal(agent.workingDirectory) }
                         .buttonStyle(PillButtonStyle(isProminent: true))
+                        .help("Reply in the terminal")
                     EditorButton(path: agent.project?.rootPath ?? agent.workingDirectory)
-                    if agent.state == .yourTurn {
-                        Button("Clear") { store.clearYourTurn(agent) }
-                            .buttonStyle(PillButtonStyle())
-                            .help("Remove from Your turn until this agent does something new")
-                    }
                 }
                 .padding(.top, 4)
             }
