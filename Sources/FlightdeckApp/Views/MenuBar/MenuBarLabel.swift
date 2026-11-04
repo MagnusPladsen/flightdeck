@@ -2,7 +2,7 @@ import AppKit
 import MonitorCore
 import SwiftUI
 
-/// The menu bar item. Rendered to a template image because the menu bar only draws one image and one text.
+/// The menu bar item. Rendered to an image because the menu bar only draws one image and one text.
 struct MenuBarLabel: View {
     var store: MonitorStore
 
@@ -10,16 +10,31 @@ struct MenuBarLabel: View {
         Image(nsImage: renderedLabel)
     }
 
+    // Not a template image, so the yellow dot keeps its colour; the drawing handler picks the
+    // black or white rendering from the appearance of the menu bar it is drawn into.
     private var renderedLabel: NSImage {
-        let renderer = ImageRenderer(content: MenuBarLabelContent(items: items, statusSymbol: statusSymbol, style: store.settings.menuBarLabelStyle))
-        renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
-        let image = renderer.nsImage ?? NSImage()
-        image.isTemplate = true
+        let lightBar = render(foreground: .black)
+        let darkBar = render(foreground: .white)
+        let image = NSImage(size: lightBar.size, flipped: false) { rect in
+            let isDark = NSAppearance.currentDrawing().bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            (isDark ? darkBar : lightBar).draw(in: rect)
+            return true
+        }
+        image.isTemplate = false
         return image
     }
 
+    private func render(foreground: Color) -> NSImage {
+        let content = MenuBarLabelContent(items: items, statusSymbol: statusSymbol, style: store.settings.menuBarLabelStyle, foreground: foreground)
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
+        return renderer.nsImage ?? NSImage()
+    }
+
     private var statusSymbol: String? {
-        if store.agents.contains(where: { $0.state == .needsApproval }) { return "exclamationmark.circle.fill" }
+        if !store.settings.isShowingInMenuBar(.agentsNeedingYou), store.agents.contains(where: { $0.state == .needsApproval }) {
+            return "exclamationmark.circle.fill"
+        }
         return items.isEmpty ? "gauge.with.dots.needle.33percent" : nil
     }
 
@@ -33,12 +48,18 @@ struct MenuBarLabel: View {
         switch metric {
         case .cpu: store.snapshot.map { Formatters.percent($0.cpu.total) }
         case .memory: store.snapshot.map { Formatters.percent($0.memory.usedFraction) }
+        case .workingAgents: "\(store.agents.filter { $0.state == .working }.count)"
+        case .agentsNeedingYou: needsYouCount > 0 ? "\(needsYouCount)" : nil
         case .network: store.snapshot.map { Formatters.rate($0.network.bytesInPerSecond) }
         case .servers: "\(store.devServers.count)"
         case .agents: "\(store.activeAgents.count)"
         case .claudeLimit: fiveHourPercent(for: .claude)
         case .codexLimit: fiveHourPercent(for: .codex)
         }
+    }
+
+    private var needsYouCount: Int {
+        store.agents.filter(\.state.needsYou).count
     }
 
     private func fiveHourPercent(for tool: AgentTool) -> String? {
@@ -56,22 +77,50 @@ private struct MenuBarLabelContent: View {
     var items: [Item]
     var statusSymbol: String?
     var style: MenuBarLabelStyle
+    var foreground: Color
 
     var body: some View {
         HStack(spacing: 8) {
             if let statusSymbol { Image(systemName: statusSymbol) }
             ForEach(items) { item in
                 HStack(spacing: 3) {
-                    switch style {
-                    case .icons: Image(systemName: item.metric.symbolName).font(.system(size: 11, weight: .semibold))
-                    case .text: Text(item.metric.shortTitle).font(.system(size: 10, weight: .semibold)).opacity(0.7)
-                    }
+                    glyph(for: item.metric)
                     Text(item.value)
                 }
             }
         }
         .font(.system(size: 12, weight: .medium).monospacedDigit())
-        .foregroundStyle(.black)
+        .foregroundStyle(foreground)
         .frame(height: 18)
+    }
+
+    @ViewBuilder
+    private func glyph(for metric: MenuBarMetric) -> some View {
+        switch (metric, style) {
+        case (.workingAgents, _): RobotGlyph().frame(width: 11, height: 12)
+        case (.agentsNeedingYou, _): Circle().fill(.yellow).frame(width: 7, height: 7)
+        case (_, .icons): Image(systemName: metric.symbolName).font(.system(size: 11, weight: .semibold))
+        case (_, .text): Text(metric.shortTitle).font(.system(size: 10, weight: .semibold)).opacity(0.7)
+        }
+    }
+}
+
+/// A small robot head; SF Symbols has no robot before macOS 15.
+private struct RobotGlyph: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Circle().frame(width: 2.5, height: 2.5)
+            Rectangle().frame(width: 1.2, height: 1.5)
+            RoundedRectangle(cornerRadius: 2.5)
+                .frame(width: 11, height: 8)
+                .overlay {
+                    HStack(spacing: 3) {
+                        Circle().frame(width: 2.2, height: 2.2)
+                        Circle().frame(width: 2.2, height: 2.2)
+                    }
+                    .blendMode(.destinationOut)
+                }
+                .compositingGroup()
+        }
     }
 }
