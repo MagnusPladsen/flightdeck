@@ -71,6 +71,7 @@ final class AppSettings {
     private let defaults: UserDefaults
 
     var menuBarMetrics: [MenuBarMetric] { didSet { save(menuBarMetrics, forKey: "menuBarMetrics") } }
+    var panelShowsNetworkAndDisk: Bool { didSet { defaults.set(panelShowsNetworkAndDisk, forKey: "panelShowsNetworkAndDisk") } }
     var showSystemPorts: Bool { didSet { defaults.set(showSystemPorts, forKey: "showSystemPorts") } }
     var showIdleAgents: Bool { didSet { defaults.set(showIdleAgents, forKey: "showIdleAgents") } }
     var claudeLimitsEnabled: Bool { didSet { defaults.set(claudeLimitsEnabled, forKey: "claudeLimitsEnabled") } }
@@ -89,6 +90,7 @@ final class AppSettings {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         menuBarMetrics = Self.load([MenuBarMetric].self, forKey: "menuBarMetrics", from: defaults) ?? [.cpu, .memory, .workingAgents, .agentsNeedingYou]
+        panelShowsNetworkAndDisk = defaults.bool(forKey: "panelShowsNetworkAndDisk")
         showSystemPorts = defaults.bool(forKey: "showSystemPorts")
         showIdleAgents = defaults.bool(forKey: "showIdleAgents")
         claudeLimitsEnabled = defaults.bool(forKey: "claudeLimitsEnabled")

@@ -37,6 +37,9 @@ private struct GeneralSettings: View {
                     ))
                 }
             }
+            Section("Menu bar panel") {
+                Toggle("Show network and disk, not just CPU and memory", isOn: $settings.panelShowsNetworkAndDisk)
+            }
             Section("Ports") {
                 Toggle("Show system ports, not just dev servers", isOn: $settings.showSystemPorts)
             }

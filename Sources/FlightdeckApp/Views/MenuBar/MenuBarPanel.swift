@@ -13,9 +13,13 @@ struct MenuBarPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
-            SystemTilesGrid()
+            SystemTilesGrid(showsNetworkAndDisk: store.settings.panelShowsNetworkAndDisk)
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        SectionHeading(title: "Needs you", count: agentsNeedingYou.count)
+                        HairlineRows(items: Array(agentsNeedingYou.prefix(6)), emptyText: "Nobody is waiting on you") { AgentRow(agent: $0, isCompact: true) }
+                    }
                     VStack(alignment: .leading, spacing: 0) {
                         SectionHeading(title: "Dev servers", count: store.devServers.count)
                         HairlineRows(items: Array(store.devServers.prefix(6)), emptyText: "No dev servers running") { PortRow(port: $0, isCompact: true) }
@@ -68,8 +72,12 @@ struct MenuBarPanel: View {
         }
     }
 
+    private var agentsNeedingYou: [AgentSession] {
+        store.agents.filter(\.state.needsYou)
+    }
+
     private var needsYouCount: Int {
-        store.agents.filter(\.state.needsYou).count
+        agentsNeedingYou.count
     }
 
     private var headline: String {
@@ -92,14 +100,20 @@ struct SystemTilesGrid: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     var columns = 2
+    var showsNetworkAndDisk = true
 
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns), spacing: 8) {
             MetricTile(title: "CPU", value: Formatters.percent(snapshot?.cpu.total ?? 0), detail: cpuDetail, history: store.cpuHistory, color: UsageLevel.color(forFraction: snapshot?.cpu.total ?? 0, in: theme), maximum: 1)
             MetricTile(title: "Memory", value: Formatters.percent(snapshot?.memory.usedFraction ?? 0), detail: memoryDetail, history: store.memoryHistory, color: memoryColor, maximum: 1)
-            MetricTile(title: "Network", value: "↓ \(Formatters.rate(snapshot?.network.bytesInPerSecond ?? 0))", detail: "↑ \(Formatters.rate(snapshot?.network.bytesOutPerSecond ?? 0))", history: store.networkInHistory, color: theme.info)
-            MetricTile(title: "Disk", value: Formatters.percent(primaryDisk?.usedFraction ?? 0), detail: diskDetail, history: [], color: UsageLevel.color(forFraction: primaryDisk?.usedFraction ?? 0, in: theme), gaugeFraction: primaryDisk?.usedFraction ?? 0)
+            if showsNetworkAndDisk { networkAndDisk }
         }
+    }
+
+    @ViewBuilder
+    private var networkAndDisk: some View {
+        MetricTile(title: "Network", value: "↓ \(Formatters.rate(snapshot?.network.bytesInPerSecond ?? 0))", detail: "↑ \(Formatters.rate(snapshot?.network.bytesOutPerSecond ?? 0))", history: store.networkInHistory, color: theme.info)
+        MetricTile(title: "Disk", value: Formatters.percent(primaryDisk?.usedFraction ?? 0), detail: diskDetail, history: [], color: UsageLevel.color(forFraction: primaryDisk?.usedFraction ?? 0, in: theme), gaugeFraction: primaryDisk?.usedFraction ?? 0)
     }
 
     private var snapshot: SystemSnapshot? { store.snapshot }
