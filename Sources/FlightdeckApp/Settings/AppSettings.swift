@@ -3,7 +3,7 @@ import MonitorCore
 import Observation
 
 enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
-    case cpu, memory, network, servers, agents, claudeLimit, codexLimit
+    case cpu, memory, workingAgents, agentsNeedingYou, network, servers, agents, claudeLimit, codexLimit
 
     var id: String { rawValue }
 
@@ -11,6 +11,8 @@ enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .cpu: "CPU"
         case .memory: "Memory"
+        case .workingAgents: "Working AI agents"
+        case .agentsNeedingYou: "AI agents needing you"
         case .network: "Network"
         case .servers: "Running servers"
         case .agents: "Active AI agents"
@@ -23,6 +25,8 @@ enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .cpu: "cpu"
         case .memory: "memorychip"
+        case .workingAgents: "faceid"
+        case .agentsNeedingYou: "circle.fill"
         case .network: "arrow.down"
         case .servers: "server.rack"
         case .agents: "sparkles"
@@ -36,6 +40,8 @@ enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .cpu: "CPU"
         case .memory: "MEM"
+        case .workingAgents: "RUN"
+        case .agentsNeedingYou: "YOU"
         case .network: "NET"
         case .servers: "SRV"
         case .agents: "AI"
@@ -82,12 +88,12 @@ final class AppSettings {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        menuBarMetrics = Self.load([MenuBarMetric].self, forKey: "menuBarMetrics", from: defaults) ?? [.cpu, .memory, .servers]
+        menuBarMetrics = Self.load([MenuBarMetric].self, forKey: "menuBarMetrics", from: defaults) ?? [.cpu, .memory, .workingAgents, .agentsNeedingYou]
         showSystemPorts = defaults.bool(forKey: "showSystemPorts")
         showIdleAgents = defaults.bool(forKey: "showIdleAgents")
         claudeLimitsEnabled = defaults.bool(forKey: "claudeLimitsEnabled")
         customWidgets = Self.load([CustomWidget].self, forKey: "customWidgets", from: defaults) ?? []
-        menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .icons
+        menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .text
         themeID = defaults.string(forKey: "themeID") ?? Theme.ignition.id
         overviewResources = Self.load([OverviewResource].self, forKey: "overviewResources", from: defaults) ?? OverviewResource.defaultSelection
         resourcesInSidebar = defaults.bool(forKey: "resourcesInSidebar")
