@@ -58,7 +58,7 @@ A big clock sits beside the "needs you" headline on the overview; like every sec
 
 Every dashboard page can be rearranged: click the lock button in the toolbar, then drag sections to move them (also onto another page in the sidebar), drag their right edge to resize on a 12-column grid, or hide them and add them back from the tray. Locking saves a custom version of the theme's layout, e.g. "Ignition (custom)"; Settings › Appearance resets it.
 
-Linux support is planned; the core library already builds there.
+Flightdeck is macOS only for now. The core library already builds on Linux, but there is no Linux app yet.
 
 ## Install
 
