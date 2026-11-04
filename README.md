@@ -14,6 +14,18 @@ Every dashboard page can be rearranged: click the lock button in the toolbar, th
 
 Linux support is planned; the core library already builds there.
 
+## Install
+
+```bash
+brew install --cask magnuspladsen/tap/system-monitor
+```
+
+Or download `SystemMonitor.zip` from [Releases](https://github.com/MagnusPladsen/system-monitor/releases). The app is not notarized yet; if macOS blocks it, allow it under System Settings › Privacy & Security › Open Anyway.
+
+## Release
+
+Bump `VERSION` on `main`. `.github/workflows/release.yml` tests, builds a universal `SystemMonitor.app`, publishes it as a GitHub release and, when the `TAP_TOKEN` secret is set, updates `Casks/system-monitor.rb` in `MagnusPladsen/homebrew-tap` (first release copies `packaging/homebrew/system-monitor.rb` there).
+
 ## Requirements
 
 macOS 14+, Swift 6 toolchain (Xcode 16+).

@@ -5,11 +5,13 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/SystemMonitor.app"
 BUNDLE_ID="com.magnuspladsen.SystemMonitor"
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-$(cat "$ROOT/VERSION")}"
+# Extra flags for swift build, e.g. "--arch arm64 --arch x86_64" for a universal release build
+read -r -a BUILD_FLAGS <<< "${SWIFT_BUILD_FLAGS:-}"
 
 cd "$ROOT"
-swift build -c release --product SystemMonitor
-BINARY="$(swift build -c release --product SystemMonitor --show-bin-path)/SystemMonitor"
+swift build -c release --product SystemMonitor ${BUILD_FLAGS[@]+"${BUILD_FLAGS[@]}"}
+BINARY="$(swift build -c release --product SystemMonitor ${BUILD_FLAGS[@]+"${BUILD_FLAGS[@]}"} --show-bin-path)/SystemMonitor"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"

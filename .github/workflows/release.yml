@@ -1,0 +1,88 @@
+name: release
+
+# Releases the version in VERSION once: a push to main whose version already has a tag publishes
+# nothing. Bump VERSION on main to ship a new release. The zip goes to GitHub Releases and, when
+# TAP_TOKEN is set, the cask in MagnusPladsen/homebrew-tap is updated to point at it.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the version and look for its tag
+        id: version
+        run: |
+          version=$(tr -d '[:space:]' < VERSION)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+            echo "v$version is already released, nothing to do"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Test
+        if: steps.version.outputs.release == 'true'
+        run: swift test
+
+      - name: Build the universal app
+        if: steps.version.outputs.release == 'true'
+        env:
+          SWIFT_BUILD_FLAGS: --arch arm64 --arch x86_64
+        run: |
+          scripts/bundle.sh
+          ditto -c -k --keepParent SystemMonitor.app SystemMonitor.zip
+          codesign --verify --strict SystemMonitor.app
+
+      - name: Publish the release
+        if: steps.version.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "v$VERSION" SystemMonitor.zip \
+            --target "$GITHUB_SHA" \
+            --title "$VERSION" \
+            --generate-notes \
+            ${prerelease:+"$prerelease"}
+
+      - name: Update the Homebrew cask
+        if: steps.version.outputs.release == 'true'
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "TAP_TOKEN is not set, leaving the Homebrew cask alone"
+            exit 0
+          fi
+          sha=$(shasum -a 256 SystemMonitor.zip | cut -d' ' -f1)
+          git clone -q --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/MagnusPladsen/homebrew-tap.git" tap
+          if [ ! -f tap/Casks/system-monitor.rb ]; then
+            cp packaging/homebrew/system-monitor.rb tap/Casks/system-monitor.rb
+          fi
+          sed -i '' -e "s/^  version \".*\"/  version \"$VERSION\"/" -e "s/^  sha256 \".*\"/  sha256 \"$sha\"/" tap/Casks/system-monitor.rb
+          git -C tap add Casks/system-monitor.rb
+          if git -C tap diff --cached --quiet; then
+            echo "The cask already offers $VERSION"
+            exit 0
+          fi
+          git -C tap config user.name "github-actions[bot]"
+          git -C tap config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C tap commit -q -m "Update system-monitor to $VERSION"
+          git -C tap push -q
