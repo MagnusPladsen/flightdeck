@@ -26,8 +26,8 @@ struct MenuBarPanel: View {
                         HairlineRows(items: Array(store.devServers.prefix(6)), emptyText: "No dev servers running") { PortRow(port: $0, isCompact: true) }
                     }
                     VStack(alignment: .leading, spacing: 0) {
-                        SectionHeading(title: "AI agents", count: store.activeAgents.count)
-                        HairlineRows(items: Array(store.activeAgents.prefix(6)), emptyText: "No active agents") { AgentRow(agent: $0, isCompact: true) }
+                        SectionHeading(title: "AI agents", count: otherActiveAgents.count)
+                        HairlineRows(items: Array(otherActiveAgents.prefix(6)), emptyText: "No other active agents") { AgentRow(agent: $0, isCompact: true) }
                     }
                     if !store.usage.isEmpty {
                         VStack(alignment: .leading, spacing: 0) {
@@ -80,6 +80,11 @@ struct MenuBarPanel: View {
 
     private var agentsNeedingYou: [AgentSession] {
         store.needsYouGroups.map(\.agent)
+    }
+
+    /// Active agents not already listed under "Needs you".
+    private var otherActiveAgents: [AgentSession] {
+        store.activeAgents.filter { !$0.state.needsYou }
     }
 
     private var needsYouCount: Int {
