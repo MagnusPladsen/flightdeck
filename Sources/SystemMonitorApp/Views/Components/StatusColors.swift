@@ -5,10 +5,14 @@ extension AgentState {
     func color(in theme: Theme) -> Color {
         switch self {
         case .working: theme.success
-        case .needsApproval: theme.warning
-        case .yourTurn: theme.info
+        case .needsApproval, .yourTurn: theme.warning
         case .idle: theme.foreground.opacity(0.4)
         }
+    }
+
+    /// Approval and your turn are the same status to the user: the agent is waiting on you.
+    var needsYou: Bool {
+        self == .needsApproval || self == .yourTurn
     }
 
     var label: String {

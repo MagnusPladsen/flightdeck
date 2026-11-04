@@ -8,7 +8,7 @@ A macOS menu bar system monitor for developers. Click the menu bar item for a qu
 - **Usage limits**: Codex 5h and weekly limits from local logs; Claude token counts from local logs, and optionally Claude limit percentages.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 
-Ships 12 themes (Clean Dark by default, Clean Light, a "match system" option, plus Tokyo Night, Catppuccin, Dracula and other popular coding palettes). Linux support is planned; the core library already builds there.
+Ships 13 themes. A theme sets the dashboard layout as well as its colours: Ignition is the default (a near-black agent board that leads with whichever agent needs you), plus Clean Dark, Clean Light, a "match system" option, Tokyo Night, Catppuccin, Dracula and other popular coding palettes. More layouts are planned. Linux support is planned; the core library already builds there.
 
 ## Requirements
 

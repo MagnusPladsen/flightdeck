@@ -24,6 +24,17 @@ public enum AgentState: String, Sendable {
     case idle
 }
 
+/// The latest thing an agent did, e.g. verb "Running", detail "swift test".
+public struct AgentAction: Sendable, Hashable {
+    public var verb: String
+    public var detail: String
+
+    public init(verb: String, detail: String) {
+        self.verb = verb
+        self.detail = detail
+    }
+}
+
 public struct AgentSession: Sendable, Identifiable, Hashable {
     public var id: Int32 { pid }
     public var tool: AgentTool
@@ -33,8 +44,9 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
     public var state: AgentState
     public var cpuPercent: Double
     public var lastActivity: Date?
+    public var lastAction: AgentAction?
 
-    public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?) {
+    public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?, lastAction: AgentAction? = nil) {
         self.tool = tool
         self.pid = pid
         self.workingDirectory = workingDirectory
@@ -42,6 +54,7 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
         self.state = state
         self.cpuPercent = cpuPercent
         self.lastActivity = lastActivity
+        self.lastAction = lastAction
     }
 }
 

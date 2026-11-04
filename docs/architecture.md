@@ -21,7 +21,7 @@ One Swift package with two targets.
 
 - **Store/** — `MonitorEngine` owns the collectors and blocks; `MonitorStore` (`@Observable`, main actor) polls it off the main thread: system every 2s, ports and agents every 5s, usage every 60s, widgets every 5s, project cache every 30s.
 - **Settings/** — `AppSettings`, persisted to UserDefaults.
-- **Views/** — `MenuBar/` (label and the 380pt popover), `Dashboard/` (`NavigationSplitView` with Overview, Servers & Ports, AI Agents, Processes, Widgets), `Settings/`, and shared `Components/`.
+- **Views/** — `MenuBar/` (label and the 380pt popover), `Dashboard/` (`NavigationSplitView` with Overview, Servers & Ports, AI Agents, Processes, Widgets; the Overview is drawn by the current theme's `DashboardLayout`, today Ignition), `Settings/`, and shared `Components/`.
 
 The app runs as an accessory (no Dock icon). `DockPresence` switches to a regular app while the dashboard window is open.
 

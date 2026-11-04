@@ -17,7 +17,7 @@ public struct ClaudeSessionLogs: Sendable {
         let directory = projectsDirectory + "/" + Self.encodedDirectoryName(for: workingDirectory)
         guard let newest = LogFiles.newestFile(in: directory, withExtension: "jsonl") else { return nil }
         let tail = LogFiles.readTail(of: newest.path, maxBytes: 64 * 1024)
-        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail))
+        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: Self.lastAction(inTranscriptTail: tail))
     }
 
     /// Looks at the last user/assistant message to tell who is expected to act next.
@@ -35,6 +35,92 @@ public struct ClaudeSessionLogs: Sendable {
             }
         }
         return .unknown
+    }
+
+    /// Describes the newest assistant step: the tool it called, or the first line of what it said.
+    static func lastAction(inTranscriptTail tail: String) -> AgentAction? {
+        for line in tail.split(separator: "\n").reversed() {
+            guard line.contains(#""type":"assistant""#),
+                  let data = line.data(using: .utf8),
+                  let entry = try? JSONDecoder().decode(AssistantEntry.self, from: data),
+                  let block = entry.message.content.last(where: { $0.type == "tool_use" || $0.type == "text" }) else { continue }
+            return block.type == "tool_use" ? toolAction(name: block.name ?? "tool", input: block.input) : textAction(block.text ?? "")
+        }
+        return nil
+    }
+
+    static func toolAction(name: String, input: ToolInput?) -> AgentAction {
+        let fileName = (input?.filePath ?? input?.path).map { ($0 as NSString).lastPathComponent }
+        switch name {
+        case "Bash": return AgentAction(verb: "Running", detail: firstLine(input?.command ?? ""))
+        case "Edit", "MultiEdit", "NotebookEdit": return AgentAction(verb: "Editing", detail: fileName ?? "a file")
+        case "Write": return AgentAction(verb: "Writing", detail: fileName ?? "a file")
+        case "Read": return AgentAction(verb: "Reading", detail: fileName ?? "a file")
+        case "Grep", "Glob": return AgentAction(verb: "Searching", detail: input?.pattern ?? "the project")
+        case "WebFetch", "WebSearch": return AgentAction(verb: "Browsing", detail: input?.url ?? input?.query ?? "the web")
+        case "Task", "Agent": return AgentAction(verb: "Delegating", detail: input?.description ?? "a subtask")
+        default: return AgentAction(verb: "Using", detail: name)
+        }
+    }
+
+    static func textAction(_ text: String) -> AgentAction {
+        let line = firstLine(plainText(fromMarkdown: text))
+        return AgentAction(verb: line.hasSuffix("?") ? "Asked" : "Said", detail: line)
+    }
+
+    /// Keeps link text, drops link targets, emphasis and code markers.
+    static func plainText(fromMarkdown text: String) -> String {
+        text.replacingOccurrences(of: #"\[([^\]]*)\]\([^)]*\)"#, with: "$1", options: .regularExpression)
+            .replacingOccurrences(of: #"[*_`]{1,3}"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"^#+\s*"#, with: "", options: .regularExpression)
+    }
+
+    private static func firstLine(_ text: String) -> String {
+        let line = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? ""
+        return line.count > 140 ? String(line.prefix(139)) + "…" : line
+    }
+
+    struct ToolInput: Decodable {
+        var command: String?
+        var filePath: String?
+        var path: String?
+        var pattern: String?
+        var url: String?
+        var query: String?
+        var description: String?
+
+        enum CodingKeys: String, CodingKey {
+            case command, path, pattern, url, query, description
+            case filePath = "file_path"
+        }
+
+        /// Tool inputs vary per tool, so a field of an unexpected type is skipped rather than failing.
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            func string(_ key: CodingKeys) -> String? { (try? container.decodeIfPresent(String.self, forKey: key)) ?? nil }
+            command = string(.command)
+            filePath = string(.filePath)
+            path = string(.path)
+            pattern = string(.pattern)
+            url = string(.url)
+            query = string(.query)
+            description = string(.description)
+        }
+    }
+
+    private struct AssistantEntry: Decodable {
+        struct Message: Decodable {
+            let content: [Block]
+        }
+
+        struct Block: Decodable {
+            let type: String
+            let name: String?
+            let text: String?
+            let input: ToolInput?
+        }
+
+        let message: Message
     }
 
     private struct TranscriptEntry: Decodable {

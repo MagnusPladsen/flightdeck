@@ -1,0 +1,73 @@
+import MonitorCore
+import SwiftUI
+
+/// The big headline: the one agent that needs you most, or a calm "All clear".
+struct NeedsYouHero: View {
+    @Environment(MonitorStore.self) private var store
+    @Environment(\.theme) private var theme
+    var agent: AgentSession?
+    var snooze: (AgentSession) -> Void
+
+    var body: some View {
+        if let agent {
+            waiting(agent)
+        } else {
+            allClear
+        }
+    }
+
+    private func waiting(_ agent: AgentSession) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            (Text(agent.displayName + " ") + Text("needs you.").foregroundStyle(theme.attention))
+                .font(.system(size: 60, weight: .heavy))
+                .tracking(-2.4)
+                .lineLimit(2)
+                .minimumScaleFactor(0.6)
+            HStack(alignment: .firstTextBaseline, spacing: 18) {
+                actionText(agent.actionLine)
+                    .lineLimit(1)
+                Text(meta(for: agent))
+                    .font(.system(size: 14))
+                    .foregroundStyle(theme.muted)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            HStack(spacing: 12) {
+                Button("Go to terminal") { store.openInTerminal(agent.workingDirectory) }
+                    .buttonStyle(PillButtonStyle(isProminent: true, size: 15))
+                Button("Later") { snooze(agent) }
+                    .buttonStyle(PillButtonStyle(size: 15))
+            }
+        }
+    }
+
+    private var allClear: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("All clear.")
+                .font(.system(size: 60, weight: .heavy))
+                .tracking(-2.4)
+            Text(summary).font(.system(size: 15)).foregroundStyle(theme.muted)
+        }
+    }
+
+    /// Commands read best in monospace; messages in the normal font.
+    private func actionText(_ action: AgentAction) -> some View {
+        let detail = Text(action.detail.isEmpty ? "" : " " + action.detail)
+            .font(.system(size: 15, design: action.verb == "Running" ? .monospaced : .default))
+        return (Text(action.verb).font(.system(size: 15, weight: .bold)).foregroundStyle(theme.attention) + detail)
+    }
+
+    private func meta(for agent: AgentSession) -> String {
+        var parts = [agent.tool.displayName, agent.abbreviatedPath]
+        if let checkout = agent.checkoutLabel { parts.append(checkout) }
+        let age = agent.ageText()
+        parts.append(age == "now" ? "waiting since just now" : "waiting \(age)")
+        return parts.joined(separator: " · ")
+    }
+
+    private var summary: String {
+        let working = store.agents.filter { $0.state == .working }.count
+        let servers = store.devServers.count
+        return "\(working) agent\(working == 1 ? "" : "s") working · \(servers) dev server\(servers == 1 ? "" : "s") up"
+    }
+}

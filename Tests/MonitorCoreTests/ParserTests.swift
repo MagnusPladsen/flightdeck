@@ -104,6 +104,21 @@ struct AgentLogTests {
         #expect(ClaudeSessionLogs.lastTurn(inTranscriptTail: #"{"type":"assistant","message":{"stop_reason":"end_turn"}}"#) == .finished)
     }
 
+    @Test func claudeLastActionDescribesNewestToolCallOrText() {
+        let tail = """
+        {"type":"assistant","message":{"content":[{"type":"text","text":"Done."}]}}
+        {"type":"assistant","message":{"content":[{"type":"text","text":"Running the tests."},{"type":"tool_use","name":"Bash","input":{"command":"swift test\\nwait","timeout":120000}}]}}
+        {"type":"user","message":{"content":"ok"}}
+        """
+        #expect(ClaudeSessionLogs.lastAction(inTranscriptTail: tail) == AgentAction(verb: "Running", detail: "swift test"))
+        let edit = #"{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Edit","input":{"file_path":"/repo/Sources/Theme.swift"}}]}}"#
+        #expect(ClaudeSessionLogs.lastAction(inTranscriptTail: edit) == AgentAction(verb: "Editing", detail: "Theme.swift"))
+        let question = #"{"type":"assistant","message":{"content":[{"type":"text","text":"Keep the old API?\nIt is used twice."}]}}"#
+        #expect(ClaudeSessionLogs.lastAction(inTranscriptTail: question) == AgentAction(verb: "Asked", detail: "Keep the old API?"))
+        let markdown = #"{"type":"assistant","message":{"content":[{"type":"text","text":"**Merged** as [#16](https://github.com/x/y/pull/16), see `main`."}]}}"#
+        #expect(ClaudeSessionLogs.lastAction(inTranscriptTail: markdown) == AgentAction(verb: "Said", detail: "Merged as #16, see main."))
+    }
+
     @Test func claudeUsageRecordParsesTokens() throws {
         let line: Substring = #"{"type":"assistant","timestamp":"2026-11-03T14:33:17.034Z","requestId":"req_1","message":{"id":"msg_1","usage":{"input_tokens":2,"output_tokens":490,"cache_read_input_tokens":88546,"cache_creation_input_tokens":2389}}}"#
         let record = try #require(ClaudeTokenTracker.parseUsageRecord(line))

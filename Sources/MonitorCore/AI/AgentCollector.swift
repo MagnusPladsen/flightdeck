@@ -37,7 +37,8 @@ public final class AgentCollector: @unchecked Sendable {
                 project: projects.project(containing: directory),
                 state: Self.state(cpuPercent: sample.cpuPercent, activity: activity, now: Date()),
                 cpuPercent: sample.cpuPercent,
-                lastActivity: activity?.lastWrite
+                lastActivity: activity?.lastWrite,
+                lastAction: activity?.lastAction
             )
         }
         .sorted { ($0.lastActivity ?? .distantPast) > ($1.lastActivity ?? .distantPast) }
@@ -77,4 +78,11 @@ public struct SessionActivity: Sendable, Equatable {
 
     public var lastWrite: Date
     public var lastTurn: LastTurn
+    public var lastAction: AgentAction?
+
+    public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil) {
+        self.lastWrite = lastWrite
+        self.lastTurn = lastTurn
+        self.lastAction = lastAction
+    }
 }

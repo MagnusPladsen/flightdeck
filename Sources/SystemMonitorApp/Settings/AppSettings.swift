@@ -71,6 +71,13 @@ final class AppSettings {
     var customWidgets: [CustomWidget] { didSet { save(customWidgets, forKey: "customWidgets") } }
     var menuBarLabelStyle: MenuBarLabelStyle { didSet { defaults.set(menuBarLabelStyle.rawValue, forKey: "menuBarLabelStyle") } }
     var themeID: String { didSet { defaults.set(themeID, forKey: "themeID") } }
+    var overviewResources: [OverviewResource] { didSet { save(overviewResources, forKey: "overviewResources") } }
+    var resourcesInSidebar: Bool { didSet { defaults.set(resourcesInSidebar, forKey: "resourcesInSidebar") } }
+    var agentCardFields: [AgentCardField] { didSet { save(agentCardFields, forKey: "agentCardFields") } }
+    var agentBoardColumns: [AgentBoardColumn] { didSet { save(agentBoardColumns, forKey: "agentBoardColumns") } }
+    var defaultAgent: AgentTool { didSet { defaults.set(defaultAgent.rawValue, forKey: "defaultAgent") } }
+    /// Nil until the user picks an editor the first time they open a project.
+    var editorBundleID: String? { didSet { defaults.set(editorBundleID, forKey: "editorBundleID") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -80,7 +87,13 @@ final class AppSettings {
         claudeLimitsEnabled = defaults.bool(forKey: "claudeLimitsEnabled")
         customWidgets = Self.load([CustomWidget].self, forKey: "customWidgets", from: defaults) ?? []
         menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .icons
-        themeID = defaults.string(forKey: "themeID") ?? Theme.cleanDark.id
+        themeID = defaults.string(forKey: "themeID") ?? Theme.ignition.id
+        overviewResources = Self.load([OverviewResource].self, forKey: "overviewResources", from: defaults) ?? OverviewResource.defaultSelection
+        resourcesInSidebar = defaults.bool(forKey: "resourcesInSidebar")
+        agentCardFields = Self.load([AgentCardField].self, forKey: "agentCardFields", from: defaults) ?? AgentCardField.allCases
+        agentBoardColumns = Self.load([AgentBoardColumn].self, forKey: "agentBoardColumns", from: defaults) ?? AgentBoardColumn.allCases
+        defaultAgent = defaults.string(forKey: "defaultAgent").flatMap(AgentTool.init(rawValue:)) ?? .claude
+        editorBundleID = defaults.string(forKey: "editorBundleID")
     }
 
     func isShowingInMenuBar(_ metric: MenuBarMetric) -> Bool {
@@ -88,11 +101,12 @@ final class AppSettings {
     }
 
     func setMenuBarMetric(_ metric: MenuBarMetric, shown: Bool) {
-        if shown, !menuBarMetrics.contains(metric) {
-            menuBarMetrics = MenuBarMetric.allCases.filter { $0 == metric || menuBarMetrics.contains($0) }
-        } else if !shown {
-            menuBarMetrics.removeAll { $0 == metric }
-        }
+        menuBarMetrics = Self.updating(menuBarMetrics, with: metric, shown: shown)
+    }
+
+    /// Adds or removes an option while keeping the options in their declared order.
+    static func updating<Option: CaseIterable & Equatable>(_ selection: [Option], with option: Option, shown: Bool) -> [Option] {
+        shown ? Option.allCases.filter { $0 == option || selection.contains($0) } : selection.filter { $0 != option }
     }
 
     func upsertWidget(_ widget: CustomWidget) {

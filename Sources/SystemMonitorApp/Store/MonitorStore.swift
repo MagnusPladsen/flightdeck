@@ -129,14 +129,24 @@ final class MonitorStore {
         NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: path)
     }
 
+    let installedEditors = EditorApp.installed()
+
+    var preferredEditor: EditorApp? {
+        installedEditors.first { $0.bundleID == settings.editorBundleID }
+    }
+
+    /// Opens with the chosen editor, else the first installed one, else Finder.
     func openInEditor(_ path: String) {
-        let editorIdentifiers = ["dev.zed.Zed", "com.microsoft.VSCode", "com.todesktop.230313mzl4w4u92", "com.apple.dt.Xcode"]
-        let folder = URL(fileURLWithPath: path)
-        guard let editor = editorIdentifiers.lazy.compactMap({ NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) }).first else {
+        guard let editor = preferredEditor ?? installedEditors.first else {
             revealInFinder(path)
             return
         }
-        NSWorkspace.shared.open([folder], withApplicationAt: editor, configuration: NSWorkspace.OpenConfiguration())
+        open(path, in: editor)
+    }
+
+    func open(_ path: String, in editor: EditorApp) {
+        guard let application = NSWorkspace.shared.urlForApplication(withBundleIdentifier: editor.bundleID) else { return }
+        NSWorkspace.shared.open([URL(fileURLWithPath: path)], withApplicationAt: application, configuration: NSWorkspace.OpenConfiguration())
     }
 
     func openInTerminal(_ path: String) {

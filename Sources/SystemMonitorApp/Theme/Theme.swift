@@ -17,11 +17,13 @@ struct Theme: Identifiable, Hashable {
     let error: Color
     let info: Color
     let border: Color
+    let layout: DashboardLayout
 
-    init(id: String, name: String, isDark: Bool, background: UInt32, foreground: UInt32, surface: UInt32, overlay: UInt32, primary: UInt32, secondary: UInt32, accent: UInt32, success: UInt32, warning: UInt32, error: UInt32, info: UInt32, border: UInt32) {
+    init(id: String, name: String, isDark: Bool, layout: DashboardLayout = .ignition, background: UInt32, foreground: UInt32, surface: UInt32, overlay: UInt32, primary: UInt32, secondary: UInt32, accent: UInt32, success: UInt32, warning: UInt32, error: UInt32, info: UInt32, border: UInt32) {
         self.id = id
         self.name = name
         self.isDark = isDark
+        self.layout = layout
         self.background = Color(hex: background)
         self.foreground = Color(hex: foreground)
         self.surface = Color(hex: surface)
@@ -41,12 +43,29 @@ extension Theme {
     /// Pseudo theme id: Clean Dark or Clean Light, following the macOS appearance.
     static let systemID = "system"
 
-    static let all: [Theme] = [cleanDark, cleanLight, tokyoNight, catppuccinMocha, dracula, oneDark, nord, gruvboxDark, monokaiPro, rosePine, kanagawa, solarizedDark]
+    static let all: [Theme] = [ignition, cleanDark, cleanLight, tokyoNight, catppuccinMocha, dracula, oneDark, nord, gruvboxDark, monokaiPro, rosePine, kanagawa, solarizedDark]
 
     static func resolve(id: String, systemScheme: ColorScheme) -> Theme {
         if id == systemID { return systemScheme == .dark ? cleanDark : cleanLight }
         return all.first { $0.id == id } ?? cleanDark
     }
+
+    /// The default: near-black, hairline borders, orange for anything that needs you.
+    static let ignition = Theme(
+        id: "ignition", name: "Ignition", isDark: true,
+        background: 0x000000,
+        foreground: 0xe7e9ea,
+        surface: 0x16181c,
+        overlay: 0x202327,
+        primary: 0x1d9bf0,
+        secondary: 0x7856ff,
+        accent: 0xff7a1a,
+        success: 0x00ba7c,
+        warning: 0xff7a1a,
+        error: 0xf4212e,
+        info: 0x1d9bf0,
+        border: 0x2f3336
+    )
 
     static let cleanDark = Theme(
         id: "clean-dark", name: "Clean Dark", isDark: true,

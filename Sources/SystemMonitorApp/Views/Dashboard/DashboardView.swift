@@ -52,7 +52,7 @@ struct DashboardView: View {
     @ViewBuilder
     private func detail(for section: DashboardSection) -> some View {
         switch section {
-        case .overview: OverviewSection()
+        case .overview: OverviewSection { selection = $0 }
         case .ports: PortsSection()
         case .agents: AgentsSection()
         case .processes: ProcessesSection()

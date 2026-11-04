@@ -144,12 +144,18 @@ private struct AppearanceSettings: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                ThemeOptionButton(title: "Match system", subtitle: "Clean Dark or Clean Light", themes: [.cleanDark, .cleanLight], isSelected: store.settings.themeID == Theme.systemID) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Theme").font(.headline)
+                    Text("A theme sets the dashboard's layout as well as its colours. More layouts are on the way.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                ThemeOptionButton(title: "Match system", subtitle: "Clean Dark or Clean Light · Ignition layout", themes: [.cleanDark, .cleanLight], isSelected: store.settings.themeID == Theme.systemID) {
                     store.settings.themeID = Theme.systemID
                 }
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                     ForEach(Theme.all) { theme in
-                        ThemeOptionButton(title: theme.name, subtitle: theme.isDark ? "Dark" : "Light", themes: [theme], isSelected: store.settings.themeID == theme.id) {
+                        ThemeOptionButton(title: theme.name, subtitle: "\(theme.layout.title) layout · \(theme.isDark ? "dark" : "light")", themes: [theme], isSelected: store.settings.themeID == theme.id) {
                             store.settings.themeID = theme.id
                         }
                     }
