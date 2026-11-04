@@ -52,7 +52,7 @@ enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
 }
 
 enum MenuBarLabelStyle: String, CaseIterable, Identifiable {
-    case icons, text
+    case icons, text, stacked
 
     var id: String { rawValue }
 
@@ -60,6 +60,7 @@ enum MenuBarLabelStyle: String, CaseIterable, Identifiable {
         switch self {
         case .icons: "Icon and value"
         case .text: "Text and value"
+        case .stacked: "Compact, stacked"
         }
     }
 }

@@ -82,16 +82,45 @@ private struct MenuBarLabelContent: View {
     var body: some View {
         HStack(spacing: 8) {
             if let statusSymbol { Image(systemName: statusSymbol) }
-            ForEach(items) { item in
-                HStack(spacing: 3) {
-                    glyph(for: item.metric)
-                    Text(item.value)
-                }
+            if style == .stacked {
+                ForEach(stackedColumns, id: \.first?.id) { stackedColumn($0) }
+                ForEach(agentItems) { inline($0) }
+            } else {
+                ForEach(items) { inline($0) }
             }
         }
         .font(.system(size: 12, weight: .medium).monospacedDigit())
         .foregroundStyle(foreground)
         .frame(height: 18)
+    }
+
+    private func inline(_ item: Item) -> some View {
+        HStack(spacing: 3) {
+            glyph(for: item.metric)
+            Text(item.value)
+        }
+    }
+
+    private static let agentMetrics: Set<MenuBarMetric> = [.workingAgents, .agentsNeedingYou]
+
+    private var agentItems: [Item] { items.filter { Self.agentMetrics.contains($0.metric) } }
+
+    /// The other metrics, two per column, so CPU and memory take the width of one.
+    private var stackedColumns: [[Item]] {
+        let metrics = items.filter { !Self.agentMetrics.contains($0.metric) }
+        return stride(from: 0, to: metrics.count, by: 2).map { Array(metrics[$0..<min($0 + 2, metrics.count)]) }
+    }
+
+    private func stackedColumn(_ column: [Item]) -> some View {
+        VStack(alignment: .trailing, spacing: -1) {
+            ForEach(column) { item in
+                HStack(spacing: 2) {
+                    Text(item.metric.shortTitle).opacity(0.7)
+                    Text(item.value)
+                }
+            }
+        }
+        .font(.system(size: 8, weight: .semibold).monospacedDigit())
     }
 
     @ViewBuilder
@@ -100,7 +129,7 @@ private struct MenuBarLabelContent: View {
         case (.workingAgents, _): RobotGlyph().frame(width: 11, height: 12)
         case (.agentsNeedingYou, _): Circle().fill(.yellow).frame(width: 7, height: 7)
         case (_, .icons): Image(systemName: metric.symbolName).font(.system(size: 11, weight: .semibold))
-        case (_, .text): Text(metric.shortTitle).font(.system(size: 10, weight: .semibold)).opacity(0.7)
+        case (_, .text), (_, .stacked): Text(metric.shortTitle).font(.system(size: 10, weight: .semibold)).opacity(0.7)
         }
     }
 }
