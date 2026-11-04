@@ -40,7 +40,7 @@ struct MenuBarLabel: View {
 
     private var items: [MenuBarLabelContent.Item] {
         store.settings.menuBarMetrics.compactMap { metric in
-            value(for: metric).map { MenuBarLabelContent.Item(metric: metric, value: $0) }
+            value(for: metric).map { MenuBarLabelContent.Item(metric: metric, value: $0, fraction: fraction(for: metric)) }
         }
     }
 
@@ -58,6 +58,17 @@ struct MenuBarLabel: View {
         }
     }
 
+    /// How full a metric is, for the bars label style; nil for counts and rates.
+    private func fraction(for metric: MenuBarMetric) -> Double? {
+        switch metric {
+        case .cpu: store.snapshot?.cpu.total
+        case .memory: store.snapshot?.memory.usedFraction
+        case .claudeLimit: store.usage(for: .claude)?.windows.first.map { $0.usedPercent / 100 }
+        case .codexLimit: store.usage(for: .codex)?.windows.first.map { $0.usedPercent / 100 }
+        default: nil
+        }
+    }
+
     private var needsYouCount: Int {
         store.agents.filter(\.state.needsYou).count
     }
@@ -71,6 +82,7 @@ private struct MenuBarLabelContent: View {
     struct Item: Identifiable {
         var metric: MenuBarMetric
         var value: String
+        var fraction: Double?
         var id: MenuBarMetric { metric }
     }
 
@@ -82,9 +94,9 @@ private struct MenuBarLabelContent: View {
     var body: some View {
         HStack(spacing: 8) {
             if let statusSymbol { Image(systemName: statusSymbol) }
-            if style == .stacked {
-                ForEach(stackedColumns, id: \.first?.id) { stackedColumn($0) }
-                ForEach(agentItems) { inline($0) }
+            if style == .bars {
+                HStack(spacing: 2) { ForEach(barItems) { bar($0.fraction ?? 0) } }
+                ForEach(items.filter { $0.fraction == nil }) { inline($0) }
             } else {
                 ForEach(items) { inline($0) }
             }
@@ -101,26 +113,14 @@ private struct MenuBarLabelContent: View {
         }
     }
 
-    private static let agentMetrics: Set<MenuBarMetric> = [.workingAgents, .agentsNeedingYou]
+    private var barItems: [Item] { items.filter { $0.fraction != nil } }
 
-    private var agentItems: [Item] { items.filter { Self.agentMetrics.contains($0.metric) } }
-
-    /// The other metrics, two per column, so CPU and memory take the width of one.
-    private var stackedColumns: [[Item]] {
-        let metrics = items.filter { !Self.agentMetrics.contains($0.metric) }
-        return stride(from: 0, to: metrics.count, by: 2).map { Array(metrics[$0..<min($0 + 2, metrics.count)]) }
-    }
-
-    private func stackedColumn(_ column: [Item]) -> some View {
-        VStack(alignment: .trailing, spacing: -1) {
-            ForEach(column) { item in
-                HStack(spacing: 2) {
-                    Text(item.metric.shortTitle).opacity(0.7)
-                    Text(item.value)
-                }
-            }
+    private func bar(_ fraction: Double) -> some View {
+        ZStack(alignment: .bottom) {
+            Capsule().opacity(0.25)
+            Capsule().frame(height: 14 * min(max(fraction, 0), 1))
         }
-        .font(.system(size: 8, weight: .semibold).monospacedDigit())
+        .frame(width: 3.5, height: 14)
     }
 
     @ViewBuilder
@@ -129,7 +129,7 @@ private struct MenuBarLabelContent: View {
         case (.workingAgents, _): RobotGlyph().frame(width: 11, height: 12)
         case (.agentsNeedingYou, _): Circle().fill(.yellow).frame(width: 7, height: 7)
         case (_, .icons): Image(systemName: metric.symbolName).font(.system(size: 11, weight: .semibold))
-        case (_, .text), (_, .stacked): Text(metric.shortTitle).font(.system(size: 10, weight: .semibold)).opacity(0.7)
+        case (_, .text), (_, .bars): Text(metric.shortTitle).font(.system(size: 10, weight: .semibold)).opacity(0.7)
         }
     }
 }
