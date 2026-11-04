@@ -44,6 +44,7 @@ struct DashboardView: View {
             detail(for: selection ?? .overview)
                 .navigationTitle((selection ?? .overview).title)
                 .toolbar {
+                    LayoutLockButton()
                     Button { Task { await store.refreshAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 }
         }

@@ -30,6 +30,23 @@ public enum SectionKind: Codable, Hashable, Sendable {
         }
     }
 
+    /// Plain-text form used when a section is dragged.
+    public var token: String {
+        if case .widget(let id) = self { return "widget:\(id.uuidString)" }
+        return String(describing: self)
+    }
+
+    public init?(token: String) {
+        if token.hasPrefix("widget:") {
+            guard let id = UUID(uuidString: String(token.dropFirst("widget:".count))) else { return nil }
+            self = .widget(id)
+        } else if let kind = Self.builtIn.first(where: { $0.token == token }) {
+            self = kind
+        } else {
+            return nil
+        }
+    }
+
     public var defaultSpan: Int {
         switch self {
         case .workingAgents, .idleAgents: 6

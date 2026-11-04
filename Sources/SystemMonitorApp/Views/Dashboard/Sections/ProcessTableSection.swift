@@ -17,7 +17,7 @@ struct ProcessTableSection: View {
                     .frame(width: 220)
             }
             table
-                .frame(minHeight: 480)
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 480)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(theme.border))
         }

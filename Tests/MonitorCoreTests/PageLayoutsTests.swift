@@ -61,4 +61,12 @@ struct PageLayoutsTests {
         let decoded = try JSONDecoder().decode(PageLayouts.self, from: JSONEncoder().encode(layouts))
         #expect(decoded == layouts)
     }
+
+    @Test func tokensRoundTripForEveryKind() {
+        let kinds = SectionKind.builtIn + [.widget(UUID())]
+        for kind in kinds {
+            #expect(SectionKind(token: kind.token) == kind)
+        }
+        #expect(SectionKind(token: "nonsense") == nil)
+    }
 }
