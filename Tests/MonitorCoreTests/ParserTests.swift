@@ -87,6 +87,22 @@ struct DetectionTests {
         #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(20, .waitingOnModel), now: now) == .working)
         #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(3600, .finished), now: now) == .idle)
     }
+
+    @Test func waitingOnToolIsWorkingWhileACommandRunsOrTheToolNeverAsks() {
+        let now = Date()
+        let waiting = { (tool: String) in SessionActivity(lastWrite: now.addingTimeInterval(-20), lastTurn: .waitingOnTool, pendingTool: tool) }
+        #expect(AgentCollector.state(cpuPercent: 0, activity: waiting("Bash"), isRunningCommand: true, now: now) == .working)
+        #expect(AgentCollector.state(cpuPercent: 0, activity: waiting("Bash"), now: now) == .needsApproval)
+        #expect(AgentCollector.state(cpuPercent: 0, activity: waiting("Task"), now: now) == .working)
+    }
+
+    @Test func shellDescendantMeansACommandIsRunning() {
+        let sample = { (pid: Int32, parent: Int32, name: String) in ProcessSample(pid: pid, parentPID: parent, name: name, cpuPercent: 0, memoryBytes: 0) }
+        let running = Dictionary(grouping: [sample(2, 1, "node"), sample(3, 1, "zsh"), sample(4, 3, "swift-build")], by: \.parentPID)
+        let mcpOnly = Dictionary(grouping: [sample(2, 1, "node"), sample(5, 2, "python3")], by: \.parentPID)
+        #expect(AgentCollector.hasShellDescendant(of: 1, in: running))
+        #expect(!AgentCollector.hasShellDescendant(of: 1, in: mcpOnly))
+    }
 }
 
 struct AgentLogTests {

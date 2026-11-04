@@ -17,7 +17,8 @@ public struct ClaudeSessionLogs: Sendable {
         let directory = projectsDirectory + "/" + Self.encodedDirectoryName(for: workingDirectory)
         guard let newest = LogFiles.newestFile(in: directory, withExtension: "jsonl") else { return nil }
         let tail = LogFiles.readTail(of: newest.path, maxBytes: 64 * 1024)
-        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: Self.lastAction(inTranscriptTail: tail))
+        let block = Self.lastAssistantBlock(inTranscriptTail: tail)
+        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action), pendingTool: block?.type == "tool_use" ? block?.name : nil)
     }
 
     /// Looks at the last user/assistant message to tell who is expected to act next.
@@ -39,14 +40,22 @@ public struct ClaudeSessionLogs: Sendable {
 
     /// Describes the newest assistant step: the tool it called, or the first line of what it said.
     static func lastAction(inTranscriptTail tail: String) -> AgentAction? {
+        lastAssistantBlock(inTranscriptTail: tail).map(action)
+    }
+
+    private static func lastAssistantBlock(inTranscriptTail tail: String) -> AssistantEntry.Block? {
         for line in tail.split(separator: "\n").reversed() {
             guard line.contains(#""type":"assistant""#),
                   let data = line.data(using: .utf8),
                   let entry = try? JSONDecoder().decode(AssistantEntry.self, from: data),
                   let block = entry.message.content.last(where: { $0.type == "tool_use" || $0.type == "text" }) else { continue }
-            return block.type == "tool_use" ? toolAction(name: block.name ?? "tool", input: block.input) : textAction(block.text ?? "")
+            return block
         }
         return nil
+    }
+
+    private static func action(for block: AssistantEntry.Block) -> AgentAction {
+        block.type == "tool_use" ? toolAction(name: block.name ?? "tool", input: block.input) : textAction(block.text ?? "")
     }
 
     static func toolAction(name: String, input: ToolInput?) -> AgentAction {

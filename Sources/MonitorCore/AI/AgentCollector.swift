@@ -8,6 +8,10 @@ public final class AgentCollector: @unchecked Sendable {
     private let codexLogs: CodexSessionLogs
     static let busyCPUPercent = 5.0
     static let idleAfter: TimeInterval = 30 * 60
+    /// Agents run each shell command in a fresh child shell, so one exists only while a command runs.
+    static let shellNames: Set<String> = ["zsh", "bash", "sh", "fish", "dash"]
+    /// Tools that run without a permission prompt; waiting on one means it is still working.
+    static let toolsThatNeverAsk: Set<String> = ["Read", "Grep", "Glob", "LS", "Task", "Agent", "TodoWrite", "TaskOutput", "WebSearch", "ToolSearch", "Skill"]
 
     public init(processes: ProcessInspector = PlatformServices.makeProcessInspector(),
                 projects: ProjectResolver,
@@ -24,6 +28,7 @@ public final class AgentCollector: @unchecked Sendable {
             AgentDetector.tool(forArguments: processes.arguments(of: sample.pid)).map { (sample, $0) }
         }
         let detectedPIDs = Dictionary(detected.map { ($0.0.pid, $0.1) }, uniquingKeysWith: { first, _ in first })
+        let childrenByParent = Dictionary(grouping: samples, by: \.parentPID)
 
         return detected.compactMap { sample, tool in
             // Agents spawn helper copies of themselves; only report the outermost one.
@@ -35,7 +40,7 @@ public final class AgentCollector: @unchecked Sendable {
                 pid: sample.pid,
                 workingDirectory: directory,
                 project: projects.project(containing: directory),
-                state: Self.state(cpuPercent: sample.cpuPercent, activity: activity, now: Date()),
+                state: Self.state(cpuPercent: sample.cpuPercent, activity: activity, isRunningCommand: Self.hasShellDescendant(of: sample.pid, in: childrenByParent), now: Date()),
                 cpuPercent: sample.cpuPercent,
                 lastActivity: activity?.lastWrite,
                 lastAction: activity?.lastAction
@@ -52,14 +57,23 @@ public final class AgentCollector: @unchecked Sendable {
         }
     }
 
-    static func state(cpuPercent: Double, activity: SessionActivity?, now: Date) -> AgentState {
+    static func hasShellDescendant(of pid: Int32, in childrenByParent: [Int32: [ProcessSample]], depth: Int = 3) -> Bool {
+        guard depth > 0 else { return false }
+        return (childrenByParent[pid] ?? []).contains { child in
+            shellNames.contains(child.name) || hasShellDescendant(of: child.pid, in: childrenByParent, depth: depth - 1)
+        }
+    }
+
+    static func state(cpuPercent: Double, activity: SessionActivity?, isRunningCommand: Bool = false, now: Date) -> AgentState {
         if cpuPercent >= busyCPUPercent { return .working }
         guard let activity else { return .idle }
         let quietFor = now.timeIntervalSince(activity.lastWrite)
         if quietFor < 3 { return .working }
         if quietFor > idleAfter { return .idle }
         switch activity.lastTurn {
-        case .waitingOnTool: return .needsApproval
+        case .waitingOnTool:
+            let isSafeTool = activity.pendingTool.map(toolsThatNeverAsk.contains) == true
+            return isRunningCommand || isSafeTool ? .working : .needsApproval
         case .waitingOnModel: return .working
         case .finished, .unknown: return .yourTurn
         }
@@ -79,10 +93,13 @@ public struct SessionActivity: Sendable, Equatable {
     public var lastWrite: Date
     public var lastTurn: LastTurn
     public var lastAction: AgentAction?
+    /// Name of the tool the agent called last, e.g. "Bash".
+    public var pendingTool: String?
 
-    public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil) {
+    public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil, pendingTool: String? = nil) {
         self.lastWrite = lastWrite
         self.lastTurn = lastTurn
         self.lastAction = lastAction
+        self.pendingTool = pendingTool
     }
 }
