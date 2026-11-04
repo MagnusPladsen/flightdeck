@@ -18,7 +18,9 @@ enum DashboardLayout: String, CaseIterable, Identifiable {
         switch self {
         case .ignition:
             PageLayouts(pages: [
-                .overview: [.needsYou, .resources, .yourTurn, .workingAgents, .idleAgents, .projects].map { SectionPlacement(kind: $0) },
+                .overview: [
+                    SectionPlacement(kind: .needsYou, span: 8), SectionPlacement(kind: .clock),
+                ] + [.resources, .yourTurn, .workingAgents, .idleAgents, .projects].map { SectionPlacement(kind: $0) },
                 .ports: [SectionPlacement(kind: .devServers), SectionPlacement(kind: .otherPorts)],
                 .agents: [SectionPlacement(kind: .agentSessions, span: 8), SectionPlacement(kind: .usageLimits, span: 4)],
                 .processes: [SectionPlacement(kind: .processTable)],

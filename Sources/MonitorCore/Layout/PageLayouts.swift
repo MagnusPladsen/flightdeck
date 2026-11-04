@@ -7,7 +7,7 @@ public enum DashboardPage: String, Codable, CodingKeyRepresentable, CaseIterable
 
 /// A block that can be placed on a dashboard page.
 public enum SectionKind: Codable, Hashable, Sendable {
-    case needsYou, resources, yourTurn, workingAgents, idleAgents, projects
+    case needsYou, clock, resources, yourTurn, workingAgents, idleAgents, projects
     case devServers, otherPorts
     case agentSessions, usageLimits
     case processTable
@@ -15,14 +15,14 @@ public enum SectionKind: Codable, Hashable, Sendable {
 
     /// Every kind except widgets, which come from the user's widget list.
     public static let builtIn: [SectionKind] = [
-        .needsYou, .resources, .yourTurn, .workingAgents, .idleAgents, .projects,
+        .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects,
         .devServers, .otherPorts, .agentSessions, .usageLimits, .processTable,
     ]
 
     /// Where the kind goes when it is new or re-added without a page.
     public var homePage: DashboardPage {
         switch self {
-        case .needsYou, .resources, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
+        case .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
         case .devServers, .otherPorts: .ports
         case .agentSessions, .usageLimits: .agents
         case .processTable: .processes
@@ -50,7 +50,7 @@ public enum SectionKind: Codable, Hashable, Sendable {
     public var defaultSpan: Int {
         switch self {
         case .workingAgents, .idleAgents: 6
-        case .widget: 4
+        case .widget, .clock: 4
         default: GridPacking.columns
         }
     }

@@ -11,6 +11,8 @@ struct SectionHost: View {
         switch kind {
         case .needsYou:
             NeedsYouHero(agent: store.heroAgent(excluding: context.snoozedAgentIDs.wrappedValue)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
+        case .clock:
+            ClockSection()
         case .resources:
             ResourceStrip()
         case .yourTurn:

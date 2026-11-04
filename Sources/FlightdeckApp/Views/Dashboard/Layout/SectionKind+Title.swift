@@ -5,6 +5,7 @@ extension SectionKind {
     func title(in settings: AppSettings) -> String {
         switch self {
         case .needsYou: "Needs you"
+        case .clock: "Clock"
         case .resources: "Resources"
         case .yourTurn: "Your turn"
         case .workingAgents: "Working"
