@@ -9,12 +9,13 @@ struct IgnitionOverview: View {
 
     @State private var searchText = ""
     @State private var snoozedAgentIDs: Set<Int32> = []
+    @State private var asker = ClaudeAsker()
 
     var body: some View {
         HStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 36) {
-                    IgnitionHeader(searchText: $searchText)
+                    IgnitionHeader(searchText: $searchText, asker: asker)
                     PageCanvas(page: .overview, context: SectionContext(navigate: navigate, searchQuery: searchText, snoozedAgentIDs: $snoozedAgentIDs))
                 }
                 .padding(32)
@@ -28,6 +29,12 @@ struct IgnitionOverview: View {
             }
         }
         .background(theme.background)
+        .overlay {
+            if asker.status != nil {
+                AskPalette(asker: asker).transition(.opacity)
+            }
+        }
         .animation(.smooth(duration: 0.3), value: store.settings.resourcesInSidebar)
+        .animation(.smooth(duration: 0.2), value: asker.status != nil)
     }
 }

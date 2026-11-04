@@ -18,12 +18,13 @@ final class ClaudeAsker {
 
     private nonisolated static let timeout: TimeInterval = 120
     private nonisolated static let answerFormat = """
-        The answer is shown in a small card in the Flightdeck dashboard. Reply in short plain sentences and simple "- " bullets, \
+        The answer is shown in a small palette over the Flightdeck dashboard. Reply in short plain sentences and simple "- " bullets, \
         with **bold** for names. No headings, horizontal rules, emoji or blocks of asks and caveats; \
         response-formatting rules from other instructions do not apply here.
         """
 
-    func ask(_ question: String, store: MonitorStore) {
+    /// `continuing` resumes the last conversation in the ask folder, so follow-ups keep their context.
+    func ask(_ question: String, store: MonitorStore, continuing: Bool = false) {
         let question = question.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty else { return }
         task?.cancel()
@@ -36,7 +37,7 @@ final class ClaudeAsker {
             return
         }
         task = Task {
-            let result = await Self.runClaude(question)
+            let result = await Self.runClaude(question, continuing: continuing)
             if !Task.isCancelled { status = result }
         }
     }
@@ -47,12 +48,12 @@ final class ClaudeAsker {
         status = nil
     }
 
-    private nonisolated static func runClaude(_ question: String) async -> Status {
+    private nonisolated static func runClaude(_ question: String, continuing: Bool) async -> Status {
         guard let claude = locateClaude() else {
             return .failed("Claude Code isn't installed, or Flightdeck can't find the `claude` command.")
         }
         let home = FileManager.default.homeDirectoryForCurrentUser.path
-        let arguments = ["-p", question, "--append-system-prompt", answerFormat, "--allowedTools", "Read", "Grep", "Glob", "--add-dir", home]
+        let arguments = (continuing ? ["--continue"] : []) + ["-p", question, "--append-system-prompt", answerFormat, "--allowedTools", "Read", "Grep", "Glob", "--add-dir", home]
         return await Task.detached {
             let result = run(claude, arguments, in: AskContext.folder)
             if result.didTimeOut { return .failed("Claude took longer than \(Int(timeout)) seconds.") }

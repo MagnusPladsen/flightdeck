@@ -6,7 +6,7 @@ struct IgnitionHeader: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     @Binding var searchText: String
-    @State private var asker = ClaudeAsker()
+    var asker: ClaudeAsker
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -22,9 +22,6 @@ struct IgnitionHeader: View {
             .padding(.vertical, 12)
             .background(theme.surface, in: Capsule())
             .overlay(Capsule().strokeBorder(theme.border))
-            if asker.status != nil {
-                AskAnswerCard(asker: asker)
-            }
             HStack {
                 Text(greeting)
                 Spacer()
@@ -36,7 +33,7 @@ struct IgnitionHeader: View {
         }
     }
 
-    /// The question moves into the answer card, so it stops filtering the sections below.
+    /// The question moves into the answer palette, so it stops filtering the sections below.
     private func askClaude() {
         asker.ask(searchText, store: store)
         searchText = ""
