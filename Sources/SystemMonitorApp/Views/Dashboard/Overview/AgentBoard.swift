@@ -1,66 +1,57 @@
 import MonitorCore
 import SwiftUI
 
-/// Agents grouped by status: a large "Your turn" section, then Working and Idle columns.
-struct AgentBoard: View {
+/// Header shared by the agent sections: title, count, card customisation and a link to the Agents page.
+private struct AgentSectionHeader: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
-    var agents: [AgentSession]
+    var column: AgentBoardColumn
+    var count: Int
+    var isLarge: Bool
     var navigate: (DashboardPage) -> Void
     @State private var isCustomizing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            header
-            if isShowing(.yourTurn), !sessions(in: .yourTurn).isEmpty {
-                YourTurnSection(agents: sessions(in: .yourTurn), navigate: navigate)
-            }
-            let columns = [AgentBoardColumn.working, .idle].filter(isShowing)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 32, alignment: .top), count: max(columns.count, 1)), alignment: .leading, spacing: 24) {
-                ForEach(columns) { column in
-                    AgentColumn(column: column, agents: sessions(in: column), navigate: navigate)
-                }
-            }
+        HStack(alignment: .firstTextBaseline, spacing: isLarge ? 10 : 8) {
+            Circle().fill(color).frame(width: isLarge ? 9 : 7, height: isLarge ? 9 : 7)
+            Text(column.title).font(.system(size: isLarge ? 22 : 14, weight: isLarge ? .heavy : .bold)).tracking(isLarge ? -0.4 : 0)
+            Text("\(count)").font(.system(size: isLarge ? 22 : 14)).foregroundStyle(theme.muted)
+            Spacer()
+            Button { isCustomizing = true } label: { Image(systemName: "slider.horizontal.3") }
+                .buttonStyle(.borderless)
+                .foregroundStyle(theme.muted)
+                .help("Choose what each agent shows")
+                .popover(isPresented: $isCustomizing, arrowEdge: .bottom) { customizer }
+            SeeAllLink(title: "See all →", color: isLarge ? theme.attention : nil) { navigate(.agents) }
         }
     }
 
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text("Agents").font(.system(size: 15, weight: .bold))
-            Text("\(agents.count) session\(agents.count == 1 ? "" : "s")").font(.system(size: 15)).foregroundStyle(theme.muted)
-            Spacer()
-            Button("Customize") { isCustomizing = true }
-                .buttonStyle(PillButtonStyle())
-                .popover(isPresented: $isCustomizing, arrowEdge: .bottom) { customizer }
-            SeeAllLink(title: "See all →") { navigate(.agents) }
+    private var color: Color {
+        switch column {
+        case .yourTurn: theme.attention
+        case .working: AgentState.working.color(in: theme)
+        case .idle: AgentState.idle.color(in: theme)
         }
     }
 
     private var customizer: some View {
         @Bindable var settings = store.settings
-        return VStack(alignment: .leading, spacing: 18) {
-            OptionChecklist(title: "Show on each agent", options: AgentCardField.allCases, label: \.title,
-                            isOn: { settings.agentCardFields.contains($0) },
-                            setOn: { settings.agentCardFields = AppSettings.updating(settings.agentCardFields, with: $0, shown: $1) })
-            OptionChecklist(title: "Columns", options: AgentBoardColumn.allCases, label: \.title,
-                            isOn: { settings.agentBoardColumns.contains($0) },
-                            setOn: { settings.agentBoardColumns = AppSettings.updating(settings.agentBoardColumns, with: $0, shown: $1) })
-        }
-        .padding(16)
-        .frame(minWidth: 220, alignment: .leading)
+        return OptionChecklist(title: "Show on each agent", options: AgentCardField.allCases, label: \.title,
+                               isOn: { settings.agentCardFields.contains($0) },
+                               setOn: { settings.agentCardFields = AppSettings.updating(settings.agentCardFields, with: $0, shown: $1) })
+            .padding(16)
+            .frame(minWidth: 220, alignment: .leading)
     }
+}
 
-    private func isShowing(_ column: AgentBoardColumn) -> Bool {
-        store.settings.agentBoardColumns.contains(column)
-    }
-
-    private func sessions(in column: AgentBoardColumn) -> [AgentGroup] {
-        AgentSession.grouped(agents.filter { column.contains($0.state) })
+extension AgentBoardColumn {
+    func groups(from agents: [AgentSession]) -> [AgentGroup] {
+        AgentSession.grouped(agents.filter { contains($0.state) })
     }
 }
 
 /// The agents waiting on you, marked with an attention-coloured rail and glow.
-private struct YourTurnSection: View {
+struct YourTurnSection: View {
     @Environment(\.theme) private var theme
     var agents: [AgentGroup]
     var navigate: (DashboardPage) -> Void
@@ -68,14 +59,9 @@ private struct YourTurnSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Circle().fill(theme.attention).frame(width: 9, height: 9)
-                Text("Your turn").font(.system(size: 22, weight: .heavy)).tracking(-0.4)
-                Text("\(agents.count)").font(.system(size: 22)).foregroundStyle(theme.muted)
-                Spacer()
-                if agents.count > Self.cardLimit {
-                    SeeAllLink(title: "See all \(agents.count) →", color: theme.attention) { navigate(.agents) }
-                }
+            AgentSectionHeader(column: .yourTurn, count: agents.count, isLarge: true, navigate: navigate)
+            if agents.isEmpty {
+                Text("Nobody is waiting on you.").font(.system(size: 14)).foregroundStyle(theme.muted).padding(.vertical, 12)
             }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 32, alignment: .top)], alignment: .leading, spacing: 0) {
                 ForEach(agents.prefix(Self.cardLimit)) { AgentCard(group: $0, isFeatured: true) }
@@ -87,7 +73,7 @@ private struct YourTurnSection: View {
     }
 }
 
-private struct AgentColumn: View {
+struct AgentColumnSection: View {
     @Environment(\.theme) private var theme
     var column: AgentBoardColumn
     var agents: [AgentGroup]
@@ -96,12 +82,8 @@ private struct AgentColumn: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                Circle().fill(color).frame(width: 7, height: 7)
-                Text(column.title).font(.system(size: 14, weight: .bold))
-                Text("\(agents.count)").font(.system(size: 14)).foregroundStyle(theme.muted)
-            }
-            .padding(.bottom, 10)
+            AgentSectionHeader(column: column, count: agents.count, isLarge: false, navigate: navigate)
+                .padding(.bottom, 10)
             if agents.isEmpty {
                 Hairline()
                 Text(column == .working ? "Nothing running" : "No idle sessions")
@@ -116,9 +98,6 @@ private struct AgentColumn: View {
         }
     }
 
-    private var color: Color {
-        column == .working ? AgentState.working.color(in: theme) : AgentState.idle.color(in: theme)
-    }
 }
 
 /// One agent: project, what it is doing, and where. Featured cards are larger and carry actions.

@@ -30,6 +30,7 @@ struct DashboardView: View {
 
     @Environment(MonitorStore.self) private var store
     @State private var selection: DashboardPage? = .overview
+    @State private var layoutEditor = LayoutEditor()
 
     var body: some View {
         NavigationSplitView {
@@ -46,6 +47,7 @@ struct DashboardView: View {
                     Button { Task { await store.refreshAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 }
         }
+        .environment(layoutEditor)
     }
 
     @ViewBuilder

@@ -74,7 +74,6 @@ final class AppSettings {
     var overviewResources: [OverviewResource] { didSet { save(overviewResources, forKey: "overviewResources") } }
     var resourcesInSidebar: Bool { didSet { defaults.set(resourcesInSidebar, forKey: "resourcesInSidebar") } }
     var agentCardFields: [AgentCardField] { didSet { save(agentCardFields, forKey: "agentCardFields") } }
-    var agentBoardColumns: [AgentBoardColumn] { didSet { save(agentBoardColumns, forKey: "agentBoardColumns") } }
     var defaultAgent: AgentTool { didSet { defaults.set(defaultAgent.rawValue, forKey: "defaultAgent") } }
     /// Customised arrangements keyed by `DashboardLayout` raw value; a missing key means the default.
     var customLayouts: [String: PageLayouts] { didSet { save(customLayouts, forKey: "customLayouts") } }
@@ -93,7 +92,6 @@ final class AppSettings {
         overviewResources = Self.load([OverviewResource].self, forKey: "overviewResources", from: defaults) ?? OverviewResource.defaultSelection
         resourcesInSidebar = defaults.bool(forKey: "resourcesInSidebar")
         agentCardFields = Self.load([AgentCardField].self, forKey: "agentCardFields", from: defaults) ?? AgentCardField.allCases
-        agentBoardColumns = Self.load([AgentBoardColumn].self, forKey: "agentBoardColumns", from: defaults) ?? AgentBoardColumn.allCases
         defaultAgent = defaults.string(forKey: "defaultAgent").flatMap(AgentTool.init(rawValue:)) ?? .claude
         editorBundleID = defaults.string(forKey: "editorBundleID")
         customLayouts = Self.load([String: PageLayouts].self, forKey: "customLayouts", from: defaults) ?? [:]

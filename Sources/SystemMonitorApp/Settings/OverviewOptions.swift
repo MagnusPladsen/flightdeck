@@ -38,7 +38,7 @@ enum AgentCardField: String, CaseIterable, Codable, Identifiable {
 }
 
 /// Status groups on the agent board.
-enum AgentBoardColumn: String, CaseIterable, Codable, Identifiable {
+enum AgentBoardColumn: String, CaseIterable, Identifiable {
     case yourTurn, working, idle
 
     var id: String { rawValue }
