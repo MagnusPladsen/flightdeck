@@ -75,8 +75,7 @@ public final class AgentCollector: @unchecked Sendable {
             let isSafeTool = activity.pendingTool.map(toolsThatNeverAsk.contains) == true
             return isRunningCommand || isSafeTool ? .working : .needsApproval
         case .waitingOnModel: return .working
-        case .askedQuestion, .unknown: return .yourTurn
-        case .finished: return .idle
+        case .finished, .unknown: return .yourTurn
         }
     }
 }
@@ -88,8 +87,6 @@ public struct SessionActivity: Sendable, Equatable {
         /// A tool result or prompt was sent; the model is thinking.
         case waitingOnModel
         case finished
-        /// Finished with a question for the user.
-        case askedQuestion
         case unknown
     }
 

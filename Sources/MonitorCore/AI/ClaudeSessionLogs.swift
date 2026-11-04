@@ -18,17 +18,7 @@ public struct ClaudeSessionLogs: Sendable {
         guard let newest = LogFiles.newestFile(in: directory, withExtension: "jsonl") else { return nil }
         let tail = LogFiles.readTail(of: newest.path, maxBytes: 64 * 1024)
         let block = Self.lastAssistantBlock(inTranscriptTail: tail)
-        // A transcript whose last turn can't be read counts as finished, so it doesn't land in "Your turn"
-        var lastTurn = Self.lastTurn(inTranscriptTail: tail)
-        if lastTurn == .unknown { lastTurn = .finished }
-        if lastTurn == .finished, block?.type == "text", Self.asksQuestion(block?.text ?? "") { lastTurn = .askedQuestion }
-        return SessionActivity(lastWrite: newest.modified, lastTurn: lastTurn, lastAction: block.map(Self.action), pendingTool: block?.type == "tool_use" ? block?.name : nil)
-    }
-
-    /// Whether a finished reply ends by asking the user something: a question mark in its last few lines.
-    static func asksQuestion(_ text: String) -> Bool {
-        let lines = plainText(fromMarkdown: text).split(whereSeparator: \.isNewline).filter { !$0.allSatisfy(\.isWhitespace) }
-        return lines.suffix(6).contains { $0.range(of: #"\?(\s|\)|$)"#, options: .regularExpression) != nil }
+        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action), pendingTool: block?.type == "tool_use" ? block?.name : nil)
     }
 
     /// Looks at the last user/assistant message to tell who is expected to act next.

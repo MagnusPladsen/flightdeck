@@ -83,17 +83,9 @@ struct DetectionTests {
         let quiet = { (seconds: TimeInterval, turn: SessionActivity.LastTurn) in SessionActivity(lastWrite: now.addingTimeInterval(-seconds), lastTurn: turn) }
         #expect(AgentCollector.state(cpuPercent: 40, activity: nil, now: now) == .working)
         #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(20, .waitingOnTool), now: now) == .needsApproval)
-        #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(20, .askedQuestion), now: now) == .yourTurn)
-        #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(20, .finished), now: now) == .idle)
+        #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(20, .finished), now: now) == .yourTurn)
         #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(20, .waitingOnModel), now: now) == .working)
         #expect(AgentCollector.state(cpuPercent: 0, activity: quiet(3600, .finished), now: now) == .idle)
-    }
-
-    @Test func finishedReplyAsksOnlyWithAQuestionNearTheEnd() {
-        #expect(ClaudeSessionLogs.asksQuestion("Done. Should I push it?"))
-        #expect(ClaudeSessionLogs.asksQuestion("Fixed it.\n\n1. **Merge:** want me to merge it into main?\n"))
-        #expect(!ClaudeSessionLogs.asksQuestion("Pushed to main. Tests pass."))
-        #expect(!ClaudeSessionLogs.asksQuestion("See https://example.com/page?id=4 for details."))
     }
 
     @Test func waitingOnToolIsWorkingWhileACommandRunsOrTheToolNeverAsks() {
