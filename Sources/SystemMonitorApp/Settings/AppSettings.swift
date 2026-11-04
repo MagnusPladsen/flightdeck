@@ -18,6 +18,44 @@ enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
         case .codexLimit: "Codex 5h limit"
         }
     }
+
+    var symbolName: String {
+        switch self {
+        case .cpu: "cpu"
+        case .memory: "memorychip"
+        case .network: "arrow.down"
+        case .servers: "server.rack"
+        case .agents: "sparkles"
+        case .claudeLimit: "sparkle"
+        case .codexLimit: "chevron.left.forwardslash.chevron.right"
+        }
+    }
+
+    /// Short text prefix used by the text label style.
+    var shortTitle: String {
+        switch self {
+        case .cpu: "CPU"
+        case .memory: "MEM"
+        case .network: "NET"
+        case .servers: "SRV"
+        case .agents: "AI"
+        case .claudeLimit: "CC"
+        case .codexLimit: "CX"
+        }
+    }
+}
+
+enum MenuBarLabelStyle: String, CaseIterable, Identifiable {
+    case icons, text
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .icons: "Icon and value"
+        case .text: "Text and value"
+        }
+    }
 }
 
 /// User preferences, persisted to UserDefaults.
@@ -31,6 +69,8 @@ final class AppSettings {
     var showIdleAgents: Bool { didSet { defaults.set(showIdleAgents, forKey: "showIdleAgents") } }
     var claudeLimitsEnabled: Bool { didSet { defaults.set(claudeLimitsEnabled, forKey: "claudeLimitsEnabled") } }
     var customWidgets: [CustomWidget] { didSet { save(customWidgets, forKey: "customWidgets") } }
+    var menuBarLabelStyle: MenuBarLabelStyle { didSet { defaults.set(menuBarLabelStyle.rawValue, forKey: "menuBarLabelStyle") } }
+    var themeID: String { didSet { defaults.set(themeID, forKey: "themeID") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -39,6 +79,8 @@ final class AppSettings {
         showIdleAgents = defaults.bool(forKey: "showIdleAgents")
         claudeLimitsEnabled = defaults.bool(forKey: "claudeLimitsEnabled")
         customWidgets = Self.load([CustomWidget].self, forKey: "customWidgets", from: defaults) ?? []
+        menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .icons
+        themeID = defaults.string(forKey: "themeID") ?? Theme.cleanDark.id
     }
 
     func isShowingInMenuBar(_ metric: MenuBarMetric) -> Bool {
@@ -50,6 +92,14 @@ final class AppSettings {
             menuBarMetrics = MenuBarMetric.allCases.filter { $0 == metric || menuBarMetrics.contains($0) }
         } else if !shown {
             menuBarMetrics.removeAll { $0 == metric }
+        }
+    }
+
+    func upsertWidget(_ widget: CustomWidget) {
+        if let index = customWidgets.firstIndex(where: { $0.id == widget.id }) {
+            customWidgets[index] = widget
+        } else {
+            customWidgets.append(widget)
         }
     }
 
