@@ -70,7 +70,7 @@ struct MenuBarLabel: View {
     }
 
     private var needsYouCount: Int {
-        store.agents.filter(\.state.needsYou).count
+        store.needsYouGroups.count
     }
 
     private func fiveHourPercent(for tool: AgentTool) -> String? {

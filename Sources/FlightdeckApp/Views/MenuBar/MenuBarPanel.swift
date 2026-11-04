@@ -79,7 +79,7 @@ struct MenuBarPanel: View {
     }
 
     private var agentsNeedingYou: [AgentSession] {
-        store.agents.filter(\.state.needsYou)
+        store.needsYouGroups.map(\.agent)
     }
 
     private var needsYouCount: Int {

@@ -11,7 +11,7 @@ struct SectionHost: View {
         switch kind {
         case .needsYou:
             let hero = store.heroAgent(excluding: context.snoozedAgentIDs.wrappedValue)
-            NeedsYouHero(agent: hero, othersCount: store.foldersNeedingYou(excluding: hero)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
+            NeedsYouHero(agent: hero, othersCount: max(store.needsYouGroups.count - 1, 0)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
         case .clock:
             ClockSection()
         case .resources:
@@ -55,9 +55,10 @@ extension MonitorStore {
             }
     }
 
-    /// Folders other than the hero's with an agent waiting on you, counted like the "Your turn" groups.
-    func foldersNeedingYou(excluding hero: AgentSession?) -> Int {
-        Set(agents.filter { $0.state.needsYou && $0.workingDirectory != hero?.workingDirectory }.map(\.workingDirectory)).count
+    /// The agents waiting on you, one per session group as on the "Your turn" cards. The menu bar
+    /// label, its panel and the overview headline all count these.
+    var needsYouGroups: [AgentGroup] {
+        AgentBoardColumn.yourTurn.groups(from: agents)
     }
 
     func agents(matching query: String) -> [AgentSession] {
