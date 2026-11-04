@@ -6,6 +6,8 @@ struct NeedsYouHero: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     var agent: AgentSession?
+    /// Other folders with agents waiting on you, for "X and 2 others need you."
+    var othersCount = 0
     var snooze: (AgentSession) -> Void
 
     var body: some View {
@@ -18,7 +20,7 @@ struct NeedsYouHero: View {
 
     private func waiting(_ agent: AgentSession) -> some View {
         VStack(alignment: .leading, spacing: 20) {
-            (Text(agent.displayName + " ") + Text("needs you.").foregroundStyle(theme.attention))
+            (Text(agent.displayName + othersSuffix + " ") + Text(othersCount == 0 ? "needs you." : "need you.").foregroundStyle(theme.attention))
                 .font(.system(size: 60, weight: .heavy))
                 .tracking(-2.4)
                 .lineLimit(2)
@@ -38,6 +40,14 @@ struct NeedsYouHero: View {
                 Button("Later") { snooze(agent) }
                     .buttonStyle(PillButtonStyle(size: 15))
             }
+        }
+    }
+
+    private var othersSuffix: String {
+        switch othersCount {
+        case 0: ""
+        case 1: " and 1 other"
+        default: " and \(othersCount) others"
         }
     }
 

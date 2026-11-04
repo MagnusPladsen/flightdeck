@@ -10,7 +10,8 @@ struct SectionHost: View {
     var body: some View {
         switch kind {
         case .needsYou:
-            NeedsYouHero(agent: store.heroAgent(excluding: context.snoozedAgentIDs.wrappedValue)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
+            let hero = store.heroAgent(excluding: context.snoozedAgentIDs.wrappedValue)
+            NeedsYouHero(agent: hero, othersCount: store.foldersNeedingYou(excluding: hero)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
         case .clock:
             ClockSection()
         case .resources:
@@ -52,6 +53,11 @@ extension MonitorStore {
                 if (lhs.state == .needsApproval) != (rhs.state == .needsApproval) { return lhs.state == .needsApproval }
                 return (lhs.lastActivity ?? .distantFuture) < (rhs.lastActivity ?? .distantFuture)
             }
+    }
+
+    /// Folders other than the hero's with an agent waiting on you, counted like the "Your turn" groups.
+    func foldersNeedingYou(excluding hero: AgentSession?) -> Int {
+        Set(agents.filter { $0.state.needsYou && $0.workingDirectory != hero?.workingDirectory }.map(\.workingDirectory)).count
     }
 
     func agents(matching query: String) -> [AgentSession] {
