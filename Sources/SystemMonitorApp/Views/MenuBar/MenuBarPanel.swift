@@ -7,6 +7,7 @@ struct MenuBarPanel: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
     @State private var listsHeight: CGFloat = 0
 
     var body: some View {
@@ -14,24 +15,19 @@ struct MenuBarPanel: View {
             header
             SystemTilesGrid()
             ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    SectionCard(title: "Dev servers", count: store.devServers.count) {
-                        if store.devServers.isEmpty {
-                            EmptyHint(text: "No dev servers running")
-                        } else {
-                            ForEach(store.devServers.prefix(6)) { PortRow(port: $0, isCompact: true) }
-                        }
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        SectionHeading(title: "Dev servers", count: store.devServers.count)
+                        HairlineRows(items: Array(store.devServers.prefix(6)), emptyText: "No dev servers running") { PortRow(port: $0, isCompact: true) }
                     }
-                    SectionCard(title: "AI agents", count: store.activeAgents.count) {
-                        if store.activeAgents.isEmpty {
-                            EmptyHint(text: "No active agents")
-                        } else {
-                            ForEach(store.activeAgents.prefix(6)) { AgentRow(agent: $0, isCompact: true) }
-                        }
+                    VStack(alignment: .leading, spacing: 0) {
+                        SectionHeading(title: "AI agents", count: store.activeAgents.count)
+                        HairlineRows(items: Array(store.activeAgents.prefix(6)), emptyText: "No active agents") { AgentRow(agent: $0, isCompact: true) }
                     }
                     if !store.usage.isEmpty {
-                        SectionCard(title: "Usage") {
-                            ForEach(store.usage) { ProviderUsageView(usage: $0) }
+                        VStack(alignment: .leading, spacing: 0) {
+                            SectionHeading(title: "Usage")
+                            HairlineRows(items: store.usage, emptyText: "") { ProviderUsageView(usage: $0) }
                         }
                     }
                 }
@@ -39,21 +35,23 @@ struct MenuBarPanel: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .frame(height: min(listsHeight, Self.listsMaxHeight))
-            Divider()
+            Hairline()
             footer
         }
-        .padding(14)
+        .padding(18)
         .frame(width: 380)
+        .background(theme.background)
     }
 
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 1) {
-                Text(store.snapshot?.hostName ?? "System Monitor").font(.headline)
+                Text(headline).font(.system(size: 22, weight: .heavy)).tracking(-0.4)
+                    .foregroundStyle(needsYouCount > 0 ? theme.attention : theme.foreground)
                 if let snapshot = store.snapshot {
-                    Text("Up \(Formatters.duration(snapshot.uptime)) · load \(snapshot.loadAverage.prefix(3).map { String(format: "%.2f", $0) }.joined(separator: " "))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text("\(snapshot.hostName) · up \(Formatters.duration(snapshot.uptime)) · load \(String(format: "%.2f", snapshot.loadAverage.first ?? 0))").lineLimit(1)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.muted)
                 }
             }
             Spacer()
@@ -62,14 +60,24 @@ struct MenuBarPanel: View {
     }
 
     private var footer: some View {
-        HStack {
-            Button("Dashboard") { openDashboard() }
-            SettingsLink { Text("Settings") }
+        HStack(spacing: 8) {
+            Button("Dashboard") { openDashboard() }.buttonStyle(PillButtonStyle(isProminent: true, size: 12))
+            SettingsLink { Text("Settings") }.buttonStyle(PillButtonStyle(size: 12))
             Spacer()
-            Button("Quit") { NSApp.terminate(nil) }
+            Button("Quit") { NSApp.terminate(nil) }.buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.muted)
         }
-        .buttonStyle(.borderless)
-        .font(.callout)
+    }
+
+    private var needsYouCount: Int {
+        store.agents.filter(\.state.needsYou).count
+    }
+
+    private var headline: String {
+        switch needsYouCount {
+        case 0: "All clear."
+        case 1: "1 agent needs you."
+        default: "\(needsYouCount) agents need you."
+        }
     }
 
     private func openDashboard() {

@@ -13,19 +13,16 @@ struct MetricTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(.title3, design: .rounded).weight(.semibold))
-                .monospacedDigit()
+                .font(.system(size: 26, weight: .light).monospacedDigit())
+                .tracking(-0.6)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
                 .contentTransition(.numericText())
-            if let detail {
-                Text(detail)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+            (Text(title) + Text(detail.map { " · " + $0 } ?? "").foregroundStyle(theme.foreground.opacity(0.35)))
+                .font(.system(size: 11))
+                .foregroundStyle(theme.muted)
+                .lineLimit(1)
             if let gaugeFraction, history.isEmpty {
                 ProgressBar(fraction: gaugeFraction, color: color)
                     .frame(height: 26, alignment: .bottom)
@@ -34,9 +31,7 @@ struct MetricTile: View {
                     .frame(height: 26)
             }
         }
-        .padding(10)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme.surface, in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(theme.border.opacity(0.6)))
     }
 }

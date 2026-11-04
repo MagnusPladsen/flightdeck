@@ -29,31 +29,32 @@ struct DashboardView: View {
     static let windowID = "dashboard"
 
     @Environment(MonitorStore.self) private var store
-    @State private var selection: DashboardPage? = .overview
+    @Environment(\.theme) private var theme
+    @State private var selection: DashboardPage = .overview
     @State private var layoutEditor = LayoutEditor()
 
     var body: some View {
         NavigationSplitView {
-            List(DashboardPage.allCases, selection: $selection) { section in
-                Label(section.title, systemImage: section.symbolName)
-                    .badge(badgeCount(for: section))
-                    .dropDestination(for: String.self) { tokens, _ in
-                        guard layoutEditor.isEditing, let kind = tokens.first.flatMap(SectionKind.init(token:)) else { return false }
-                        layoutEditor.update { $0.move(kind, to: section) }
-                        return true
-                    }
-            }
-            .themedScrollBackground(useSurface: true)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
+            sidebar
+                .navigationSplitViewColumnWidth(min: 240, ideal: 250)
         } detail: {
-            detail(for: selection ?? .overview)
-                .navigationTitle((selection ?? .overview).title)
+            detail(for: selection)
+                .navigationTitle(selection.title)
                 .toolbar {
                     LayoutLockButton()
                     Button { Task { await store.refreshAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 }
         }
+        .toolbarBackground(theme.background, for: .windowToolbar)
         .environment(layoutEditor)
+    }
+
+    /// The page list in the style of the theme's layout.
+    @ViewBuilder
+    private var sidebar: some View {
+        switch theme.layout {
+        case .ignition: IgnitionSidebar(selection: $selection, count: badgeCount)
+        }
     }
 
     @ViewBuilder
