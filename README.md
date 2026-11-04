@@ -23,6 +23,7 @@ Flightdeck lives in the macOS menu bar and shows which AI agents are working, wh
 [![Download Flightdeck for macOS](https://img.shields.io/badge/Download_for_macOS-Flightdeck.zip-ff7a1a?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/MagnusPladsen/flightdeck/releases/latest/download/Flightdeck.zip)
 
 ```bash
+brew trust magnuspladsen/tap
 brew install --cask magnuspladsen/tap/flightdeck
 ```
 
@@ -63,8 +64,11 @@ Flightdeck is macOS only for now. The core library already builds on Linux, but 
 ## Install
 
 ```bash
+brew trust magnuspladsen/tap
 brew install --cask magnuspladsen/tap/flightdeck
 ```
+
+Newer Homebrew versions only load casks from taps you trust, hence the first line.
 
 Or download `Flightdeck.zip` from [Releases](https://github.com/MagnusPladsen/flightdeck/releases). The app is not notarized yet; if macOS blocks it, allow it under System Settings › Privacy & Security › Open Anyway.
 
