@@ -11,11 +11,16 @@ read -r -a BUILD_FLAGS <<< "${SWIFT_BUILD_FLAGS:-}"
 
 cd "$ROOT"
 swift build -c release --product Flightdeck ${BUILD_FLAGS[@]+"${BUILD_FLAGS[@]}"}
-BINARY="$(swift build -c release --product Flightdeck ${BUILD_FLAGS[@]+"${BUILD_FLAGS[@]}"} --show-bin-path)/Flightdeck"
+BIN_PATH="$(swift build -c release --product Flightdeck ${BUILD_FLAGS[@]+"${BUILD_FLAGS[@]}"} --show-bin-path)"
+# Sparkle reads its update feed from here; the matching private key is the SPARKLE_PRIVATE_KEY secret
+FEED_URL="https://github.com/MagnusPladsen/flightdeck/releases/download/update-feed/appcast.xml"
+PUBLIC_ED_KEY="82pqZdpi9TYcG4s3WUBLTVDP2WfoIugrkuZhbk5Xjvo="
 
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BINARY" "$APP/Contents/MacOS/Flightdeck"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
+cp "$BIN_PATH/Flightdeck" "$APP/Contents/MacOS/Flightdeck"
+ditto "$BIN_PATH/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
+install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/Flightdeck"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
@@ -34,9 +39,12 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    <key>SUFeedURL</key><string>$FEED_URL</string>
+    <key>SUPublicEDKey</key><string>$PUBLIC_ED_KEY</string>
 </dict>
 </plist>
 PLIST
 
+# Sparkle.framework keeps its own signature; this signs the app around it
 codesign --force --sign - "$APP"
 echo "Built $APP"

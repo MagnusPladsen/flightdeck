@@ -5,6 +5,7 @@ struct MenuBarPanel: View {
     private static let listsMaxHeight: CGFloat = 480
 
     @Environment(MonitorStore.self) private var store
+    @Environment(AppUpdater.self) private var updater
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
@@ -68,6 +69,11 @@ struct MenuBarPanel: View {
             Button("Dashboard") { openDashboard() }.buttonStyle(PillButtonStyle(isProminent: true, size: 12))
             SettingsLink { Text("Settings") }.buttonStyle(PillButtonStyle(size: 12))
             Spacer()
+            if updater.isAvailable {
+                IconButton(systemImage: "arrow.down.circle", help: "Check for Updates…") { checkForUpdates() }
+                    .foregroundStyle(theme.muted)
+                    .disabled(!updater.canCheckForUpdates)
+            }
             Button("Quit") { NSApp.terminate(nil) }.buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.muted)
         }
     }
@@ -86,6 +92,11 @@ struct MenuBarPanel: View {
         case 1: "1 agent needs you."
         default: "\(needsYouCount) agents need you."
         }
+    }
+
+    private func checkForUpdates() {
+        dismiss()
+        updater.checkForUpdates()
     }
 
     private func openDashboard() {

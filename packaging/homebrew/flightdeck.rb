@@ -7,6 +7,13 @@ cask "flightdeck" do
   desc "Agent and system monitor for developers, in the menu bar"
   homepage "https://github.com/MagnusPladsen/flightdeck"
 
+  # GitHub's release list skips pre-releases; the app's own update feed does not
+  livecheck do
+    url "https://github.com/MagnusPladsen/flightdeck/releases/download/update-feed/appcast.xml"
+    strategy :sparkle, &:short_version
+  end
+
+  auto_updates true
   depends_on macos: :sonoma
 
   app "Flightdeck.app"

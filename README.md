@@ -68,9 +68,13 @@ brew install --cask magnuspladsen/tap/flightdeck
 
 Or download `Flightdeck.zip` from [Releases](https://github.com/MagnusPladsen/flightdeck/releases). The app is not notarized yet; if macOS blocks it, allow it under System Settings › Privacy & Security › Open Anyway.
 
+Flightdeck updates itself with [Sparkle](https://sparkle-project.org): it checks daily once you allow it, and "Check for Updates…" sits in the menu bar panel footer and in Settings › General.
+
 ## Release
 
-Bump `VERSION` on `main`. `.github/workflows/release.yml` tests, builds a universal `Flightdeck.app`, publishes it as a GitHub release and, when the `TAP_TOKEN` secret is set, updates `Casks/flightdeck.rb` in `MagnusPladsen/homebrew-tap` (first release copies `packaging/homebrew/flightdeck.rb` there).
+Bump `VERSION` on `main`. `.github/workflows/release.yml` tests, builds a universal `Flightdeck.app`, signs the zip and writes `appcast.xml` with Sparkle's `generate_appcast`, publishes both as a GitHub release, uploads the appcast to the fixed `update-feed` release the app reads (`SUFeedURL`) and, when the `TAP_TOKEN` secret is set, updates `Casks/flightdeck.rb` in `MagnusPladsen/homebrew-tap` (first release copies `packaging/homebrew/flightdeck.rb` there).
+
+The release needs the `SPARKLE_PRIVATE_KEY` secret: the EdDSA private key whose public half is `SUPublicEDKey` in `scripts/bundle.sh`. It lives in the login keychain under the `flightdeck` account of Sparkle's `generate_keys`.
 
 ## Requirements
 
@@ -89,7 +93,7 @@ scripts/bundle.sh
 open Flightdeck.app
 ```
 
-Launch at login only works from the bundled app. The app icon is drawn by `scripts/make-icon.swift`; run `swift scripts/make-icon.swift` to regenerate `Resources/AppIcon.icns`.
+Launch at login and update checks only work from the bundled app, which embeds `Sparkle.framework`. The app icon is drawn by `scripts/make-icon.swift`; run `swift scripts/make-icon.swift` to regenerate `Resources/AppIcon.icns`.
 
 ## Test
 
