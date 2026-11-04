@@ -118,7 +118,7 @@ private struct AgentCard: View {
                 if !isFeatured && isHovering { quickActions }
                 Text(agent.ageText()).font(.system(size: isFeatured ? 13 : 12)).foregroundStyle(theme.muted)
                 if isHovering && agent.state == .yourTurn {
-                    IconButton(systemImage: "xmark", help: "Clear from Your turn until this agent does something new") { store.clearYourTurn(agent) }
+                    IconButton(systemImage: "xmark", help: "Clear until this agent does something new") { store.clearYourTurn(agent) }
                         .foregroundStyle(theme.muted)
                 }
             }

@@ -88,7 +88,7 @@ struct ProjectsList: View {
         let count = project.agents.filter { $0.state == state }.count
         switch state {
         case .needsApproval: return "needs you"
-        case .yourTurn: return count > 1 ? "\(count) your turn" : "your turn"
+        case .yourTurn: return count > 1 ? "\(count) need you" : "needs you"
         case .working: return count > 1 ? "\(count) working" : "\(project.agents.first { $0.state == .working }?.tool.displayName ?? "agent") working"
         case .idle: return "idle"
         }

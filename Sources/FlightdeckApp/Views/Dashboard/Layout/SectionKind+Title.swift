@@ -4,10 +4,10 @@ extension SectionKind {
     @MainActor
     func title(in settings: AppSettings) -> String {
         switch self {
-        case .needsYou: "Needs you"
+        case .needsYou: "Headline"
         case .clock: "Clock"
         case .resources: "Resources"
-        case .yourTurn: "Your turn"
+        case .yourTurn: "Needs you"
         case .workingAgents: "Working"
         case .idleAgents: "Idle"
         case .projects: "Projects"

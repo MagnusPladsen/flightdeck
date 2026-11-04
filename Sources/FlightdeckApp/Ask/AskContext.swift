@@ -21,7 +21,7 @@ enum AskContext {
     monitors AI coding agents (Claude Code, Codex and others), dev servers, ports and system resources.
 
     - `state.md` in this folder is what Flightdeck shows right now. Read it first; it is rewritten before every question.
-    - Agent states: **working** (busy), **needs approval** (blocked on a permission prompt), **your turn**
+    - Agent states: **working** (busy), **needs approval** (blocked on a permission prompt), **needs you**
       (finished, waiting for the next prompt), **idle** (no activity for a while).
     - Claude Code transcripts live in `~/.claude/projects/<path with / replaced by ->/<session>.jsonl`.
       Read the newest one for a project when asked what an agent is doing or did.
@@ -89,7 +89,7 @@ enum AskContext {
         switch state {
         case .working: "working"
         case .needsApproval: "needs approval"
-        case .yourTurn: "your turn"
+        case .yourTurn: "needs you"
         case .idle: "idle"
         }
     }

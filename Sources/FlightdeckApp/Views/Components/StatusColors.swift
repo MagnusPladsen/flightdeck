@@ -19,7 +19,7 @@ extension AgentState {
         switch self {
         case .working: "Working"
         case .needsApproval: "Needs approval"
-        case .yourTurn: "Your turn"
+        case .yourTurn: "Needs you"
         case .idle: "Idle"
         }
     }

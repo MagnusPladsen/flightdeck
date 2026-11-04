@@ -45,7 +45,7 @@ enum AgentBoardColumn: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .yourTurn: "Your turn"
+        case .yourTurn: "Needs you"
         case .working: "Working"
         case .idle: "Idle"
         }
