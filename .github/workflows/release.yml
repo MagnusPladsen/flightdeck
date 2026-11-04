@@ -1,8 +1,9 @@
 name: release
 
 # Releases the version in VERSION once: a push to main whose version already has a tag publishes
-# nothing. Bump VERSION on main to ship a new release. The zip goes to GitHub Releases and, when
-# TAP_TOKEN is set, the cask in MagnusPladsen/homebrew-tap is updated to point at it.
+# nothing. Bump VERSION on main to ship a new release. The zip goes to GitHub Releases, its Sparkle
+# appcast to the fixed update-feed release the app reads, and, when TAP_TOKEN is set, the cask in
+# MagnusPladsen/homebrew-tap is updated to point at it.
 on:
   push:
     branches: [main]
@@ -44,8 +45,26 @@ jobs:
           SWIFT_BUILD_FLAGS: --arch arm64 --arch x86_64
         run: |
           scripts/bundle.sh
-          ditto -c -k --keepParent Flightdeck.app Flightdeck.zip
+          mkdir release
+          ditto -c -k --keepParent Flightdeck.app release/Flightdeck.zip
           codesign --verify --strict Flightdeck.app
+
+      # Needs SPARKLE_PRIVATE_KEY: the EdDSA private key whose public half is SUPublicEDKey in scripts/bundle.sh
+      - name: Generate the appcast
+        if: steps.version.outputs.release == 'true'
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+            echo "::error::SPARKLE_PRIVATE_KEY is not set, so the update can't be signed"
+            exit 1
+          fi
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | .build/artifacts/sparkle/Sparkle/bin/generate_appcast \
+            --ed-key-file - \
+            --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/" \
+            --full-release-notes-url "https://github.com/$GITHUB_REPOSITORY/releases/tag/v$VERSION" \
+            release
 
       - name: Publish the release
         if: steps.version.outputs.release == 'true'
@@ -55,11 +74,17 @@ jobs:
         run: |
           prerelease=""
           case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
-          gh release create "v$VERSION" Flightdeck.zip \
+          gh release create "v$VERSION" release/Flightdeck.zip release/appcast.xml \
             --target "$GITHUB_SHA" \
             --title "$VERSION" \
             --generate-notes \
             ${prerelease:+"$prerelease"}
+          # The app reads its feed from this fixed release, because releases/latest skips pre-releases
+          gh release view update-feed > /dev/null 2>&1 || gh release create update-feed \
+            --target "$GITHUB_SHA" \
+            --title "Update feed" --notes "Sparkle feed read by Flightdeck. Not a release; download builds from the releases above." \
+            --prerelease --latest=false
+          gh release upload update-feed release/appcast.xml --clobber
 
       - name: Update the Homebrew cask
         if: steps.version.outputs.release == 'true'
@@ -71,7 +96,7 @@ jobs:
             echo "TAP_TOKEN is not set, leaving the Homebrew cask alone"
             exit 0
           fi
-          sha=$(shasum -a 256 Flightdeck.zip | cut -d' ' -f1)
+          sha=$(shasum -a 256 release/Flightdeck.zip | cut -d' ' -f1)
           git clone -q --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/MagnusPladsen/homebrew-tap.git" tap
           if [ ! -f tap/Casks/flightdeck.rb ]; then
             cp packaging/homebrew/flightdeck.rb tap/Casks/flightdeck.rb

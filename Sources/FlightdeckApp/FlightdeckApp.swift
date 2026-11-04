@@ -5,6 +5,7 @@ import SwiftUI
 struct FlightdeckApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var store: MonitorStore
+    @State private var updater = AppUpdater()
 
     init() {
         let store = MonitorStore(settings: AppSettings())
@@ -16,6 +17,7 @@ struct FlightdeckApp: App {
         MenuBarExtra {
             MenuBarPanel()
                 .environment(store)
+                .environment(updater)
                 .themedRoot(store.settings)
         } label: {
             MenuBarLabel(store: store)
@@ -35,6 +37,7 @@ struct FlightdeckApp: App {
         Settings {
             SettingsView()
                 .environment(store)
+                .environment(updater)
                 .themedRoot(store.settings)
         }
     }

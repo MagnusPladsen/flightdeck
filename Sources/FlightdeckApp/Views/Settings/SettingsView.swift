@@ -17,12 +17,14 @@ struct SettingsView: View {
 
 private struct GeneralSettings: View {
     @Environment(MonitorStore.self) private var store
+    @Environment(AppUpdater.self) private var updater
     @Environment(\.theme) private var theme
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
 
     var body: some View {
         @Bindable var settings = store.settings
+        @Bindable var updater = updater
         Form {
             Section("Menu bar") {
                 Picker("Label style", selection: $settings.menuBarLabelStyle) {
@@ -47,6 +49,18 @@ private struct GeneralSettings: View {
                     Text(launchAtLoginError).font(.caption).foregroundStyle(theme.error)
                 }
             }
+            Section {
+                Toggle("Automatically check for updates", isOn: $updater.automaticallyChecksForUpdates)
+                Button("Check for Updates…") { updater.checkForUpdates() }
+                    .disabled(!updater.canCheckForUpdates)
+            } header: {
+                Text("Updates")
+            } footer: {
+                if !updater.isAvailable {
+                    Text("Updates work only from the bundled Flightdeck.app.")
+                }
+            }
+            .disabled(!updater.isAvailable)
         }
         .formStyle(.grouped)
         .themedScrollBackground()
