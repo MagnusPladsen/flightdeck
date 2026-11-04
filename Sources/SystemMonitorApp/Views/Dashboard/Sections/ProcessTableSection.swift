@@ -1,14 +1,29 @@
 import MonitorCore
 import SwiftUI
 
-struct ProcessesSection: View {
+struct ProcessTableSection: View {
     @Environment(MonitorStore.self) private var store
-    @State private var searchText = ""
+    @Environment(\.theme) private var theme
+    @State private var filterText = ""
     @State private var sortOrder = [KeyPathComparator(\ProcessSample.cpuPercent, order: .reverse)]
     @State private var selection: ProcessSample.ID?
     @State private var processToStop: ProcessSample?
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeading(title: "Processes", count: rows.count) {
+                TextField("Filter processes", text: $filterText)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 220)
+            }
+            table
+                .frame(minHeight: 480)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(theme.border))
+        }
+    }
+
+    private var table: some View {
         Table(rows, selection: $selection, sortOrder: $sortOrder) {
             TableColumn("Name", value: \.name)
             TableColumn("PID", value: \.pid) { Text(String($0.pid)).monospacedDigit() }
@@ -19,7 +34,6 @@ struct ProcessesSection: View {
                 .width(100)
         }
         .themedScrollBackground()
-        .searchable(text: $searchText, prompt: "Filter processes")
         .contextMenu(forSelectionType: ProcessSample.ID.self) { ids in
             if let process = rows.first(where: { ids.contains($0.id) }) {
                 Button("Stop \(process.name)…") { processToStop = process }
@@ -32,7 +46,7 @@ struct ProcessesSection: View {
 
     private var rows: [ProcessSample] {
         let processes = store.snapshot?.processes ?? []
-        let filtered = searchText.isEmpty ? processes : processes.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        let filtered = filterText.isEmpty ? processes : processes.filter { $0.name.localizedCaseInsensitiveContains(filterText) }
         return filtered.sorted(using: sortOrder)
     }
 

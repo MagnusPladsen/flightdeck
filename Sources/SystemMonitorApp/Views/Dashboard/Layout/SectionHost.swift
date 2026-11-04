@@ -21,8 +21,18 @@ struct SectionHost: View {
             AgentColumnSection(column: .idle, agents: AgentBoardColumn.idle.groups(from: agents), navigate: context.navigate)
         case .projects:
             ProjectsList(projects: store.projects(matching: context.searchQuery), totalPorts: store.devServers.count, navigate: context.navigate)
-        case .devServers, .otherPorts, .agentSessions, .usageLimits, .processTable, .widget:
-            EmptyView()
+        case .devServers:
+            DevServersSection()
+        case .otherPorts:
+            OtherPortsSection()
+        case .agentSessions:
+            AgentSessionsSection()
+        case .usageLimits:
+            UsageLimitsSection()
+        case .processTable:
+            ProcessTableSection()
+        case .widget(let id):
+            WidgetSection(widgetID: id)
         }
     }
 

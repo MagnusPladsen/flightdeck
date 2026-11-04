@@ -1,40 +1,6 @@
 import MonitorCore
 import SwiftUI
 
-struct WidgetsSection: View {
-    @Environment(MonitorStore.self) private var store
-    @State private var editingWidget: CustomWidget?
-
-    var body: some View {
-        ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
-                ForEach(store.settings.customWidgets) { widget in
-                    WidgetTile(widget: widget, result: store.widgetResults[widget.id])
-                        .onTapGesture(count: 2) { editingWidget = widget }
-                        .contextMenu {
-                            Button("Edit…") { editingWidget = widget }
-                            Button("Remove", role: .destructive) { store.settings.customWidgets.removeAll { $0.id == widget.id } }
-                        }
-                }
-            }
-            .padding(20)
-            if store.settings.customWidgets.isEmpty {
-                ContentUnavailableView("No widgets yet", systemImage: "square.grid.2x2", description: Text("A widget runs a shell command on a timer and shows its output."))
-            }
-        }
-        .themedScrollBackground()
-        .toolbar {
-            Button { editingWidget = CustomWidget(title: "", command: "") } label: { Label("Add widget", systemImage: "plus") }
-        }
-        .sheet(item: $editingWidget) { widget in
-            WidgetEditor(widget: widget) { saved in
-                store.settings.upsertWidget(saved)
-                Task { await store.refreshDueWidgets(force: true) }
-            }
-        }
-    }
-}
-
 struct WidgetTile: View {
     @Environment(\.theme) private var theme
     var widget: CustomWidget

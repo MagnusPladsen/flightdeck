@@ -54,10 +54,8 @@ struct DashboardView: View {
     private func detail(for section: DashboardPage) -> some View {
         switch section {
         case .overview: OverviewSection { selection = $0 }
-        case .ports: PortsSection()
-        case .agents: AgentsSection()
-        case .processes: ProcessesSection()
-        case .widgets: WidgetsSection()
+        case .ports, .agents, .processes: GridPage(page: section) { selection = $0 }
+        case .widgets: WidgetsPage { selection = $0 }
         }
     }
 
