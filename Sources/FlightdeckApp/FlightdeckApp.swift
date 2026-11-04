@@ -6,6 +6,7 @@ struct FlightdeckApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var store: MonitorStore
     @State private var updater = AppUpdater()
+    @State private var asker = ClaudeAsker()
 
     init() {
         let store = MonitorStore(settings: AppSettings())
@@ -28,12 +29,22 @@ struct FlightdeckApp: App {
         Window("Dashboard", id: DashboardView.windowID) {
             DashboardView()
                 .environment(store)
+                .environment(asker)
                 .themedRoot(store.settings)
                 .onAppear { DockPresence.dashboardDidOpen() }
                 .onDisappear { DockPresence.dashboardDidClose() }
         }
         .defaultSize(width: 1180, height: 780)
         .windowStyle(.hiddenTitleBar)
+        .commands {
+            CommandGroup(after: .textEditing) {
+                Button("Ask Claude…") {
+                    DashboardOpener.open()
+                    asker.open()
+                }
+                .keyboardShortcut("k", modifiers: .command)
+            }
+        }
 
         Settings {
             SettingsView()

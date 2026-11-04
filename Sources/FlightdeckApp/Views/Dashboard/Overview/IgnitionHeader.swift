@@ -6,13 +6,13 @@ struct IgnitionHeader: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     @Binding var searchText: String
-    var asker: ClaudeAsker
+    @Environment(ClaudeAsker.self) private var asker
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme.muted)
-                TextField("Search, or press Return to ask Claude", text: $searchText)
+                TextField("Search, or press Return to ask Claude (⌘K)", text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 15))
                     .onSubmit(askClaude)

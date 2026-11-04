@@ -32,6 +32,7 @@ struct DashboardView: View {
     @Environment(\.theme) private var theme
     @State private var selection: DashboardPage = .overview
     @State private var layoutEditor = LayoutEditor()
+    @Environment(ClaudeAsker.self) private var asker
 
     var body: some View {
         NavigationSplitView {
@@ -45,6 +46,12 @@ struct DashboardView: View {
                     Button { Task { await store.refreshAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 }
         }
+        .overlay {
+            if asker.isPresented {
+                AskPalette(asker: asker).transition(.opacity)
+            }
+        }
+        .animation(.smooth(duration: 0.2), value: asker.isPresented)
         .toolbarBackground(theme.background, for: .windowToolbar)
         .environment(layoutEditor)
     }

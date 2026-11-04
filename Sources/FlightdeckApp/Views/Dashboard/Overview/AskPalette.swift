@@ -26,18 +26,10 @@ struct AskPalette: View {
     private var card: some View {
         VStack(alignment: .leading, spacing: 0) {
             field
-            Rectangle().fill(theme.border).frame(height: 1)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(asker.question).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.muted)
-                    answer
-                    mentionedAgents
-                }
-                .padding(20)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if asker.status != nil {
+                Rectangle().fill(theme.border).frame(height: 1)
+                conversation
             }
-            .frame(maxHeight: 440)
-            .fixedSize(horizontal: false, vertical: true)
             footer
         }
         .background(theme.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -45,10 +37,24 @@ struct AskPalette: View {
         .shadow(color: .black.opacity(0.5), radius: 40, y: 20)
     }
 
+    private var conversation: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(asker.question).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.muted)
+                answer
+                mentionedAgents
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxHeight: 440)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
     private var field: some View {
         HStack(spacing: 12) {
             Image(systemName: "sparkle").foregroundStyle(theme.accent).font(.system(size: 15, weight: .bold))
-            TextField("Ask a follow-up", text: $draft)
+            TextField(asker.status == nil ? "Ask Claude about your agents, ports and usage" : "Ask a follow-up", text: $draft)
                 .textFieldStyle(.plain)
                 .font(.system(size: 17))
                 .focused($isFieldFocused)
@@ -116,7 +122,7 @@ struct AskPalette: View {
     }
 
     private var footer: some View {
-        Text("Return asks a follow-up · click an agent to open its terminal")
+        Text(asker.status == nil ? "Return asks · esc closes" : "Return asks a follow-up · click an agent to open its terminal")
             .font(.system(size: 11))
             .foregroundStyle(theme.muted)
             .padding(.horizontal, 20)
@@ -135,7 +141,7 @@ struct AskPalette: View {
     }
 
     private func askFollowUp() {
-        asker.ask(draft, store: store, continuing: true)
+        asker.ask(draft, store: store, continuing: asker.status != nil)
         draft = ""
     }
 

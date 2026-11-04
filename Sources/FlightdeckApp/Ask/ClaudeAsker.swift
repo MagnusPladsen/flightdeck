@@ -14,6 +14,7 @@ final class ClaudeAsker {
 
     private(set) var question = ""
     private(set) var status: Status?
+    private(set) var isPresented = false
     @ObservationIgnored private var task: Task<Void, Never>?
 
     private nonisolated static let timeout: TimeInterval = 120
@@ -29,6 +30,7 @@ final class ClaudeAsker {
         guard !question.isEmpty else { return }
         task?.cancel()
         self.question = question
+        isPresented = true
         status = .asking
         do {
             try AskContext.write(from: store)
@@ -42,10 +44,17 @@ final class ClaudeAsker {
         }
     }
 
+    /// Opens the palette empty, ready for a first question.
+    func open() {
+        isPresented = true
+    }
+
     func dismiss() {
         task?.cancel()
         task = nil
         status = nil
+        question = ""
+        isPresented = false
     }
 
     private nonisolated static func runClaude(_ question: String, continuing: Bool) async -> Status {
