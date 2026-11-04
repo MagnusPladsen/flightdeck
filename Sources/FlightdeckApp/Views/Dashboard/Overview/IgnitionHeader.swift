@@ -1,25 +1,30 @@
 import MonitorCore
 import SwiftUI
 
-/// Search field with the default-agent picker, then the greeting.
+/// Search field with the default-agent picker, then the greeting. Return asks Claude about what the app shows.
 struct IgnitionHeader: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     @Binding var searchText: String
+    @State private var asker = ClaudeAsker()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme.muted)
-                TextField("Search agents, projects and ports", text: $searchText)
+                TextField("Search, or press Return to ask Claude", text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 15))
+                    .onSubmit(askClaude)
                 DefaultAgentMenu()
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 12)
             .background(theme.surface, in: Capsule())
             .overlay(Capsule().strokeBorder(theme.border))
+            if asker.status != nil {
+                AskAnswerCard(asker: asker)
+            }
             HStack {
                 Text(greeting)
                 Spacer()
@@ -29,6 +34,12 @@ struct IgnitionHeader: View {
             .font(.system(size: 13))
             .foregroundStyle(theme.muted)
         }
+    }
+
+    /// The question moves into the answer card, so it stops filtering the sections below.
+    private func askClaude() {
+        asker.ask(searchText, store: store)
+        searchText = ""
     }
 
     private var greeting: String {
