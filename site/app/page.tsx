@@ -4,7 +4,16 @@ import { Clock } from "@/components/Clock";
 import { CopyCommand } from "@/components/CopyCommand";
 import { FormationMark } from "@/components/FormationMark";
 import { NeedsYouHeadline } from "@/components/NeedsYouHeadline";
-import { BREW_COMMANDS, DOWNLOAD_URL, RELEASES_URL, REPOSITORY_URL, TAP_URL, getAppVersion } from "@/lib/site";
+import {
+  BREW_COMMANDS,
+  CHANGELOG_URL,
+  DOWNLOAD_URL,
+  RELEASES_URL,
+  REPOSITORY_URL,
+  TAP_URL,
+  getAppVersion,
+  getChangelog,
+} from "@/lib/site";
 
 const FEATURES = [
   {
@@ -39,8 +48,11 @@ const SCREENS = [
   { src: "/screenshots/edit-layout.png", alt: "Layout editing with the page unlocked", caption: "Rearrange any page", width: 1180, height: 917 },
 ];
 
+const CHANGELOG_LIMIT = 4;
+
 export default function Home() {
   const version = getAppVersion();
+  const releases = getChangelog().slice(0, CHANGELOG_LIMIT);
 
   return (
     <>
@@ -53,6 +65,7 @@ export default function Home() {
         <nav>
           <a href="#features">Features</a>
           <a href="#screens">Screens</a>
+          <a href="#changelog">Changelog</a>
           <a href="#install">Install</a>
           <a href={REPOSITORY_URL}>GitHub</a>
         </nav>
@@ -152,10 +165,37 @@ export default function Home() {
           </div>
         </section>
 
+        {releases.length > 0 && (
+          <section id="changelog" className="changelog">
+            <div className="section-title">
+              <span className="index">04</span>
+              <h2>Flight log.</h2>
+            </div>
+            <ol className="release-list">
+              {releases.map((release) => (
+                <li key={release.version}>
+                  <div className="release-head">
+                    <strong>v{release.version}</strong>
+                    <span>{release.date}</span>
+                  </div>
+                  <ul>
+                    {release.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+            <a className="changelog-link" href={CHANGELOG_URL}>
+              Full changelog →
+            </a>
+          </section>
+        )}
+
         <section id="install" className="install">
           <div className="install-inner">
             <div className="section-title">
-              <span className="index">04</span>
+              <span className="index">05</span>
               <h2>Cleared for takeoff.</h2>
             </div>
             <div className="install-grid">

@@ -33,6 +33,7 @@ struct DashboardView: View {
     @State private var selection: DashboardPage = .overview
     @State private var layoutEditor = LayoutEditor()
     @Environment(ClaudeAsker.self) private var asker
+    @Environment(WhatsNew.self) private var whatsNew
 
     var body: some View {
         NavigationSplitView {
@@ -49,9 +50,12 @@ struct DashboardView: View {
         .overlay {
             if asker.isPresented {
                 AskPalette(asker: asker).transition(.opacity)
+            } else if whatsNew.isPresented {
+                WhatsNewCard(whatsNew: whatsNew).transition(.opacity)
             }
         }
         .animation(.smooth(duration: 0.2), value: asker.isPresented)
+        .animation(.smooth(duration: 0.2), value: whatsNew.isPresented)
         .toolbarBackground(theme.background, for: .windowToolbar)
         .environment(layoutEditor)
     }

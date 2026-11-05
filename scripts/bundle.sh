@@ -22,6 +22,7 @@ cp "$BIN_PATH/Flightdeck" "$APP/Contents/MacOS/Flightdeck"
 ditto "$BIN_PATH/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
 install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/Flightdeck"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+cp "$ROOT/CHANGELOG.md" "$APP/Contents/Resources/CHANGELOG.md"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

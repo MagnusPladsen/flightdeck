@@ -236,7 +236,7 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
 
 .muted { color: var(--muted); }
 
-.board-section, .features, .screens { padding-bottom: clamp(80px, 12vw, 150px); }
+.board-section, .features, .screens, .changelog { padding-bottom: clamp(80px, 12vw, 150px); }
 
 /* Agent board */
 
@@ -307,6 +307,17 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
 .screen-grid img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line-strong); transition: transform 0.4s; }
 .screen-grid figure:hover img { transform: translateY(-6px); }
 .screen-grid figcaption { margin-top: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+/* Changelog */
+
+.release-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.release-list > li { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; padding: 28px 0; border-bottom: 1px solid var(--line); }
+.release-head { display: flex; flex-direction: column; gap: 6px; }
+.release-head strong { font-size: 26px; font-weight: 900; font-stretch: 115%; letter-spacing: -0.03em; color: var(--accent); }
+.release-head span { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.release-list ul { margin: 0; padding-left: 18px; list-style: disc; display: grid; gap: 8px; color: var(--text-soft); font-size: 16px; }
+.release-list ul li::marker { color: var(--muted); }
+.changelog-link { display: inline-block; margin-top: 24px; font-family: var(--font-mono); font-size: 13px; color: var(--accent); }
 
 /* Install, on paper */
 
@@ -429,6 +440,7 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
 @media (max-width: 900px) {
   .hero-foot, .install-grid, .platform-strip { grid-template-columns: minmax(0, 1fr); }
   .feature-list, .screen-grid { grid-template-columns: 1fr; }
+  .release-list > li { grid-template-columns: 1fr; gap: 12px; }
   .board-head, .board-row { grid-template-columns: minmax(0, 1fr) auto; }
   .board-detail, .board-port, .board-head span:nth-child(2), .board-head span:nth-child(3) { display: none; }
 }

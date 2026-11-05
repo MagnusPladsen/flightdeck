@@ -74,10 +74,18 @@ jobs:
         run: |
           prerelease=""
           case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          # The version's CHANGELOG.md entry becomes the notes; without one, GitHub lists the commits
+          awk -v heading="## $VERSION" 'index($0, heading " ") == 1 || $0 == heading { found = 1; next } /^## / { found = 0 } found' \
+            CHANGELOG.md > release/notes.md
+          if grep -q '[^[:space:]]' release/notes.md; then
+            notes=(--notes-file release/notes.md)
+          else
+            notes=(--generate-notes)
+          fi
           gh release create "v$VERSION" release/Flightdeck.zip release/appcast.xml \
             --target "$GITHUB_SHA" \
             --title "$VERSION" \
-            --generate-notes \
+            "${notes[@]}" \
             ${prerelease:+"$prerelease"}
           # The app reads its feed from this fixed release, because releases/latest skips pre-releases
           gh release view update-feed > /dev/null 2>&1 || gh release create update-feed \

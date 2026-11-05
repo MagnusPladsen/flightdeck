@@ -7,6 +7,7 @@ struct FlightdeckApp: App {
     @State private var store: MonitorStore
     @State private var updater = AppUpdater()
     @State private var asker = ClaudeAsker()
+    @State private var whatsNew = WhatsNew()
 
     init() {
         let store = MonitorStore(settings: AppSettings())
@@ -30,6 +31,7 @@ struct FlightdeckApp: App {
             DashboardView()
                 .environment(store)
                 .environment(asker)
+                .environment(whatsNew)
                 .themedRoot(store.settings)
                 .onAppear { DockPresence.dashboardDidOpen() }
                 .onDisappear { DockPresence.dashboardDidClose() }
@@ -50,6 +52,7 @@ struct FlightdeckApp: App {
             SettingsView()
                 .environment(store)
                 .environment(updater)
+                .environment(whatsNew)
                 .themedRoot(store.settings)
         }
     }

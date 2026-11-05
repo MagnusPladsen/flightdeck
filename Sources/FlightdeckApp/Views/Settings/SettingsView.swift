@@ -18,6 +18,7 @@ struct SettingsView: View {
 private struct GeneralSettings: View {
     @Environment(MonitorStore.self) private var store
     @Environment(AppUpdater.self) private var updater
+    @Environment(WhatsNew.self) private var whatsNew
     @Environment(\.theme) private var theme
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchAtLoginError: String?
@@ -54,8 +55,14 @@ private struct GeneralSettings: View {
             }
             Section {
                 Toggle("Automatically check for updates", isOn: $updater.automaticallyChecksForUpdates)
+                    .disabled(!updater.isAvailable)
                 Button("Check for Updates…") { updater.checkForUpdates() }
-                    .disabled(!updater.canCheckForUpdates)
+                    .disabled(!updater.canCheckForUpdates || !updater.isAvailable)
+                Button("What's New") {
+                    DashboardOpener.open()
+                    whatsNew.showRecent()
+                }
+                .disabled(!whatsNew.isAvailable)
             } header: {
                 Text("Updates")
             } footer: {
@@ -63,7 +70,6 @@ private struct GeneralSettings: View {
                     Text("Updates work only from the bundled Flightdeck.app.")
                 }
             }
-            .disabled(!updater.isAvailable)
         }
         .formStyle(.grouped)
         .themedScrollBackground()
