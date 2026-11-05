@@ -104,8 +104,8 @@ export default function Home() {
             className="shot shot-panel"
             src="/screenshots/menu-bar-panel.png"
             alt="Flightdeck menu bar panel"
-            width={410}
-            height={860}
+            width={380}
+            height={739}
           />
         </section>
 

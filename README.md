@@ -29,7 +29,7 @@ brew install --cask magnuspladsen/tap/flightdeck
 
 <br>
 
-<img src="docs/screenshots/overview.png" alt="Flightdeck overview: the agent that needs you, resources, and your-turn agents" width="860">
+<img src="docs/screenshots/overview.png" alt="Flightdeck overview: the agent that needs you, resources, and the Needs you list" width="860">
 
 </div>
 
