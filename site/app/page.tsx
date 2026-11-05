@@ -1,9 +1,6 @@
 import Image from "next/image";
-import { AgentBoard } from "@/components/AgentBoard";
-import { Clock } from "@/components/Clock";
 import { CopyCommand } from "@/components/CopyCommand";
 import { FormationMark } from "@/components/FormationMark";
-import { NeedsYouHeadline } from "@/components/NeedsYouHeadline";
 import {
   BREW_COMMANDS,
   CHANGELOG_URL,
@@ -15,37 +12,58 @@ import {
   getChangelog,
 } from "@/lib/site";
 
-const FEATURES = [
+/** Numbered labels on the overview screenshot, positioned in % of the image. */
+const PINS = [
   {
-    title: "AI agents",
-    body: "Which folders Claude Code, Codex and other agents are working in, and whether each is working, waiting for approval or waiting for you.",
+    x: 22,
+    y: 8,
+    title: "Search and ask",
+    body: "Type to find any agent or project across Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider. Press Return or ⌘K to ask Claude about what's running. The picker sets your default agent, whose limits show below.",
   },
+  { x: 22, y: 19, title: "Who needs you", body: "The agent waiting on you leads, with a count of the others." },
+  { x: 22, y: 35, title: "Go to terminal", body: "Opens that agent's own terminal. Later sets it aside." },
+  { x: 70.5, y: 21, title: "A big clock", body: "Readable from across the room on a second screen." },
   {
-    title: "Needs you",
-    body: "The agent waiting on you leads the overview. Reply opens its terminal; hover a card and clear it until that agent does something new.",
-  },
-  {
-    title: "Dev servers",
-    body: "Every listening port mapped to its git project, branch and worktree, with the framework detected. Open it in the browser, editor or terminal, or stop it.",
-  },
-  {
-    title: "Ask Claude",
-    body: "Press ⌘K and ask about your agents, ports and usage. The answer opens in a palette, and agents it names open their terminal in one click.",
-  },
-  {
+    x: 22,
+    y: 47.6,
     title: "System and limits",
-    body: "CPU, memory, network and disk with live sparklines, plus Codex and Claude usage limits read from local logs.",
+    body: "CPU, memory and disk, plus Claude and Codex usage limits read from local logs.",
   },
   {
-    title: "Your layout",
-    body: "13 themes, each with its own layout. Unlock any page to drag, resize or hide sections on a 12-column grid.",
+    x: 22,
+    y: 60,
+    title: "Needs you",
+    body: "Every waiting agent: what it said or wants to run, its folder and branch. Hover a card and clear it until that agent does something new.",
   },
+  { x: 10, y: 33.5, title: "Pages", body: "Servers and ports, AI agents, processes and widgets." },
 ];
 
-const SCREENS = [
-  { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", caption: "Agents and usage limits", width: 1180, height: 917 },
-  { src: "/screenshots/ports.png", alt: "Servers and ports page grouped by project", caption: "Dev servers by project", width: 1180, height: 780 },
-  { src: "/screenshots/edit-layout.png", alt: "Layout editing with the page unlocked", caption: "Rearrange any page", width: 1180, height: 917 },
+const FEATURE_ROWS = [
+  {
+    label: "AI agents",
+    title: "Every agent, one glance.",
+    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval or waiting for you.",
+    image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1180, height: 917 },
+  },
+  {
+    label: "Dev servers",
+    title: "Know what's on :3000.",
+    body: "Every listening port mapped to its git project, branch and worktree, with the framework detected. Open it in the browser, editor or terminal, or stop it.",
+    image: { src: "/screenshots/ports.png", alt: "Servers and ports page grouped by project", width: 1180, height: 780 },
+  },
+  {
+    label: "Menu bar",
+    title: "One click away.",
+    body: "The panel shows who needs you, CPU and memory, and your dev servers, without opening the dashboard.",
+    image: { src: "/screenshots/menu-bar-panel.png", alt: "Flightdeck menu bar panel", width: 380, height: 739 },
+    isPanel: true,
+  },
+  {
+    label: "Your layout",
+    title: "Rearrange any page.",
+    body: "13 themes, each with its own layout. Unlock any page to drag, resize or hide sections on a 12-column grid.",
+    image: { src: "/screenshots/edit-layout.png", alt: "Layout editing with the page unlocked", width: 1180, height: 917 },
+  },
 ];
 
 const CHANGELOG_LIMIT = 4;
@@ -63,8 +81,8 @@ export default function Home() {
           Flightdeck
         </a>
         <nav>
+          <a href="#tour">Tour</a>
           <a href="#features">Features</a>
-          <a href="#screens">Screens</a>
           <a href="#changelog">Changelog</a>
           <a href="#install">Install</a>
           <a href={REPOSITORY_URL}>GitHub</a>
@@ -73,15 +91,18 @@ export default function Home() {
 
       <main id="top">
         <section className="hero">
-          <p className="eyebrow reveal">
-            <span className="pulse" /> Agent and system monitor for developers
-            {version && <span className="version">v{version}</span>}
-          </p>
-          <div className="hero-row reveal" style={{ animationDelay: "80ms" }}>
-            <NeedsYouHeadline />
-            <Clock />
+          <div className="hero-copy reveal">
+            <p className="eyebrow">
+              <span className="pulse" /> Agent and system monitor for macOS
+              {version && <span className="version">v{version}</span>}
+            </p>
+            <h1 className="headline">
+              Every agent you run,
+              <br />
+              <span className="accent">on one screen.</span>
+            </h1>
           </div>
-          <div className="hero-foot reveal" style={{ animationDelay: "160ms" }}>
+          <div className="hero-side reveal" style={{ animationDelay: "120ms" }}>
             <p className="lede">
               Flightdeck lives in the macOS menu bar and tells you which AI agents are working, which are waiting on you and
               where, next to your dev servers and system resources.
@@ -94,81 +115,61 @@ export default function Home() {
                 Install with Homebrew
               </a>
             </div>
+            <p className="platforms">
+              <span>macOS 14+</span>
+              <span>Apple Silicon and Intel</span>
+              <span>Free and open source</span>
+            </p>
           </div>
-          <p className="platforms reveal" style={{ animationDelay: "240ms" }}>
-            <span>macOS 14+</span>
-            <span>Apple Silicon and Intel</span>
-            <span>Free and open source</span>
-            <span className="is-later">Linux coming later</span>
-          </p>
         </section>
 
-        <section className="showcase reveal" style={{ animationDelay: "320ms" }}>
-          <div className="glow" aria-hidden="true" />
-          <Image
-            className="shot shot-main"
-            src="/screenshots/overview.png"
-            alt="Flightdeck overview: the agent that needs you, a big clock, resources and agents"
-            width={1146}
-            height={1135}
-            priority
-          />
-          <Image
-            className="shot shot-panel"
-            src="/screenshots/menu-bar-panel.png"
-            alt="Flightdeck menu bar panel"
-            width={380}
-            height={739}
-          />
-        </section>
-
-        <section className="board-section">
-          <div className="section-title">
-            <span className="index">01</span>
-            <h2>
-              Every agent, one glance.
-              <br />
-              <span className="muted">The one waiting on you goes first.</span>
-            </h2>
+        <section id="tour" className="tour reveal" style={{ animationDelay: "240ms" }}>
+          <div className="tour-shot">
+            <Image
+              className="shot"
+              src="/screenshots/overview.png"
+              alt="Flightdeck overview with numbered labels: search and ask, who needs you, go to terminal, clock, system and limits, the Needs you list and pages"
+              width={1146}
+              height={1135}
+              priority
+            />
+            {PINS.map((pin, index) => (
+              <span key={pin.title} className="pin" style={{ left: `${pin.x}%`, top: `${pin.y}%` }} aria-hidden="true">
+                {index + 1}
+              </span>
+            ))}
           </div>
-          <AgentBoard />
-        </section>
-
-        <section id="features" className="features">
-          <div className="section-title">
-            <span className="index">02</span>
-            <h2>What&apos;s on deck.</h2>
-          </div>
-          <ol className="feature-list">
-            {FEATURES.map((feature, index) => (
-              <li key={feature.title}>
-                <span className="feature-number">{String(index + 1).padStart(2, "0")}</span>
-                <h3>{feature.title}</h3>
-                <p>{feature.body}</p>
+          <ol className="pin-list">
+            {PINS.map((pin, index) => (
+              <li key={pin.title}>
+                <span className="pin-key">{index + 1}</span>
+                <div>
+                  <strong>{pin.title}</strong>
+                  <span>{pin.body}</span>
+                </div>
               </li>
             ))}
           </ol>
         </section>
 
-        <section id="screens" className="screens">
-          <div className="section-title">
-            <span className="index">03</span>
-            <h2>Near-black, loud where it matters.</h2>
-          </div>
-          <div className="screen-grid">
-            {SCREENS.map((screen) => (
-              <figure key={screen.src}>
-                <Image src={screen.src} alt={screen.alt} width={screen.width} height={screen.height} />
-                <figcaption>{screen.caption}</figcaption>
-              </figure>
-            ))}
-          </div>
+        <section id="features" className="features">
+          {FEATURE_ROWS.map((row, index) => (
+            <div key={row.label} className={index % 2 === 1 ? "feature-row is-flipped" : "feature-row"}>
+              <div className={row.isPanel ? "feature-shot is-panel" : "feature-shot"}>
+                <Image className="shot" src={row.image.src} alt={row.image.alt} width={row.image.width} height={row.image.height} />
+              </div>
+              <div className="feature-copy">
+                <span className="index">{row.label}</span>
+                <h2>{row.title}</h2>
+                <p>{row.body}</p>
+              </div>
+            </div>
+          ))}
         </section>
 
         {releases.length > 0 && (
           <section id="changelog" className="changelog">
             <div className="section-title">
-              <span className="index">04</span>
               <h2>Flight log.</h2>
             </div>
             <ol className="release-list">
@@ -195,7 +196,6 @@ export default function Home() {
         <section id="install" className="install">
           <div className="install-inner">
             <div className="section-title">
-              <span className="index">05</span>
               <h2>Cleared for takeoff.</h2>
             </div>
             <div className="install-grid">
