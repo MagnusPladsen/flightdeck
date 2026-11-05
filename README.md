@@ -8,10 +8,12 @@
 
 Flightdeck lives in the macOS menu bar and shows which AI agents are working, which are waiting on you and where, next to your dev servers and system resources.
 
+**[flightdeck.pladsen.dev](https://flightdeck.pladsen.dev)**
+
 [![Latest release](https://img.shields.io/github/v/release/MagnusPladsen/flightdeck?style=flat-square&color=ff7a1a&label=release)](https://github.com/MagnusPladsen/flightdeck/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/MagnusPladsen/flightdeck/total?style=flat-square&color=ff7a1a)](https://github.com/MagnusPladsen/flightdeck/releases)
 [![Stars](https://img.shields.io/github/stars/MagnusPladsen/flightdeck?style=flat-square&color=ff7a1a)](https://github.com/MagnusPladsen/flightdeck/stargazers)
-[![Release workflow](https://img.shields.io/github/actions/workflow/status/MagnusPladsen/flightdeck/release.yml?style=flat-square&label=build)](https://github.com/MagnusPladsen/flightdeck/actions/workflows/release.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/MagnusPladsen/flightdeck/ci.yml?style=flat-square&label=build)](https://github.com/MagnusPladsen/flightdeck/actions/workflows/ci.yml)
 <br>
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?style=flat-square&logo=apple&logoColor=white)
 ![Swift 6](https://img.shields.io/badge/Swift-6-F05138?style=flat-square&logo=swift&logoColor=white)

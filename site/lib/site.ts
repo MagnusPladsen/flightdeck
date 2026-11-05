@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+export const SITE_URL = "https://flightdeck.pladsen.dev";
 export const REPOSITORY_URL = "https://github.com/MagnusPladsen/flightdeck";
 export const RELEASES_URL = `${REPOSITORY_URL}/releases`;
 export const DOWNLOAD_URL = `${RELEASES_URL}/latest/download/Flightdeck.zip`;
