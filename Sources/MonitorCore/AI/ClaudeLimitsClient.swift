@@ -11,17 +11,26 @@ public struct ClaudeLimitsClient: Sendable {
 
     public init() {}
 
-    public func fetch() async -> ProviderUsage? {
-        guard let credentials = Self.loadCredentials() else { return nil }
+    public enum FetchResult: Sendable {
+        case usage(ProviderUsage)
+        case rateLimited(retryAfter: TimeInterval?)
+        case failed
+    }
+
+    public func fetch() async -> FetchResult {
+        guard let credentials = Self.loadCredentials() else { return .failed }
         var request = URLRequest(url: Self.usageURL, timeoutInterval: 10)
         request.setValue("Bearer \(credentials.accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
 
         guard let (data, response) = try? await URLSession.shared.data(for: request),
-              (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
-        let windows = Self.parseWindows(data)
-        guard !windows.isEmpty else { return nil }
-        return ProviderUsage(tool: .claude, plan: credentials.plan, windows: windows, updatedAt: Date())
+              let httpResponse = response as? HTTPURLResponse else { return .failed }
+        if httpResponse.statusCode == 429 {
+            return .rateLimited(retryAfter: httpResponse.value(forHTTPHeaderField: "Retry-After").flatMap(TimeInterval.init))
+        }
+        let windows = httpResponse.statusCode == 200 ? Self.parseWindows(data) : []
+        guard !windows.isEmpty else { return .failed }
+        return .usage(ProviderUsage(tool: .claude, plan: credentials.plan, windows: windows, updatedAt: Date()))
     }
 
     static let windowLabels: [(key: String, label: String)] = [
