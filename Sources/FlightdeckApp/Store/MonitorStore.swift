@@ -38,6 +38,14 @@ final class MonitorStore {
     var activeAgents: [AgentSession] { agents.filter { $0.state != .idle } }
     var visibleAgents: [AgentSession] { settings.showIdleAgents ? agents : activeAgents }
 
+    /// The agent whose limits the default limit resources show: the default agent when it has
+    /// limit data, otherwise Claude Code, then Codex, then any other agent that reports limits.
+    var limitsAgent: AgentTool {
+        let preferred = settings.defaultAgent
+        let fallbacks = [preferred, .claude, .codex] + AgentTool.allCases
+        return fallbacks.first { usage(for: $0)?.windows.isEmpty == false } ?? preferred
+    }
+
     func usage(for tool: AgentTool) -> ProviderUsage? {
         usage.first { $0.tool == tool }
     }

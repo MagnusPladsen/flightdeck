@@ -10,8 +10,9 @@ struct LayoutResources: View {
     var body: some View {
         let readings = ResourceReading.all(store: store, theme: theme)
         switch layout {
-        case .macOS: RingGauges(readings: readings)
-        case .neon: RingGauges(readings: readings, glows: true)
+        case .ignition: RingGauges(readings: readings, chrome: .plain)
+        case .macOS: RingGauges(readings: readings, chrome: .card)
+        case .neon: RingGauges(readings: readings, chrome: .glow)
         case .terminal: TextBarResources(readings: readings)
         case .cockpit: LEDResources(readings: readings)
         case .mission: TelemetryResources(readings: readings)
@@ -39,7 +40,7 @@ private struct CustomizeResourcesButton: View {
                 OptionChecklist(
                     title: "Show resources",
                     options: OverviewResource.allCases,
-                    label: { $0.title(defaultAgent: store.settings.defaultAgent) },
+                    label: \.customizeTitle,
                     isOn: { store.settings.overviewResources.contains($0) },
                     setOn: { resource, isOn in
                         store.settings.overviewResources = AppSettings.updating(store.settings.overviewResources, with: resource, shown: isOn)
@@ -84,10 +85,10 @@ struct RingGauge: View {
 
     var body: some View {
         ZStack {
-            Circle().stroke(theme.overlay, lineWidth: 8)
+            Circle().stroke(theme.overlay, lineWidth: size * 0.105)
             Circle()
                 .trim(from: 0, to: min(max(fraction, 0), 1))
-                .stroke(color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(color, style: StrokeStyle(lineWidth: size * 0.105, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .shadow(color: glows ? color.opacity(0.7) : .clear, radius: 8)
             Text(label).font(.system(size: size * 0.22, weight: .bold).monospacedDigit())
@@ -98,37 +99,94 @@ struct RingGauge: View {
 }
 
 private struct RingGauges: View {
+    enum Chrome { case plain, card, glow }
+
     @Environment(\.theme) private var theme
     var readings: [ResourceReading]
-    var glows = false
+    var chrome: Chrome
+    @State private var width: CGFloat = 0
 
     var body: some View {
+        let fit = RingFit(count: readings.count, width: width, cellPadding: chrome == .plain ? 0 : 28)
         VStack(alignment: .leading, spacing: 14) {
-            ConceptHeading(title: "System", showsCustomize: true)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 14)], spacing: 14) {
-                ForEach(readings) { reading in
-                    HStack(spacing: 14) {
-                        RingGauge(fraction: reading.fraction ?? 0, color: ringColor(reading), label: reading.value, glows: glows)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(reading.title).font(.system(size: 14, weight: .semibold)).lineLimit(1)
-                            Text(reading.detail).font(.system(size: 12)).foregroundStyle(theme.muted).lineLimit(2)
-                        }
-                        Spacer(minLength: 0)
-                    }
-                    .padding(14)
-                    .background(theme.overlay.opacity(glows ? 0 : 0.45), in: RoundedRectangle(cornerRadius: glows ? 0 : 12))
-                    .overlay { if glows { Rectangle().strokeBorder(ringColor(reading).opacity(0.6)).shadow(color: ringColor(reading).opacity(0.35), radius: 11) } }
+            if chrome == .plain {
+                HStack {
+                    ConceptHeading(title: "System")
+                    ResourceControls(moveTitle: "Send to sidebar", moveImage: "sidebar.right")
                 }
+                Hairline()
+            } else {
+                ConceptHeading(title: "System", showsCustomize: true)
             }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: RingFit.gap, alignment: .leading), count: fit.columns), alignment: .leading, spacing: RingFit.gap) {
+                ForEach(readings) { cell($0, ringSize: fit.ringSize) }
+            }
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+            .padding(.vertical, chrome == .plain ? 6 : 0)
+            if chrome == .plain { Hairline() }
         }
     }
 
-    /// Neon gives each gauge its own colour; macOS colours by how full it is.
+    private func cell(_ reading: ResourceReading, ringSize: CGFloat) -> some View {
+        HStack(spacing: 14) {
+            RingGauge(fraction: reading.fraction ?? 0, color: ringColor(reading), label: reading.value, glows: chrome == .glow, size: ringSize)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(reading.shortTitle ?? reading.title).font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                Group {
+                    if let agentName = reading.agentName { Text(agentName).lineLimit(1) }
+                    Text(reading.detail).lineLimit(reading.agentName == nil ? 2 : 1)
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(theme.muted)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(chrome == .plain ? 0 : 14)
+        .background(theme.overlay.opacity(chrome == .card ? 0.45 : 0), in: RoundedRectangle(cornerRadius: chrome == .glow ? 0 : 12))
+        .overlay { if chrome == .glow { Rectangle().strokeBorder(ringColor(reading).opacity(0.6)).shadow(color: ringColor(reading).opacity(0.35), radius: 11) } }
+        .help(reading.agentName.map { "\($0) \(reading.shortTitle ?? ""), \(reading.detail)" } ?? "")
+    }
+
+    /// Neon gives each gauge its own colour; the others colour limits by how full they are and leave CPU and memory plain.
     private func ringColor(_ reading: ResourceReading) -> Color {
-        guard glows else { return reading.fraction.map { UsageLevel.color(forFraction: $0, in: theme) } ?? theme.primary }
-        let palette = [theme.primary, theme.accent, theme.success, theme.warning, theme.secondary, theme.info]
-        let index = readings.firstIndex { $0.id == reading.id } ?? 0
-        return palette[index % palette.count]
+        switch chrome {
+        case .glow:
+            let palette = [theme.primary, theme.accent, theme.success, theme.warning, theme.secondary, theme.info]
+            let index = readings.firstIndex { $0.id == reading.id } ?? 0
+            return palette[index % palette.count]
+        case .plain where reading.id == .cpu || reading.id == .memory:
+            return theme.foreground
+        default:
+            return reading.fraction.map { UsageLevel.color(forFraction: $0, in: theme) } ?? theme.primary
+        }
+    }
+}
+
+/// Ring size and column count: rings shrink to keep every reading on one row,
+/// and once they would go below the minimum the readings wrap into even rows.
+struct RingFit {
+    static let gap: CGFloat = 16
+    static let maximumRing: CGFloat = 76
+    static let minimumRing: CGFloat = 52
+    /// Room the title and detail need beside the ring, plus the spacing between them.
+    static let labelWidth: CGFloat = 118
+
+    let columns: Int
+    let ringSize: CGFloat
+
+    init(count: Int, width: CGFloat, cellPadding: CGFloat) {
+        let count = max(count, 1)
+        let room = { (columns: Int) in (width - Self.gap * CGFloat(columns - 1)) / CGFloat(columns) - cellPadding - Self.labelWidth }
+        guard width > 0, room(count) < Self.minimumRing else {
+            columns = count
+            ringSize = width > 0 ? min(Self.maximumRing, room(count)) : Self.maximumRing
+            return
+        }
+        let minimumCell = Self.minimumRing + Self.labelWidth + cellPadding
+        let maximumColumns = max(1, Int((width + Self.gap) / (minimumCell + Self.gap)))
+        let rows = (count + maximumColumns - 1) / maximumColumns
+        columns = (count + rows - 1) / rows
+        ringSize = max(Self.minimumRing, min(Self.maximumRing, room(columns)))
     }
 }
 

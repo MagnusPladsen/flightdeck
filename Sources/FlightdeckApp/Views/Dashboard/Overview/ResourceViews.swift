@@ -114,14 +114,15 @@ struct ResourceControls: View {
     @State private var isCustomizing = false
 
     var body: some View {
-        HStack(spacing: 10) {
-            Button("Customize") { isCustomizing = true }
-                .buttonStyle(PillButtonStyle())
+        HStack(spacing: 2) {
+            Button { isCustomizing = true } label: { Image(systemName: "slider.horizontal.3") }
+                .buttonStyle(IconButtonStyle())
+                .help("Customize")
                 .popover(isPresented: $isCustomizing, arrowEdge: .bottom) {
                     OptionChecklist(
                         title: "Show resources",
                         options: OverviewResource.allCases,
-                        label: { $0.title(defaultAgent: store.settings.defaultAgent) },
+                        label: \.customizeTitle,
                         isOn: { store.settings.overviewResources.contains($0) },
                         setOn: { resource, isOn in
                             store.settings.overviewResources = AppSettings.updating(store.settings.overviewResources, with: resource, shown: isOn)
@@ -130,8 +131,9 @@ struct ResourceControls: View {
                     .padding(16)
                     .frame(minWidth: 220, alignment: .leading)
                 }
-            Button { store.settings.resourcesInSidebar.toggle() } label: { Label(moveTitle, systemImage: moveImage) }
-                .buttonStyle(PillButtonStyle())
+            Button { store.settings.resourcesInSidebar.toggle() } label: { Image(systemName: moveImage) }
+                .buttonStyle(IconButtonStyle())
+                .help(moveTitle)
         }
     }
 }
@@ -151,5 +153,23 @@ struct ThinBar: View {
         }
         .frame(height: height)
         .animation(.smooth, value: fraction)
+    }
+}
+
+/// Small muted icon button that lights up on hover, for secondary controls.
+private struct IconButtonStyle: ButtonStyle {
+    @Environment(\.theme) private var theme
+    @State private var isHovered = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 13, weight: .medium))
+            .frame(width: 28, height: 28)
+            .foregroundStyle(isHovered ? theme.foreground : theme.muted)
+            .background(isHovered ? theme.overlay : .clear, in: RoundedRectangle(cornerRadius: 8))
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .contentShape(Rectangle())
+            .onHover { isHovered = $0 }
+            .animation(.easeOut(duration: 0.15), value: isHovered)
     }
 }

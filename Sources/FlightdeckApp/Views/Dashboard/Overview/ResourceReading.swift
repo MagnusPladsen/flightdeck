@@ -13,6 +13,10 @@ struct ResourceReading: Identifiable {
     var valueColor: Color?
     var history: [Double] = []
     var historyMaximum: Double?
+    /// Shorter title for gauges that put the agent on its own line, such as "5h limit".
+    var shortTitle: String?
+    /// The agent a limit belongs to, shown under the short title.
+    var agentName: String?
 
     @MainActor
     static func all(store: MonitorStore, theme: Theme) -> [ResourceReading] {
@@ -22,7 +26,7 @@ struct ResourceReading: Identifiable {
     @MainActor
     private static func reading(_ resource: OverviewResource, store: MonitorStore, theme: Theme) -> ResourceReading {
         let snapshot = store.snapshot
-        let title = resource.title(defaultAgent: store.settings.defaultAgent)
+        let title = resource.title(agent: resource.pinnedAgent ?? store.limitsAgent)
         switch resource {
         case .cpu:
             let cpu = snapshot?.cpu.total ?? 0
@@ -35,7 +39,7 @@ struct ResourceReading: Identifiable {
             let disk = snapshot?.disks.first { $0.mountPath == "/" } ?? snapshot?.disks.first
             let used = disk?.usedFraction ?? 0
             return ResourceReading(id: resource, title: title, value: Formatters.percent(used), detail: disk.map { "\(Formatters.bytes($0.availableBytes)) free" } ?? "—", fraction: used, color: UsageLevel.color(forFraction: used, in: theme), valueColor: used >= 0.6 ? UsageLevel.color(forFraction: used, in: theme) : nil)
-        case .agentFiveHour, .agentWeek:
+        case .agentFiveHour, .agentWeek, .claudeFiveHour, .claudeWeek, .codexFiveHour, .codexWeek:
             return usageReading(resource, title: title, store: store, theme: theme)
         case .network:
             let network = snapshot?.network ?? .zero
@@ -50,13 +54,13 @@ struct ResourceReading: Identifiable {
 
     @MainActor
     private static func usageReading(_ resource: OverviewResource, title: String, store: MonitorStore, theme: Theme) -> ResourceReading {
-        let agent = store.settings.defaultAgent
-        let label = resource == .agentFiveHour ? "5h" : "Weekly"
-        guard let window = store.usage(for: agent)?.windows.first(where: { $0.label == label }) else {
+        let agent = resource.pinnedAgent ?? store.limitsAgent
+        let limit = resource.limitWindow ?? ("5h", "5h limit")
+        guard let window = store.usage(for: agent)?.windows.first(where: { $0.label == limit.label }) else {
             let hint = agent == .claude && !store.settings.claudeLimitsEnabled ? "Enable in Settings" : "No data yet"
-            return ResourceReading(id: resource, title: title, value: "—", detail: hint, fraction: nil, color: theme.success)
+            return ResourceReading(id: resource, title: title, value: "—", detail: hint, fraction: nil, color: theme.success, shortTitle: limit.title, agentName: agent.displayName)
         }
         let color = UsageLevel.color(forPercent: window.usedPercent, in: theme)
-        return ResourceReading(id: resource, title: title, value: "\(Int(window.usedPercent.rounded()))%", detail: Formatters.resetCountdown(window.resetsAt) ?? "", fraction: window.usedPercent / 100, color: color, valueColor: window.usedPercent >= 85 ? color : nil)
+        return ResourceReading(id: resource, title: title, value: "\(Int(window.usedPercent.rounded()))%", detail: Formatters.resetCountdown(window.resetsAt) ?? "", fraction: window.usedPercent / 100, color: color, valueColor: window.usedPercent >= 85 ? color : nil, shortTitle: limit.title, agentName: agent.displayName)
     }
 }
