@@ -3,6 +3,10 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.1.1 — 2026-11-05
+
+- Ring labels have more room, so reset times are no longer cut off.
+
 ## 1.1.0 — 2026-11-05
 
 - 13 dashboard layouts, each with its own look and default theme. Any of the 22 themes works on any layout, and you can set your own colours.
