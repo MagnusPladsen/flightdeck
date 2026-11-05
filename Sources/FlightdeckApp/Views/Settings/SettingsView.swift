@@ -7,6 +7,7 @@ struct SettingsView: View {
         TabView {
             GeneralSettings().tabItem { Label("General", systemImage: "gearshape") }
             AppearanceSettings().tabItem { Label("Appearance", systemImage: "paintpalette") }
+            AlertSettings().tabItem { Label("Alerts", systemImage: "bell") }
             AISettings().tabItem { Label("AI", systemImage: "sparkles") }
             WidgetSettings().tabItem { Label("Widgets", systemImage: "square.grid.2x2") }
         }

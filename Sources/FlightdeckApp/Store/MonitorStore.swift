@@ -20,14 +20,17 @@ final class MonitorStore {
     private(set) var widgetResults: [UUID: CustomWidgetResult] = [:]
 
     let settings: AppSettings
+    let notifier = AgentNotifier()
     private let engine = MonitorEngine()
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
     /// Agents cleared from "Your turn", with the activity time they were cleared at.
     private var clearedTurns: [Int32: Date] = [:]
+    private var hasCollectedAgents = false
 
     init(settings: AppSettings) {
         self.settings = settings
+        notifier.openTerminal = { [weak self] in self?.openInTerminal($0) }
     }
 
     var devServers: [ListeningPort] { ports.filter(\.isDevServer) }
@@ -42,6 +45,7 @@ final class MonitorStore {
     func start() {
         guard pollingTasks.isEmpty else { return }
         if DemoData.isEnabled { return loadDemo() }
+        if settings.alertsEnabled { Task { await notifier.requestAuthorization() } }
         pollingTasks = [
             poll(every: .seconds(2)) { await $0.refreshSystem() },
             poll(every: .seconds(5)) { await $0.refreshPortsAndAgents() },
@@ -78,7 +82,23 @@ final class MonitorStore {
         async let agents = Task.detached { engine.collectAgents(from: processes) }.value
         let collected: [AgentSession]
         (self.ports, collected) = await (ports, agents)
+        let previous = hasCollectedAgents ? self.agents : nil
         self.agents = applyingClearedTurns(to: collected)
+        hasCollectedAgents = true
+        alertAboutChanges(since: previous)
+    }
+
+    func setAlertsEnabled(_ isEnabled: Bool) {
+        settings.alertsEnabled = isEnabled
+        if isEnabled { Task { await notifier.requestAuthorization() } }
+    }
+
+    private func alertAboutChanges(since previous: [AgentSession]?) {
+        notifier.withdraw(folders: AgentAlerts.stoppedWaiting(previous: previous, current: agents))
+        guard settings.alertsEnabled else { return }
+        for agent in AgentAlerts.newlyWaiting(previous: previous, current: agents, states: settings.alertStates, tools: settings.alertTools) {
+            notifier.post(about: agent, playsSound: settings.alertSound)
+        }
     }
 
     /// Takes an agent out of "Your turn" until it does something new.
@@ -87,6 +107,7 @@ final class MonitorStore {
             clearedTurns[sibling.pid] = sibling.lastActivity ?? .distantPast
         }
         agents = applyingClearedTurns(to: agents)
+        notifier.withdraw(folders: [agent.workingDirectory])
     }
 
     private func applyingClearedTurns(to agents: [AgentSession]) -> [AgentSession] {

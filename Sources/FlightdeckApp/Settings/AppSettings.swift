@@ -87,6 +87,12 @@ final class AppSettings {
     var customLayouts: [String: PageLayouts] { didSet { save(customLayouts, forKey: "customLayouts") } }
     /// Nil until the user picks an editor the first time they open a project.
     var editorBundleID: String? { didSet { defaults.set(editorBundleID, forKey: "editorBundleID") } }
+    var alertsEnabled: Bool { didSet { defaults.set(alertsEnabled, forKey: "alertsEnabled") } }
+    var alertsOnApproval: Bool { didSet { defaults.set(alertsOnApproval, forKey: "alertsOnApproval") } }
+    var alertsOnYourTurn: Bool { didSet { defaults.set(alertsOnYourTurn, forKey: "alertsOnYourTurn") } }
+    var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
+    /// Raw values of the agent tools the user turned alerts off for.
+    var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -104,6 +110,23 @@ final class AppSettings {
         defaultAgent = defaults.string(forKey: "defaultAgent").flatMap(AgentTool.init(rawValue:)) ?? .claude
         editorBundleID = defaults.string(forKey: "editorBundleID")
         customLayouts = Self.load([String: PageLayouts].self, forKey: "customLayouts", from: defaults) ?? [:]
+        alertsEnabled = defaults.object(forKey: "alertsEnabled") as? Bool ?? true
+        alertsOnApproval = defaults.object(forKey: "alertsOnApproval") as? Bool ?? true
+        alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
+        alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
+        mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
+    }
+
+    var alertStates: Set<AgentState> {
+        Set([alertsOnApproval ? AgentState.needsApproval : nil, alertsOnYourTurn ? AgentState.yourTurn : nil].compactMap { $0 })
+    }
+
+    var alertTools: Set<AgentTool> {
+        Set(AgentTool.allCases.filter { !mutedAlertTools.contains($0.rawValue) })
+    }
+
+    func setAlerts(_ isEnabled: Bool, for tool: AgentTool) {
+        mutedAlertTools = isEnabled ? mutedAlertTools.filter { $0 != tool.rawValue } : mutedAlertTools + [tool.rawValue]
     }
 
     func isShowingInMenuBar(_ metric: MenuBarMetric) -> Bool {
