@@ -136,6 +136,7 @@ private struct RingGauges: View {
                     if let agentName = reading.agentName { Text(agentName).lineLimit(1) }
                     Text(reading.detail).lineLimit(reading.agentName == nil ? 2 : 1)
                 }
+                .minimumScaleFactor(0.85)
                 .font(.system(size: 12))
                 .foregroundStyle(theme.muted)
             }
@@ -167,9 +168,9 @@ private struct RingGauges: View {
 struct RingFit {
     static let gap: CGFloat = 16
     static let maximumRing: CGFloat = 76
-    static let minimumRing: CGFloat = 52
+    static let minimumRing: CGFloat = 48
     /// Room the title and detail need beside the ring, plus the spacing between them.
-    static let labelWidth: CGFloat = 118
+    static let labelWidth: CGFloat = 136
 
     let columns: Int
     let ringSize: CGFloat
