@@ -48,14 +48,19 @@ struct MenuBarLabel: View {
         switch metric {
         case .cpu: store.snapshot.map { Formatters.percent($0.cpu.total) }
         case .memory: store.snapshot.map { Formatters.percent($0.memory.usedFraction) }
-        case .workingAgents: "\(store.agents.filter { $0.state == .working }.count)"
-        case .agentsNeedingYou: needsYouCount > 0 ? "\(needsYouCount)" : nil
+        case .workingAgents: Self.hidingZero(store.agents.filter { $0.state == .working }.count)
+        case .agentsNeedingYou: Self.hidingZero(needsYouCount)
         case .network: store.snapshot.map { Formatters.rate($0.network.bytesInPerSecond) }
-        case .servers: "\(store.devServers.count)"
-        case .agents: "\(store.activeAgents.count)"
+        case .servers: Self.hidingZero(store.devServers.count)
+        case .agents: Self.hidingZero(store.activeAgents.count)
         case .claudeLimit: fiveHourPercent(for: .claude)
         case .codexLimit: fiveHourPercent(for: .codex)
         }
+    }
+
+    /// Counts drop out of the menu bar at zero, so it only shows what is there.
+    private static func hidingZero(_ count: Int) -> String? {
+        count > 0 ? "\(count)" : nil
     }
 
     /// How full a metric is, for the bars label style; nil for counts and rates.
