@@ -11,27 +11,27 @@ struct SectionHost: View {
         switch kind {
         case .needsYou:
             let hero = store.heroAgent(excluding: context.snoozedAgentIDs.wrappedValue)
-            NeedsYouHero(agent: hero, othersCount: max(store.needsYouGroups.count - 1, 0)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
+            LayoutNeedsYou(agent: hero, othersCount: max(store.needsYouGroups.count - 1, 0)) { context.snoozedAgentIDs.wrappedValue.insert($0.id) }
         case .clock:
             ClockSection()
         case .resources:
-            ResourceStrip()
+            LayoutResources()
         case .yourTurn:
-            YourTurnSection(agents: AgentBoardColumn.yourTurn.groups(from: agents), navigate: context.navigate)
+            LayoutAgentColumn(column: .yourTurn, groups: AgentBoardColumn.yourTurn.groups(from: agents), navigate: context.navigate)
         case .workingAgents:
-            AgentColumnSection(column: .working, agents: AgentBoardColumn.working.groups(from: agents), navigate: context.navigate)
+            LayoutAgentColumn(column: .working, groups: AgentBoardColumn.working.groups(from: agents), navigate: context.navigate)
         case .idleAgents:
-            AgentColumnSection(column: .idle, agents: AgentBoardColumn.idle.groups(from: agents), navigate: context.navigate)
+            LayoutAgentColumn(column: .idle, groups: AgentBoardColumn.idle.groups(from: agents), navigate: context.navigate)
         case .projects:
-            ProjectsList(projects: store.projects(matching: context.searchQuery), totalPorts: store.devServers.count, navigate: context.navigate)
+            LayoutProjects(searchQuery: context.searchQuery, navigate: context.navigate)
         case .devServers:
-            DevServersSection()
+            LayoutDevServers()
         case .otherPorts:
             OtherPortsSection()
         case .agentSessions:
             AgentSessionsSection()
         case .usageLimits:
-            UsageLimitsSection()
+            LayoutUsageLimits()
         case .processTable:
             ProcessTableSection()
         case .widget(let id):

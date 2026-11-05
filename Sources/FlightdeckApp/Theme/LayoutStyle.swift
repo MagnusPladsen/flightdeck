@@ -35,6 +35,8 @@ struct LayoutStyle {
     var maxWidth: CGFloat = 1180
     var navigation: Navigation = .list
     var backdrop: Backdrop = .none
+    /// Small tracked capitals for section titles, as on instrument panels.
+    var uppercaseLabels = false
 }
 
 /// Draws a section's card, tile, glass or outline for the layout.

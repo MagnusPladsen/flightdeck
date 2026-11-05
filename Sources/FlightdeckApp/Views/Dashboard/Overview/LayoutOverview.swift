@@ -15,12 +15,14 @@ struct LayoutOverview: View {
         HStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: layout.style.rowSpacing) {
+                    LayoutMasthead()
                     OverviewHeader(searchText: $searchText)
                     if isSearchEmpty {
                         noMatches
                     } else {
                         PageCanvas(page: .overview, context: SectionContext(navigate: navigate, searchQuery: searchText, snoozedAgentIDs: $snoozedAgentIDs))
                     }
+                    LayoutFooter()
                 }
                 .padding(layout.style.padding)
                 .frame(maxWidth: layout.style.maxWidth)

@@ -114,13 +114,13 @@ enum DashboardLayout: String, CaseIterable, Identifiable {
         case .terminal: LayoutStyle(fontDesign: .monospaced, chrome: .outlined(radius: 4), columnSpacing: 14, rowSpacing: 14, padding: 20, maxWidth: 1280, navigation: .rail)
         case .glass: LayoutStyle(fontDesign: .rounded, chrome: .glass(radius: 22), columnSpacing: 20, rowSpacing: 20, padding: 32, maxWidth: 1200, navigation: .rail, backdrop: .blobs)
         case .bento: LayoutStyle(chrome: .tile(radius: 28), columnSpacing: 12, rowSpacing: 12, padding: 20, maxWidth: 1280, navigation: .rail)
-        case .cockpit: LayoutStyle(fontDesign: .monospaced, chrome: .outlined(radius: 0), columnSpacing: 10, rowSpacing: 10, padding: 20, maxWidth: 1280, navigation: .rail, backdrop: .scanlines)
+        case .cockpit: LayoutStyle(fontDesign: .monospaced, chrome: .outlined(radius: 0), columnSpacing: 10, rowSpacing: 10, padding: 20, maxWidth: 1280, navigation: .rail, backdrop: .scanlines, uppercaseLabels: true)
         case .editorial: LayoutStyle(fontDesign: .serif, columnSpacing: 40, rowSpacing: 40, padding: 48, navigation: .rail)
-        case .neon: LayoutStyle(chrome: .outlined(radius: 0, glows: true), columnSpacing: 18, rowSpacing: 18, padding: 28, maxWidth: 1240, navigation: .rail, backdrop: .grid)
+        case .neon: LayoutStyle(chrome: .outlined(radius: 0, glows: true), columnSpacing: 18, rowSpacing: 18, padding: 28, maxWidth: 1240, navigation: .rail, backdrop: .grid, uppercaseLabels: true)
         case .agentFocus: LayoutStyle(chrome: .card(radius: 14), columnSpacing: 16, rowSpacing: 16, padding: 24, maxWidth: 1280)
         case .projects: LayoutStyle(chrome: .card(radius: 16), columnSpacing: 16, rowSpacing: 16, padding: 28, maxWidth: 1240, navigation: .rail)
         case .zen: LayoutStyle(columnSpacing: 48, rowSpacing: 48, padding: 48, maxWidth: 760, navigation: .rail)
-        case .mission: LayoutStyle(chrome: .outlined(radius: 0), columnSpacing: 16, rowSpacing: 16, padding: 28, maxWidth: 1280, navigation: .rail)
+        case .mission: LayoutStyle(chrome: .outlined(radius: 0), columnSpacing: 16, rowSpacing: 16, padding: 28, maxWidth: 1280, navigation: .rail, uppercaseLabels: true)
         case .timeline: LayoutStyle(columnSpacing: 32, rowSpacing: 28, padding: 24, maxWidth: 1100)
         }
     }

@@ -107,7 +107,7 @@ private struct SidebarCell: View {
 }
 
 /// Customize and move buttons shared by both resource placements.
-private struct ResourceControls: View {
+struct ResourceControls: View {
     @Environment(MonitorStore.self) private var store
     var moveTitle: String
     var moveImage: String
@@ -136,7 +136,7 @@ private struct ResourceControls: View {
     }
 }
 
-private struct ThinBar: View {
+struct ThinBar: View {
     @Environment(\.theme) private var theme
     var fraction: Double
     var color: Color
