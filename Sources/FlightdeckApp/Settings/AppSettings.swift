@@ -1,6 +1,7 @@
 import Foundation
 import MonitorCore
 import Observation
+import SwiftUI
 
 enum MenuBarMetric: String, CaseIterable, Codable, Identifiable {
     case cpu, memory, workingAgents, agentsNeedingYou, network, servers, agents, claudeLimit, codexLimit
@@ -79,6 +80,9 @@ final class AppSettings {
     var customWidgets: [CustomWidget] { didSet { save(customWidgets, forKey: "customWidgets") } }
     var menuBarLabelStyle: MenuBarLabelStyle { didSet { defaults.set(menuBarLabelStyle.rawValue, forKey: "menuBarLabelStyle") } }
     var themeID: String { didSet { defaults.set(themeID, forKey: "themeID") } }
+    var dashboardLayout: DashboardLayout { didSet { defaults.set(dashboardLayout.rawValue, forKey: "dashboardLayout") } }
+    /// The user's own colours: theme id → role raw value → "#RRGGBB".
+    var customColors: [String: [String: String]] { didSet { save(customColors, forKey: "customColors") } }
     var overviewResources: [OverviewResource] { didSet { save(overviewResources, forKey: "overviewResources") } }
     var resourcesInSidebar: Bool { didSet { defaults.set(resourcesInSidebar, forKey: "resourcesInSidebar") } }
     var agentCardFields: [AgentCardField] { didSet { save(agentCardFields, forKey: "agentCardFields") } }
@@ -104,6 +108,8 @@ final class AppSettings {
         customWidgets = Self.load([CustomWidget].self, forKey: "customWidgets", from: defaults) ?? []
         menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .text
         themeID = defaults.string(forKey: "themeID") ?? Theme.ignition.id
+        dashboardLayout = defaults.string(forKey: "dashboardLayout").flatMap(DashboardLayout.init(rawValue:)) ?? .ignition
+        customColors = Self.load([String: [String: String]].self, forKey: "customColors", from: defaults) ?? [:]
         overviewResources = Self.load([OverviewResource].self, forKey: "overviewResources", from: defaults) ?? OverviewResource.defaultSelection
         resourcesInSidebar = defaults.bool(forKey: "resourcesInSidebar")
         agentCardFields = Self.load([AgentCardField].self, forKey: "agentCardFields", from: defaults) ?? AgentCardField.allCases
@@ -127,6 +133,22 @@ final class AppSettings {
 
     func setAlerts(_ isEnabled: Bool, for tool: AgentTool) {
         mutedAlertTools = isEnabled ? mutedAlertTools.filter { $0 != tool.rawValue } : mutedAlertTools + [tool.rawValue]
+    }
+
+    /// Switching layout also switches to the theme it was designed with; any theme can be picked after.
+    func selectLayout(_ layout: DashboardLayout) {
+        dashboardLayout = layout
+        themeID = layout.defaultThemeID
+    }
+
+    func setCustomColor(_ color: Color?, for role: ThemeColorRole, inTheme themeID: String) {
+        var colors = customColors[themeID] ?? [:]
+        colors[role.rawValue] = color?.hexString
+        customColors[themeID] = colors.isEmpty ? nil : colors
+    }
+
+    func resetCustomColors(inTheme themeID: String) {
+        customColors[themeID] = nil
     }
 
     func isShowingInMenuBar(_ metric: MenuBarMetric) -> Bool {

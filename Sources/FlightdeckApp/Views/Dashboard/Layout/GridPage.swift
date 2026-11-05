@@ -3,7 +3,7 @@ import SwiftUI
 
 /// A dashboard page that is just its sections on the grid.
 struct GridPage: View {
-    @Environment(\.theme) private var theme
+    @Environment(\.dashboardLayout) private var layout
     var page: DashboardPage
     var navigate: (DashboardPage) -> Void
     @State private var snoozedAgentIDs: Set<Int32> = []
@@ -11,11 +11,11 @@ struct GridPage: View {
     var body: some View {
         ScrollView {
             PageCanvas(page: page, context: SectionContext(navigate: navigate, snoozedAgentIDs: $snoozedAgentIDs))
-                .padding(32)
-                .frame(maxWidth: 1180)
+                .padding(layout.style.padding)
+                .frame(maxWidth: layout.style.maxWidth)
                 .frame(maxWidth: .infinity)
         }
-        .background(theme.background)
+        .background(LayoutBackground(backdrop: layout.style.backdrop))
     }
 }
 

@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Ignition page list: large bold labels on black, a pill behind the current page, counts in muted text.
 /// While the layout is unlocked, each page also takes dropped sections.
-struct IgnitionSidebar: View {
+struct PageListSidebar: View {
     @Environment(MonitorStore.self) private var store
     @Environment(LayoutEditor.self) private var editor
     @Environment(\.theme) private var theme

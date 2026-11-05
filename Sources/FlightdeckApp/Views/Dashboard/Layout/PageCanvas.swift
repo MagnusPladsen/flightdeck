@@ -12,18 +12,19 @@ struct SectionContext {
 struct PageCanvas: View {
     @Environment(MonitorStore.self) private var store
     @Environment(LayoutEditor.self) private var editor
-    @Environment(\.theme) private var theme
+    @Environment(\.dashboardLayout) private var layout
     var page: DashboardPage
     var context: SectionContext
 
     var body: some View {
-        let layouts = editor.layouts(settings: store.settings, layout: theme.layout)
+        let layouts = editor.layouts(settings: store.settings, layout: layout)
         let placements = visiblePlacements(in: layouts)
-        VStack(alignment: .leading, spacing: 36) {
-            SectionGrid(spans: placements.map(\.span)) {
+        VStack(alignment: .leading, spacing: layout.style.rowSpacing) {
+            SectionGrid(spans: placements.map(\.span), columnSpacing: layout.style.columnSpacing, rowSpacing: layout.style.rowSpacing) {
                 ForEach(placements, id: \.kind) { placement in
                     section(placement)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .modifier(SectionChromeModifier(chrome: layout.style.chrome))
                 }
             }
             if editor.isEditing {

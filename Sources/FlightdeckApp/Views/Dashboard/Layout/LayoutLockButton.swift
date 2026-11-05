@@ -4,14 +4,14 @@ import SwiftUI
 struct LayoutLockButton: View {
     @Environment(MonitorStore.self) private var store
     @Environment(LayoutEditor.self) private var editor
-    @Environment(\.theme) private var theme
+    @Environment(\.dashboardLayout) private var layout
 
     var body: some View {
         Button {
             if editor.isEditing {
-                editor.lock(settings: store.settings, layout: theme.layout)
+                editor.lock(settings: store.settings, layout: layout)
             } else {
-                editor.unlock(settings: store.settings, layout: theme.layout)
+                editor.unlock(settings: store.settings, layout: layout)
             }
         } label: {
             Label(editor.isEditing ? "Done editing layout" : "Edit layout", systemImage: editor.isEditing ? "lock.open.fill" : "lock")

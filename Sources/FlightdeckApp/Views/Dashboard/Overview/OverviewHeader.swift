@@ -2,7 +2,7 @@ import MonitorCore
 import SwiftUI
 
 /// Search field with the default-agent picker, then the greeting. Return asks Claude about what the app shows.
-struct IgnitionHeader: View {
+struct OverviewHeader: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     @Binding var searchText: String

@@ -30,6 +30,7 @@ struct DashboardView: View {
 
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
+    @Environment(\.dashboardLayout) private var layout
     @State private var selection: DashboardPage = .overview
     @State private var layoutEditor = LayoutEditor()
     @Environment(ClaudeAsker.self) private var asker
@@ -38,7 +39,7 @@ struct DashboardView: View {
     var body: some View {
         NavigationSplitView {
             sidebar
-                .navigationSplitViewColumnWidth(min: 240, ideal: 250)
+                .navigationSplitViewColumnWidth(min: sidebarWidth, ideal: sidebarWidth, max: layout.style.navigation == .rail ? sidebarWidth : 320)
         } detail: {
             detail(for: selection)
                 .navigationTitle(selection.title)
@@ -57,21 +58,27 @@ struct DashboardView: View {
         .animation(.smooth(duration: 0.2), value: asker.isPresented)
         .animation(.smooth(duration: 0.2), value: whatsNew.isPresented)
         .toolbarBackground(theme.background, for: .windowToolbar)
+        .fontDesign(layout.style.fontDesign)
         .environment(layoutEditor)
     }
 
-    /// The page list in the style of the theme's layout.
+    /// The page list in the style of the chosen layout.
     @ViewBuilder
     private var sidebar: some View {
-        switch theme.layout {
-        case .ignition: IgnitionSidebar(selection: $selection, count: badgeCount)
+        switch layout.style.navigation {
+        case .list: PageListSidebar(selection: $selection, count: badgeCount)
+        case .rail: RailSidebar(selection: $selection, count: badgeCount)
         }
+    }
+
+    private var sidebarWidth: CGFloat {
+        layout.style.navigation == .rail ? 76 : 250
     }
 
     @ViewBuilder
     private func detail(for section: DashboardPage) -> some View {
         switch section {
-        case .overview: OverviewSection { selection = $0 }
+        case .overview: LayoutOverview { selection = $0 }
         case .ports, .agents, .processes: GridPage(page: section) { selection = $0 }
         case .widgets: WidgetsPage { selection = $0 }
         }

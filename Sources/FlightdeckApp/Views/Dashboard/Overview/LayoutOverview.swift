@@ -1,10 +1,11 @@
 import MonitorCore
 import SwiftUI
 
-/// The Ignition overview: search on top, the page's sections on the grid, resources optionally docked.
-struct IgnitionOverview: View {
+/// The overview in any layout: search on top, the page's sections on the grid, resources optionally docked.
+struct LayoutOverview: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
+    @Environment(\.dashboardLayout) private var layout
     var navigate: (DashboardPage) -> Void
 
     @State private var searchText = ""
@@ -13,16 +14,16 @@ struct IgnitionOverview: View {
     var body: some View {
         HStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 36) {
-                    IgnitionHeader(searchText: $searchText)
+                VStack(alignment: .leading, spacing: layout.style.rowSpacing) {
+                    OverviewHeader(searchText: $searchText)
                     if isSearchEmpty {
                         noMatches
                     } else {
                         PageCanvas(page: .overview, context: SectionContext(navigate: navigate, searchQuery: searchText, snoozedAgentIDs: $snoozedAgentIDs))
                     }
                 }
-                .padding(32)
-                .frame(maxWidth: 1180)
+                .padding(layout.style.padding)
+                .frame(maxWidth: layout.style.maxWidth)
                 .frame(maxWidth: .infinity)
             }
             if store.settings.resourcesInSidebar {
@@ -31,7 +32,7 @@ struct IgnitionOverview: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .background(theme.background)
+        .background(LayoutBackground(backdrop: layout.style.backdrop))
         .animation(.smooth(duration: 0.3), value: store.settings.resourcesInSidebar)
     }
 

@@ -56,11 +56,11 @@ Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the sam
 - **Ask Claude**: type a question in the overview's search bar and press Return, or press ⌘K anywhere in the dashboard. The answer opens in a palette with follow-ups, and agents it names open their terminal in one click. It runs your installed `claude` CLI with read-only tools and a snapshot of what the dashboard shows.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 
-Ships 13 themes. A theme sets the dashboard layout as well as its colours: Ignition is the default (a near-black agent board that leads with whichever agent needs you), plus Clean Dark, Clean Light, a "match system" option, Tokyo Night, Catppuccin, Dracula and other popular coding palettes. More layouts are planned.
+Ships 13 layouts and 22 themes, and any theme works on any layout. Ignition is the default layout (a near-black agent board that leads with whichever agent needs you); the others are macOS, Terminal, Glass, Bento, Cockpit, Editorial, Neon, Agent focus, Projects, Zen, Mission control and Timeline. Each layout switches to the theme it was designed in, and Settings › Appearance lets you pick another theme (Clean Dark, Clean Light, "match system", Tokyo Night, Catppuccin, Dracula and other coding palettes) or replace any colour with your own.
 
 A big clock sits beside the "needs you" headline on the overview; like every section it can be moved, resized or hidden. Hover a "Needs you" card and click its X to clear it until that agent does something new.
 
-Every dashboard page can be rearranged: click the lock button in the toolbar, then drag sections to move them (also onto another page in the sidebar), drag their right edge to resize on a 12-column grid, or hide them and add them back from the tray. Locking saves a custom version of the theme's layout, e.g. "Ignition (custom)"; Settings › Appearance resets it.
+Every dashboard page can be rearranged: click the lock button in the toolbar, then drag sections to move them (also onto another page in the sidebar), drag their right edge to resize on a 12-column grid, or hide them and add them back from the tray. Locking saves a custom version of the layout, e.g. "Ignition (custom)"; Settings › Appearance resets it.
 
 Flightdeck is macOS only for now. The core library already builds on Linux, but there is no Linux app yet.
 

@@ -168,22 +168,24 @@ private struct AppearanceSettings: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                LayoutPicker()
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Theme").font(.headline)
-                    Text("A theme sets the dashboard's layout as well as its colours. More layouts are on the way.")
+                    Text("Colours for the whole app. Every theme works with every layout.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
-                ThemeOptionButton(title: "Match system", subtitle: "Clean Dark or Clean Light · \(store.settings.layoutTitle(.ignition)) layout", themes: [.cleanDark, .cleanLight], isSelected: store.settings.themeID == Theme.systemID) {
+                ThemeOptionButton(title: "Match system", subtitle: "Clean Dark or Clean Light", themes: [.cleanDark, .cleanLight], isSelected: store.settings.themeID == Theme.systemID) {
                     store.settings.themeID = Theme.systemID
                 }
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
                     ForEach(Theme.all) { theme in
-                        ThemeOptionButton(title: theme.name, subtitle: "\(store.settings.layoutTitle(theme.layout)) layout · \(theme.isDark ? "dark" : "light")", themes: [theme], isSelected: store.settings.themeID == theme.id) {
+                        ThemeOptionButton(title: theme.name, subtitle: theme.isDark ? "Dark" : "Light", themes: [theme], isSelected: store.settings.themeID == theme.id) {
                             store.settings.themeID = theme.id
                         }
                     }
                 }
+                CustomColorsEditor()
                 LayoutCustomization()
             }
             .padding(20)
@@ -201,7 +203,7 @@ private struct LayoutCustomization: View {
             Text("Use the lock button on any dashboard page to move, resize, hide and re-add sections. Your arrangement is saved as a custom version of the layout.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            ForEach(DashboardLayout.allCases) { layout in
+            ForEach(DashboardLayout.allCases.filter { $0 == store.settings.dashboardLayout || store.settings.isCustomized($0) }) { layout in
                 HStack {
                     Text(store.settings.layoutTitle(layout))
                     Spacer()
