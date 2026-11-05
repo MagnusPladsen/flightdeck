@@ -21,17 +21,17 @@ const PINS = [
     body: "Type to find any agent or project across Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider. Press Return or ⌘K to ask Claude about what's running. The picker sets your default agent, whose limits show below.",
   },
   { x: 22, y: 19, title: "Who needs you", body: "The agent waiting on you leads, with a count of the others." },
-  { x: 22, y: 35, title: "Go to terminal", body: "Opens that agent's own terminal. Later sets it aside." },
+  { x: 22, y: 36.5, title: "Go to terminal", body: "Opens that agent's own terminal. Later sets it aside." },
   { x: 70.5, y: 21, title: "A big clock", body: "Readable from across the room on a second screen." },
   {
     x: 22,
-    y: 47.6,
+    y: 50,
     title: "System and limits",
-    body: "CPU, memory and disk, plus Claude and Codex usage limits read from local logs.",
+    body: "CPU and memory, plus your default agent's 5h and week limits. Add disk, network, battery or Claude Code and Codex limits side by side.",
   },
   {
     x: 22,
-    y: 60,
+    y: 61,
     title: "Needs you",
     body: "Every waiting agent: what it said or wants to run, its folder and branch. Hover a card and clear it until that agent does something new.",
   },
@@ -130,7 +130,7 @@ export default function Home() {
               src="/screenshots/overview.png"
               alt="Flightdeck overview with numbered labels: search and ask, who needs you, go to terminal, clock, system and limits, the Needs you list and pages"
               width={1146}
-              height={1135}
+              height={1085}
               priority
             />
             {PINS.map((pin, index) => (
