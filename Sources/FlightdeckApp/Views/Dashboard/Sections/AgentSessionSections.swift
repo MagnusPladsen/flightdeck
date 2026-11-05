@@ -10,7 +10,33 @@ struct AgentSessionsSection: View {
             SectionHeading(title: "Sessions", count: store.visibleAgents.count) {
                 Toggle("Show idle", isOn: $settings.showIdleAgents).toggleStyle(.checkbox).font(.system(size: 13))
             }
-            HairlineRows(items: store.visibleAgents, emptyText: "No agent sessions found") { AgentRow(agent: $0) }
+            if store.visibleAgents.isEmpty {
+                HairlineRows(items: store.visibleAgents, emptyText: "No agent sessions found") { AgentRow(agent: $0) }
+            }
+            ForEach(AgentBoardColumn.allCases) { column in
+                let agents = store.visibleAgents.filter { column.contains($0.state) }
+                if !agents.isEmpty { AgentStatusGroup(column: column, agents: agents) }
+            }
+        }
+    }
+}
+
+/// One status group on the agents page, ordered like the dashboard: needs you, working, idle.
+private struct AgentStatusGroup: View {
+    @Environment(\.theme) private var theme
+    var column: AgentBoardColumn
+    var agents: [AgentSession]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                Circle().fill(column.color(in: theme)).frame(width: 7, height: 7)
+                Text(column.title).font(.system(size: 13, weight: .bold))
+                Text("\(agents.count)").font(.system(size: 13)).foregroundStyle(theme.muted)
+            }
+            .padding(.top, 18)
+            .padding(.bottom, 6)
+            HairlineRows(items: agents, emptyText: "") { AgentRow(agent: $0) }
         }
     }
 }

@@ -55,7 +55,14 @@ struct YourTurnSection: View {
     @Environment(\.theme) private var theme
     var agents: [AgentGroup]
     var navigate: (DashboardPage) -> Void
-    private static let cardLimit = 4
+    private static let minimumCardWidth: CGFloat = 320
+    private static let cardSpacing: CGFloat = 32
+    @State private var width: CGFloat = 0
+
+    /// As many cards as fit side by side, so the section never grows past one row.
+    private var cardsPerRow: Int {
+        max(1, Int((width + Self.cardSpacing) / (Self.minimumCardWidth + Self.cardSpacing)))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -63,9 +70,10 @@ struct YourTurnSection: View {
             if agents.isEmpty {
                 Text("Nobody is waiting on you.").font(.system(size: 14)).foregroundStyle(theme.muted).padding(.vertical, 12)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 32, alignment: .top)], alignment: .leading, spacing: 0) {
-                ForEach(agents.prefix(Self.cardLimit)) { AgentCard(group: $0, isFeatured: true) }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Self.cardSpacing, alignment: .top), count: cardsPerRow), alignment: .leading, spacing: 0) {
+                ForEach(agents.prefix(cardsPerRow)) { AgentCard(group: $0, isFeatured: true) }
             }
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         }
         .padding(EdgeInsets(top: 20, leading: 26, bottom: 4, trailing: 0))
         .background(RadialGradient(colors: [theme.attention.opacity(0.17), .clear], center: .topLeading, startRadius: 0, endRadius: 560))
