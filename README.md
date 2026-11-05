@@ -107,3 +107,7 @@ swift test
 ```
 
 See [docs/architecture.md](docs/architecture.md) for how it fits together.
+
+## License
+
+[MIT](LICENSE)

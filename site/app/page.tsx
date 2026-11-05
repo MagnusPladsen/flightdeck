@@ -85,7 +85,7 @@ export default function Home() {
           <p className="platforms reveal" style={{ animationDelay: "240ms" }}>
             <span>macOS 14+</span>
             <span>Apple Silicon and Intel</span>
-            <span>Free</span>
+            <span>Free and open source</span>
             <span className="is-later">Linux coming later</span>
           </p>
         </section>
@@ -201,7 +201,7 @@ export default function Home() {
           Flightdeck
         </a>
         <span>
-          Made by <a href="https://github.com/MagnusPladsen">Magnus Pladsen</a> · <a href={REPOSITORY_URL}>Source on GitHub</a>
+          Made by <a href="https://github.com/MagnusPladsen">Magnus Pladsen</a> · <a href={REPOSITORY_URL}>Source on GitHub</a> · MIT License
         </span>
       </footer>
     </>
