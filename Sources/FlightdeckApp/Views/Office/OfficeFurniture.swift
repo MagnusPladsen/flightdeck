@@ -87,6 +87,42 @@ struct OfficeFurniture {
         }
     }
 
+    /// Lit up with dancing bars and drifting notes while music plays; dark otherwise.
+    func drawJukebox() {
+        let (x, y) = OfficePen.pixels(scene.map.jukebox)
+        let isPlaying = scene.isMusicPlaying
+        pen.fill(x + 2, y - 8, 12, 23, 0x6B3A2E)
+        pen.fill(x + 2, y - 8, 12, 2, 0x8A4E3D)
+        pen.fill(x + 3, y - 6, 10, 2, isPlaying ? 0xF2B33D : 0x5A4A3A, opacity: isPlaying ? 0.7 + 0.3 * sin(time * 4) : 1)
+        pen.fill(x + 4, y - 3, 8, 7, 0x1B1E25)
+        pen.fill(x + 4, y + 6, 8, 6, 0x4A2A22)
+        for slot in 0..<3 { pen.fill(x + 5, y + 7 + Double(slot * 2), 6, 1, 0x2E1A15) }
+        pen.fill(x + 3, y + 15, 10, 1, 0x000000, opacity: 0.25)
+        guard isPlaying else { return }
+        drawVisualizer(x + 4, y + 4)
+        drawNotes(x, y)
+    }
+
+    private func drawVisualizer(_ left: Double, _ bottom: Double) {
+        let colors: [UInt32] = [0x5BD96A, 0x4FA3E0, 0xF2B33D, 0xF2545B]
+        for bar in 0..<4 {
+            let level = 0.5 + 0.5 * sin(time * (5 + Double(bar) * 1.3) + Double(bar) * 2.1)
+            let height = (1 + 5 * level).rounded()
+            pen.fill(left + Double(bar * 2), bottom - height, 1, height, colors[bar])
+        }
+    }
+
+    private func drawNotes(_ x: Double, _ y: Double) {
+        for note in 0..<2 {
+            let rise = (time * 5 + Double(note) * 7).truncatingRemainder(dividingBy: 14)
+            let drift = sin(time * 2 + Double(note) * 3) * 2
+            let noteX = x + 6 + Double(note * 5) + drift
+            let noteY = y - 10 - rise
+            pen.fill(noteX, noteY, 2, 2, 0xEDEDED, opacity: 1 - rise / 14)
+            pen.fill(noteX + 1, noteY - 3, 1, 3, 0xEDEDED, opacity: 1 - rise / 14)
+        }
+    }
+
     func drawPlant(_ tile: TilePoint) {
         let (x, y) = OfficePen.pixels(tile)
         pen.ellipse(x + 2, y - 2, 8, 9, .init(hex: 0x3E7F49))

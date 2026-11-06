@@ -11,7 +11,8 @@ struct OfficePage: View {
 
     private var readings: OfficeReadings {
         let limits = store.usage(for: store.limitsAgent)
-        return OfficeReadings(agents: store.agents, snapshot: store.snapshot, limitsTool: store.limitsAgent, limitWindows: limits?.windows ?? [])
+        return OfficeReadings(agents: store.agents, snapshot: store.snapshot, limitsTool: store.limitsAgent, limitWindows: limits?.windows ?? [],
+                              track: store.nowPlaying.isVisible ? store.nowPlaying.track : nil)
     }
 }
 
@@ -21,6 +22,8 @@ struct OfficeReadings {
     var snapshot: SystemSnapshot?
     var limitsTool: AgentTool
     var limitWindows: [UsageWindow]
+    /// What the Mac is playing, while the Now playing section would show it.
+    var track: NowPlayingTrack?
 
     var limitsHeadroom: Double? {
         limitWindows.map(\.usedPercent).max().map { 1 - $0 / 100 }
@@ -35,6 +38,8 @@ private struct OfficeStage: View {
     @State private var game = OfficeGame()
     @State private var hovered: OfficeObject?
     @State private var pointer: CGPoint = .zero
+    @State private var needsYou = NeedsYouQueue()
+    @Namespace private var avatarSpace
     @FocusState private var isFocused: Bool
 
     var body: some View {
@@ -48,7 +53,7 @@ private struct OfficeStage: View {
                     .onContinuousHover(coordinateSpace: .local) { hover($0, camera: camera) }
                 agentCard(camera: camera, size: geometry.size)
                 tooltip(size: geometry.size)
-                needsYouPosts.padding(12)
+                needsYouCorner.padding(12)
                 hint.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading).padding(12)
             }
         }
@@ -61,6 +66,7 @@ private struct OfficeStage: View {
         .onAppear { Task { isFocused = true } }
         .onChange(of: isFocused) { _, focused in if !focused { game.releaseAll() } }
         .onChange(of: map, initial: true) { _, newMap in game.update(map: newMap) }
+        .onChange(of: waitingPIDs, initial: true) { needsYou.update(agents: readings.agents, now: .now) }
         .task { await runLoop() }
     }
 
@@ -77,6 +83,7 @@ private struct OfficeStage: View {
         let spotlight: Int32? = if case .agent(let pid) = hovered { pid } else { game.cardPID }
         return OfficeScene(map: game.map, agents: Dictionary(readings.agents.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first }),
                            cpuLoad: readings.snapshot?.cpu.total ?? 0, memory: readings.snapshot?.memory, limitsHeadroom: readings.limitsHeadroom,
+                           isMusicPlaying: readings.track?.isPlaying == true,
                            player: game.player, isPlayerWalking: game.isWalking, playerFacesLeft: game.facesLeft, spotlightPID: spotlight)
     }
 
@@ -171,18 +178,31 @@ private struct OfficeStage: View {
         }
     }
 
-    private var needsYouPosts: some View {
-        let waiting = NeedsYouFeed.agents(in: readings.agents)
-        return VStack(alignment: .leading, spacing: 8) {
-            ForEach(waiting.prefix(3)) { agent in
-                NeedsYouPost(agent: agent) { game.select(agent.pid) }
-                    .transition(.move(edge: .leading).combined(with: .opacity))
+    private var waitingPIDs: [Int32] {
+        NeedsYouFeed.agents(in: readings.agents).map(\.pid)
+    }
+
+    /// Fresh requests as posts; older ones shrink into a row of avatars that stays until the agent is answered.
+    private var needsYouCorner: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            let layout = needsYou.layout(of: readings.agents, now: timeline.date)
+            VStack(alignment: .leading, spacing: 10) {
+                if !layout.avatars.isEmpty {
+                    NeedsYouAvatarRow(agents: layout.avatars, avatarSpace: avatarSpace, walk: walk)
+                }
+                ForEach(layout.posts) { agent in
+                    NeedsYouPost(agent: agent, avatarSpace: avatarSpace, walk: { walk(to: agent.pid) }, shrink: { needsYou.shrink(agent.pid) })
+                        .transition(.scale(scale: 0.15, anchor: .topLeading).combined(with: .opacity))
+                }
             }
-            if waiting.count > 3 {
-                Text("+\(waiting.count - 3) more waiting").font(.caption.weight(.semibold)).foregroundStyle(theme.muted).padding(.leading, 4)
-            }
+            .animation(.smooth(duration: 0.4), value: layout)
         }
-        .animation(.smooth(duration: 0.3), value: waiting.map(\.pid))
+    }
+
+    private func walk(to pid: Int32) {
+        isFocused = true
+        needsYou.shrink(pid)
+        game.select(pid)
     }
 
     private var hint: some View {

@@ -12,7 +12,14 @@ enum OfficeTooltipText {
         case .cpuRack: return cpu(readings.snapshot)
         case .waterCooler: return memory(readings.snapshot?.memory)
         case .wallClock: return limits(readings)
+        case .jukebox: return jukebox(readings.track)
         }
+    }
+
+    private static func jukebox(_ track: NowPlayingTrack?) -> String {
+        guard let track else { return "Jukebox: nothing playing" }
+        let parts = [track.title, track.artist, track.sourceName].compactMap { $0 }.filter { !$0.isEmpty }
+        return (track.isPlaying ? "Jukebox: " : "Jukebox (paused): ") + parts.joined(separator: " · ")
     }
 
     private static func rack(_ port: ListeningPort) -> String {
