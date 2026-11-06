@@ -8,6 +8,8 @@ public enum DashboardPage: String, Codable, CodingKeyRepresentable, CaseIterable
 /// A block that can be placed on a dashboard page.
 public enum SectionKind: Codable, Hashable, Sendable {
     case needsYou, clock, resources, yourTurn, workingAgents, idleAgents, projects
+    /// Track and visualiser for whatever the Mac is playing; only available while it is turned on in Settings.
+    case nowPlaying
     case devServers, otherPorts
     case agentSessions, usageLimits
     case worktrees
@@ -18,20 +20,26 @@ public enum SectionKind: Codable, Hashable, Sendable {
 
     /// Every kind except widgets, which come from the user's widget list.
     public static let builtIn: [SectionKind] = [
-        .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects,
+        .needsYou, .clock, .resources, .nowPlaying, .yourTurn, .workingAgents, .idleAgents, .projects,
         .devServers, .otherPorts, .agentSessions, .usageLimits, .spend, .worktrees, .processTable,
     ]
 
     /// Where the kind goes when it is new or re-added without a page.
     public var homePage: DashboardPage {
         switch self {
-        case .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
+        case .needsYou, .clock, .resources, .nowPlaying, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
         case .devServers, .otherPorts: .ports
         case .agentSessions, .usageLimits, .spend: .agents
         case .worktrees: .worktrees
         case .processTable: .processes
         case .widget: .widgets
         }
+    }
+
+    /// The section a new kind joins right after, when it is on the page, so a section added in an
+    /// update lands where it belongs in layouts the user already customised.
+    public var placedAfter: SectionKind? {
+        self == .nowPlaying ? .resources : nil
     }
 
     /// Plain-text form used when a section is dragged.
@@ -120,9 +128,21 @@ public struct PageLayouts: Codable, Hashable, Sendable {
         }
         result.hidden = hidden.filter { available.contains($0) && seen.insert($0).inserted }
         for kind in available where !seen.contains(kind) {
-            result.pages[kind.homePage, default: []].append(SectionPlacement(kind: kind))
+            result.place(kind)
         }
         return result
+    }
+
+    /// Puts a kind after its `placedAfter` section wherever that is, else at the end of its home page.
+    private mutating func place(_ kind: SectionKind) {
+        let placement = SectionPlacement(kind: kind)
+        if let anchor = kind.placedAfter, let page = page(containing: anchor), var placements = pages[page],
+           let index = placements.firstIndex(where: { $0.kind == anchor }) {
+            placements.insert(placement, at: index + 1)
+            pages[page] = placements
+        } else {
+            pages[kind.homePage, default: []].append(placement)
+        }
     }
 
     private mutating func remove(_ kind: SectionKind) {

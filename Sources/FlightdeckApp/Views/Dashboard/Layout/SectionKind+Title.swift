@@ -7,6 +7,7 @@ extension SectionKind {
         case .needsYou: "Headline"
         case .clock: "Clock"
         case .resources: "Resources"
+        case .nowPlaying: "Now playing"
         case .yourTurn: "Needs you"
         case .workingAgents: "Working"
         case .idleAgents: "Idle"

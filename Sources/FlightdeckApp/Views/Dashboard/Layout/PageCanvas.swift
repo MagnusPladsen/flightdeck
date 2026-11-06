@@ -44,11 +44,12 @@ struct PageCanvas: View {
     }
 
     /// Resources docked in the sidebar are drawn there instead of on the grid; an empty "Your turn"
-    /// only shows while editing, so it can still be moved.
+    /// and now playing with nothing playing only show while editing, so they can still be moved.
     private func visiblePlacements(in layouts: PageLayouts) -> [SectionPlacement] {
         let isYourTurnEmpty = AgentBoardColumn.yourTurn.groups(from: store.agents(matching: context.searchQuery)).isEmpty
         return layouts.placements(on: page).filter { placement in
             if store.settings.resourcesInSidebar && placement.kind == .resources { return false }
+            if placement.kind == .nowPlaying && !store.nowPlaying.isVisible && !editor.isEditing { return false }
             return !(placement.kind == .yourTurn && isYourTurnEmpty && !editor.isEditing)
         }
     }

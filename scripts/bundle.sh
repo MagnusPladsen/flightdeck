@@ -41,6 +41,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSAppleEventsUsageDescription</key><string>Flightdeck brings the terminal tab an agent runs in to the front.</string>
+    <key>NSAudioCaptureUsageDescription</key><string>Flightdeck listens to what is playing to drive the now-playing visualiser. Nothing is recorded or saved.</string>
     <key>SUFeedURL</key><string>$FEED_URL</string>
     <key>SUPublicEDKey</key><string>$PUBLIC_ED_KEY</string>
 </dict>

@@ -92,6 +92,7 @@ private struct GeneralSettings: View {
             Section("Ports") {
                 Toggle("Show system ports, not just dev servers", isOn: $settings.showSystemPorts)
             }
+            NowPlayingSettings()
             NextAgentHotkeySection()
             Section("Startup") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
@@ -342,6 +343,24 @@ private struct SpendSettings: View {
             Text("Token spend")
         } footer: {
             Text("Adds a Token spend section to the Agents page with tokens per project and an estimated pay-as-you-go API cost per model, read from local Claude Code and Codex logs. It is only an estimate: subscriptions are billed differently. Set a daily budget above 0 to get an alert when today's estimate passes it.")
+        }
+    }
+}
+
+/// The now-playing section, and whether its visualiser hears the actual audio.
+private struct NowPlayingSettings: View {
+    @Environment(MonitorStore.self) private var store
+
+    var body: some View {
+        let settings = store.settings
+        Section {
+            Toggle("Show what's playing on the dashboard", isOn: Binding(get: { settings.nowPlayingEnabled }, set: { store.setNowPlayingEnabled($0) }))
+            Toggle("Visualiser follows the actual audio", isOn: Binding(get: { settings.nowPlayingUsesSystemAudio }, set: { store.setNowPlayingUsesSystemAudio($0) }))
+                .disabled(!settings.nowPlayingEnabled)
+        } header: {
+            Text("Now playing")
+        } footer: {
+            Text("Shows the track, artist and artwork from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays. Without the actual audio the visualiser animates to play and pause; following the audio asks for the system audio recording permission and only listens while the visualiser is on screen.")
         }
     }
 }

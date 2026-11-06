@@ -54,6 +54,21 @@ struct PageLayoutsTests {
         #expect(clean.placements(on: .overview).map(\.kind) == [.needsYou, .workingAgents, .idleAgents, .projects])
     }
 
+    @Test func sanitizePlacesNowPlayingRightAfterResourcesInSavedLayouts() {
+        var layouts = base
+        layouts.pages[.overview]?.insert(SectionPlacement(kind: .resources), at: 1)
+        layouts.move(.resources, to: .agents, before: .agentSessions)
+        let clean = layouts.sanitized(available: [.needsYou, .workingAgents, .idleAgents, .resources, .agentSessions, .nowPlaying])
+        #expect(clean.placements(on: .agents).map(\.kind) == [.resources, .nowPlaying, .agentSessions])
+    }
+
+    @Test func sanitizePutsNowPlayingOnTheOverviewWhenResourcesAreHidden() {
+        var layouts = base
+        layouts.hide(.resources)
+        let clean = layouts.sanitized(available: [.needsYou, .workingAgents, .idleAgents, .resources, .agentSessions, .nowPlaying])
+        #expect(clean.placements(on: .overview).last?.kind == .nowPlaying)
+    }
+
     @Test func roundTripsThroughJSON() throws {
         var layouts = base
         layouts.pages[.widgets] = [SectionPlacement(kind: .widget(UUID()))]
