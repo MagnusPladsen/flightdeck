@@ -3,6 +3,12 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.4.0 — 2026-11-06
+
+- Office: a walkable pixel-art office where each project is a room and you can see what every agent is up to. Walk over to an agent to go to its terminal or stop it. Open it from Office in the sidebar or the Visualize button.
+- Now playing: the dashboard shows what's playing and a visualiser in your theme's colours, in every layout. Turn it off in Settings, or opt in to real audio levels.
+- The README and site describe everything new, with fresh screenshots.
+
 ## 1.3.0 — 2026-11-06
 
 - Go to terminal and Stop on agent cards. Go to terminal focuses the agent's own Ghostty, iTerm2, Terminal or tmux tab.
