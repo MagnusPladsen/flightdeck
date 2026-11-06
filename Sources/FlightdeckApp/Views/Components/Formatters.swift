@@ -25,6 +25,16 @@ enum Formatters {
         }
     }
 
+    /// Whole dollars from $100, cents below, and "<$0.01" for amounts that would round to nothing.
+    static func dollars(_ amount: Double) -> String {
+        switch amount {
+        case 100...: String(format: "$%.0f", amount)
+        case 0.01...: String(format: "$%.2f", amount)
+        case 0: "$0"
+        default: "<$0.01"
+        }
+    }
+
     static func duration(_ interval: TimeInterval) -> String {
         let minutes = Int(interval / 60)
         let days = minutes / 1440

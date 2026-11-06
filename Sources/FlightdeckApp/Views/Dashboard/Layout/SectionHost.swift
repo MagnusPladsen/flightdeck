@@ -32,6 +32,8 @@ struct SectionHost: View {
             AgentSessionsSection()
         case .usageLimits:
             LayoutUsageLimits()
+        case .spend:
+            SpendSection()
         case .processTable:
             ProcessTableSection()
         case .widget(let id):

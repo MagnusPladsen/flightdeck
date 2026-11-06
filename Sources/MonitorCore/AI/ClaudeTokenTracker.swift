@@ -6,17 +6,28 @@ public final class ClaudeTokenTracker: @unchecked Sendable {
         let id: String
         let timestamp: Date
         let tokens: TokenTotals
+        let model: String?
+        let workingDirectory: String?
     }
 
     private let projectsDirectory: String
-    private let retention: TimeInterval = 24 * 60 * 60
+    private let retention: TimeInterval
     private var offsets: [String: UInt64] = [:]
     private var records: [UsageRecord] = []
     private var seenIDs = Set<String>()
     private let lock = NSLock()
 
-    public init(projectsDirectory: String = NSHomeDirectory() + "/.claude/projects") {
+    public init(projectsDirectory: String = NSHomeDirectory() + "/.claude/projects", retention: TimeInterval = 24 * 60 * 60) {
         self.projectsDirectory = projectsDirectory
+        self.retention = retention
+    }
+
+    /// Every assistant reply in the retention window, with the model and folder it ran in.
+    public func records(now: Date = Date()) -> [TokenUsageRecord] {
+        lock.lock()
+        defer { lock.unlock() }
+        ingestNewTranscriptLines(now: now)
+        return records.map { TokenUsageRecord(tool: .claude, timestamp: $0.timestamp, model: $0.model, workingDirectory: $0.workingDirectory, tokens: $0.tokens) }
     }
 
     public func totals(now: Date = Date()) -> (today: TokenTotals, lastFiveHours: TokenTotals) {
@@ -70,7 +81,8 @@ public final class ClaudeTokenTracker: @unchecked Sendable {
             cacheRead: usage.cacheReadInputTokens ?? 0,
             cacheWrite: usage.cacheCreationInputTokens ?? 0
         )
-        return UsageRecord(id: (message.id ?? UUID().uuidString) + ":" + (entry.requestId ?? ""), timestamp: timestamp, tokens: tokens)
+        let id = (message.id ?? UUID().uuidString) + ":" + (entry.requestId ?? "")
+        return UsageRecord(id: id, timestamp: timestamp, tokens: tokens, model: message.model, workingDirectory: entry.cwd)
     }
 
     static func parseTimestamp(_ text: String?) -> Date? {
@@ -85,6 +97,7 @@ public final class ClaudeTokenTracker: @unchecked Sendable {
     private struct Entry: Decodable {
         struct Message: Decodable {
             let id: String?
+            let model: String?
             let usage: Usage?
         }
 
@@ -105,6 +118,7 @@ public final class ClaudeTokenTracker: @unchecked Sendable {
         let type: String
         let timestamp: String?
         let requestId: String?
+        let cwd: String?
         let message: Message?
     }
 }

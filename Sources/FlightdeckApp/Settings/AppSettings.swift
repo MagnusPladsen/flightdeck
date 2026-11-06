@@ -97,6 +97,12 @@ final class AppSettings {
     var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
     /// Raw values of the agent tools the user turned alerts off for.
     var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
+    /// Off by default: most people are on subscriptions and do not pay per token.
+    var spendTrackingEnabled: Bool { didSet { defaults.set(spendTrackingEnabled, forKey: "spendTrackingEnabled") } }
+    /// Estimated US dollars per day; zero means no budget.
+    var dailySpendBudget: Double { didSet { defaults.set(dailySpendBudget, forKey: "dailySpendBudget") } }
+    /// Start of the day the budget alert last fired, so it fires once per day.
+    var spendBudgetAlertedDay: Date? { didSet { defaults.set(spendBudgetAlertedDay, forKey: "spendBudgetAlertedDay") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -121,6 +127,9 @@ final class AppSettings {
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
+        spendTrackingEnabled = defaults.bool(forKey: "spendTrackingEnabled")
+        dailySpendBudget = defaults.double(forKey: "dailySpendBudget")
+        spendBudgetAlertedDay = defaults.object(forKey: "spendBudgetAlertedDay") as? Date
         migrateLegacyCustomColors()
     }
 
@@ -238,8 +247,9 @@ final class AppSettings {
         customLayouts[layout.rawValue] = nil
     }
 
+    /// The spend section exists only while spend tracking is on, so it never shows up otherwise.
     var availableSections: [SectionKind] {
-        SectionKind.builtIn + customWidgets.map { .widget($0.id) }
+        SectionKind.builtIn.filter { $0 != .spend || spendTrackingEnabled } + customWidgets.map { .widget($0.id) }
     }
 
     func upsertWidget(_ widget: CustomWidget) {
