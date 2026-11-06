@@ -46,7 +46,11 @@ struct DashboardView: View {
             detail(for: navigation.destination)
                 .navigationTitle(title(for: navigation.destination))
                 .toolbar {
-                    if navigation.destination != .settings { LayoutLockButton() }
+                    if navigation.destination != .settings && navigation.destination != .office { LayoutLockButton() }
+                    if navigation.destination != .office {
+                        Button { navigation.showOffice() } label: { Label("Visualize", systemImage: "gamecontroller") }
+                            .help("Show your agents in the office")
+                    }
                     Button { Task { await store.refreshAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 }
         }
@@ -84,6 +88,7 @@ struct DashboardView: View {
         case .page(.overview): LayoutOverview(navigate: navigation.show)
         case .page(.widgets): WidgetsPage(navigate: navigation.show)
         case .page(let page): GridPage(page: page, navigate: navigation.show)
+        case .office: OfficePage()
         case .settings: SettingsView()
         }
     }
@@ -91,6 +96,7 @@ struct DashboardView: View {
     private func title(for destination: DashboardDestination) -> String {
         switch destination {
         case .page(let page): page.title
+        case .office: "Office"
         case .settings: "Settings"
         }
     }

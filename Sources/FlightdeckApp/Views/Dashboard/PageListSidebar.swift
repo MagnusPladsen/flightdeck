@@ -21,7 +21,8 @@ struct PageListSidebar: View {
                 PageButton(page: page, count: count(page), isSelected: selection == .page(page)) { selection = .page(page) }
             }
             Spacer()
-            SettingsButton(isSelected: selection == .settings) { selection = .settings }
+            FooterButton(title: "Office", systemImage: "gamecontroller", isSelected: selection == .office) { selection = .office }
+            FooterButton(title: "Settings", systemImage: "gearshape", isSelected: selection == .settings) { selection = .settings }
         }
         .padding(.top, 44)
         .padding(.bottom, 18)
@@ -74,15 +75,18 @@ private struct PageButton: View {
     }
 }
 
-private struct SettingsButton: View {
+/// A destination pinned under the page list, like Office and Settings.
+private struct FooterButton: View {
     @Environment(\.theme) private var theme
+    var title: String
+    var systemImage: String
     var isSelected: Bool
     var select: () -> Void
     @State private var isHovering = false
 
     var body: some View {
         Button(action: select) {
-            Label("Settings", systemImage: "gearshape")
+            Label(title, systemImage: systemImage)
                 .font(.system(size: 15, weight: isSelected ? .heavy : .medium))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14)

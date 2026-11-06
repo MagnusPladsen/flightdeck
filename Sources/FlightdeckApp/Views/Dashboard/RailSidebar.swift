@@ -16,6 +16,7 @@ struct RailSidebar: View {
                 RailButton(symbolName: page.symbolName, title: page.title, count: count(page), isSelected: selection == .page(page)) { selection = .page(page) }
             }
             Spacer()
+            RailButton(symbolName: "gamecontroller", title: "Office", count: 0, isSelected: selection == .office) { selection = .office }
             RailButton(symbolName: "gearshape", title: "Settings", count: 0, isSelected: selection == .settings) { selection = .settings }
         }
         .padding(.top, 44)
