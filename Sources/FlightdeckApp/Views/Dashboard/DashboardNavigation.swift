@@ -1,9 +1,10 @@
 import MonitorCore
 import Observation
 
-/// What the dashboard window shows: one of the layout pages, or the settings page.
+/// What the dashboard window shows: one of the layout pages, the office, or the settings page.
 enum DashboardDestination: Hashable {
     case page(DashboardPage)
+    case office
     case settings
 }
 
@@ -15,6 +16,10 @@ final class DashboardNavigation {
 
     func show(_ page: DashboardPage) {
         destination = .page(page)
+    }
+
+    func showOffice() {
+        destination = .office
     }
 
     func showSettings() {

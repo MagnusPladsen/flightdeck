@@ -55,7 +55,8 @@ public enum OfficeMotion {
     }
 }
 
-/// How the office maps onto the view: a whole-number pixel scale, centred, following the player when it doesn't fit.
+/// How the office maps onto the view: the largest whole-number pixel scale that fits the office's height, centred,
+/// scrolling sideways with the player when the office is wider than the view.
 public struct OfficeCamera: Equatable, Sendable {
     /// Art pixels per tile.
     public static let tilePixels = 16.0
@@ -69,8 +70,8 @@ public struct OfficeCamera: Equatable, Sendable {
     public var tileSize: Double { Self.tilePixels * scale }
 
     public init(mapWidth: Int, mapHeight: Int, viewWidth: Double, viewHeight: Double, focus: OfficePoint) {
-        let fit = min(viewWidth / (Double(mapWidth) * Self.tilePixels), viewHeight / (Double(mapHeight) * Self.tilePixels))
-        scale = min(4, max(2, fit.rounded(.down)))
+        let fit = viewHeight / (Double(mapHeight) * Self.tilePixels)
+        scale = min(3, max(2, fit.rounded(.down)))
         let tileSize = Self.tilePixels * scale
         originX = Self.origin(view: viewWidth, map: Double(mapWidth) * tileSize, focus: focus.x * tileSize)
         originY = Self.origin(view: viewHeight, map: Double(mapHeight) * tileSize, focus: focus.y * tileSize)

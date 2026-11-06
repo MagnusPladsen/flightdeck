@@ -117,8 +117,8 @@ struct OfficeTests {
 
     @Test func cameraCentresSmallMapsAndFollowsOnBigOnes() {
         let small = OfficeCamera(mapWidth: 10, mapHeight: 10, viewWidth: 1000, viewHeight: 1000, focus: OfficePoint(x: 1, y: 1))
-        #expect(small.scale == 4)
-        #expect(small.originX == 180)
+        #expect(small.scale == 3)
+        #expect(small.originX == 260)
         let big = OfficeCamera(mapWidth: 100, mapHeight: 15, viewWidth: 800, viewHeight: 600, focus: OfficePoint(x: 50, y: 7))
         #expect(big.scale == 2)
         #expect(big.originX == 400 - 50 * 32)
