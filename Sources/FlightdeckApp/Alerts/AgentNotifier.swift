@@ -12,6 +12,7 @@ final class AgentNotifier: NSObject {
     nonisolated private static let showDashboardActionID = "showDashboard"
     nonisolated private static let folderKey = "folder"
     nonisolated private static let pidKey = "pid"
+    nonisolated private static let summaryIdentifier = "agent-summary"
 
     private(set) var authorization: UNAuthorizationStatus = .notDetermined
     @ObservationIgnored var openTerminal: (_ pid: Int32?, _ folder: String) -> Void = { _, _ in }
@@ -50,6 +51,18 @@ final class AgentNotifier: NSObject {
         guard isAvailable else { return }
         let request = UNNotificationRequest(identifier: Self.identifier(for: agent.workingDirectory), content: content(for: agent, playsSound: playsSound), trigger: nil)
         UNUserNotificationCenter.current().add(request)
+    }
+
+    /// One alert for everything held through quiet hours or a pause; a single agent gets its usual alert.
+    func postSummary(of agents: [AgentSession], playsSound: Bool) {
+        guard isAvailable, let first = agents.first else { return }
+        guard agents.count > 1 else { return post(about: first, playsSound: playsSound) }
+        let content = UNMutableNotificationContent()
+        content.title = "\(agents.count) agents need you"
+        content.body = agents.map(\.displayName).joined(separator: ", ")
+        content.sound = playsSound ? .default : nil
+        content.interruptionLevel = .active
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: Self.summaryIdentifier, content: content, trigger: nil))
     }
 
     func withdraw(folders: Set<String>) {
