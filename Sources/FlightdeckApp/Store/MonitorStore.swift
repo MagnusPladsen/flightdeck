@@ -18,6 +18,8 @@ final class MonitorStore {
     private(set) var agents: [AgentSession] = []
     private(set) var usage: [ProviderUsage] = []
     private(set) var widgetResults: [UUID: CustomWidgetResult] = [:]
+    /// Nil while spend tracking is off or before its first read.
+    private(set) var spend: SpendReport?
 
     let settings: AppSettings
     let notifier = AgentNotifier()
@@ -78,6 +80,7 @@ final class MonitorStore {
             poll(every: .seconds(2)) { await $0.refreshSystem() },
             poll(every: .seconds(5)) { await $0.refreshPortsAndAgents() },
             poll(every: .seconds(60)) { await $0.refreshUsage() },
+            poll(every: .seconds(60)) { await $0.refreshSpend() },
             poll(every: .seconds(5)) { await $0.refreshDueWidgets() },
             poll(every: .seconds(30)) { await $0.refreshProjectCache() },
             poll(every: .seconds(60)) { await $0.refreshWorktrees() },
@@ -169,10 +172,32 @@ final class MonitorStore {
         usage = await Task.detached { await engine.collectUsage(includeClaudeLimits: includeLimits) }.value
     }
 
+    func refreshSpend() async {
+        guard settings.spendTrackingEnabled else { return spend = nil }
+        if DemoData.isEnabled { return spend = DemoData.spend }
+        let engine = engine
+        spend = await Task.detached { engine.collectSpend() }.value
+        alertIfOverBudget()
+    }
+
+    func setSpendTrackingEnabled(_ isEnabled: Bool) {
+        settings.spendTrackingEnabled = isEnabled
+        Task { await refreshSpend() }
+    }
+
+    private func alertIfOverBudget() {
+        guard let today = spend?.today else { return }
+        let budget = settings.dailySpendBudget
+        guard SpendBudget.shouldAlert(todayCost: today.estimatedCost, budget: budget, lastAlertedDay: settings.spendBudgetAlertedDay, today: today.day) else { return }
+        settings.spendBudgetAlertedDay = today.day
+        if settings.alertsEnabled { notifier.postBudgetAlert(estimatedCost: today.estimatedCost, budget: budget, playsSound: settings.alertSound) }
+    }
+
     func refreshAll() async {
         await refreshSystem()
         await refreshPortsAndAgents()
         await refreshUsage()
+        await refreshSpend()
         await refreshDueWidgets(force: true)
         await refreshWorktrees()
     }
@@ -207,6 +232,7 @@ final class MonitorStore {
         agents = DemoData.agents
         usage = DemoData.usage
         worktreeOverview.showDemo(DemoData.worktrees)
+        spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)

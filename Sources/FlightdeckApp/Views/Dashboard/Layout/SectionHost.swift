@@ -34,6 +34,8 @@ struct SectionHost: View {
             LayoutUsageLimits()
         case .worktrees:
             WorktreesSection()
+        case .spend:
+            SpendSection()
         case .processTable:
             ProcessTableSection()
         case .widget(let id):

@@ -65,6 +65,15 @@ final class AgentNotifier: NSObject {
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: Self.summaryIdentifier, content: content, trigger: nil))
     }
 
+    func postBudgetAlert(estimatedCost: Double, budget: Double, playsSound: Bool) {
+        guard isAvailable else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Daily token budget passed"
+        content.body = "About \(Formatters.dollars(estimatedCost)) of API-equivalent usage today, over your \(Formatters.dollars(budget)) budget. This is an estimate, not a bill."
+        content.sound = playsSound ? .default : nil
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "spend-budget", content: content, trigger: nil))
+    }
+
     func withdraw(folders: Set<String>) {
         guard isAvailable, !folders.isEmpty else { return }
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: folders.map(Self.identifier(for:)))

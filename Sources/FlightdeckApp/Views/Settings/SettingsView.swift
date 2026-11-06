@@ -153,6 +153,7 @@ private struct AISettings: View {
                 Text("Codex limits are read from local session logs in ~/.codex/sessions and need no setup.")
                     .foregroundStyle(.secondary)
             }
+            SpendSettings()
         }
         .formStyle(.grouped)
         .themedScrollBackground()
@@ -322,5 +323,25 @@ private struct ThemeSwatch: View {
         }
         .padding(7)
         .background(theme.background)
+    }
+}
+
+/// Opt-in token and spend tracking. Off by default, because subscriptions do not bill per token.
+private struct SpendSettings: View {
+    @Environment(MonitorStore.self) private var store
+
+    var body: some View {
+        @Bindable var settings = store.settings
+        Section {
+            Toggle("Track tokens and estimated spend", isOn: Binding(get: { settings.spendTrackingEnabled }, set: { store.setSpendTrackingEnabled($0) }))
+            if settings.spendTrackingEnabled {
+                TextField("Daily budget (US$)", value: $settings.dailySpendBudget, format: .number.precision(.fractionLength(0...2)))
+                    .onSubmit { Task { await store.refreshSpend() } }
+            }
+        } header: {
+            Text("Token spend")
+        } footer: {
+            Text("Adds a Token spend section to the Agents page with tokens per project and an estimated pay-as-you-go API cost per model, read from local Claude Code and Codex logs. It is only an estimate: subscriptions are billed differently. Set a daily budget above 0 to get an alert when today's estimate passes it.")
+        }
     }
 }

@@ -100,6 +100,30 @@ enum DemoData {
         ]
     }
 
+    /// A week of made-up replies across a few projects and models.
+    static var spend: SpendReport {
+        let usage: [(project: String, tool: AgentTool, model: String, tokens: TokenTotals)] = [
+            ("storefront", .claude, "claude-opus-5-5", TokenTotals(input: 42_000, output: 310_000, cacheRead: 6_100_000, cacheWrite: 480_000)),
+            ("payments-api", .claude, "claude-sonnet-5-5", TokenTotals(input: 18_000, output: 140_000, cacheRead: 2_900_000, cacheWrite: 220_000)),
+            ("mobile-app", .codex, "gpt-5.2-codex", TokenTotals(input: 380_000, output: 90_000, cacheRead: 1_700_000)),
+            ("docs-site", .codex, "gpt-5.2-codex", TokenTotals(input: 120_000, output: 26_000, cacheRead: 640_000)),
+            ("blog", .claude, "claude-haiku-5-5", TokenTotals(input: 9_000, output: 30_000, cacheRead: 400_000, cacheWrite: 60_000)),
+        ]
+        let weekShape = [1.0, 0.7, 1.3, 0.4, 0.9, 1.1, 0.6]
+        let records = weekShape.enumerated().flatMap { dayOffset, scale in
+            usage.map { item in
+                TokenUsageRecord(tool: item.tool, timestamp: Date().addingTimeInterval(-Double(dayOffset) * 86_400), model: item.model,
+                                 workingDirectory: "/Users/alex/code/\(item.project)", tokens: scaled(item.tokens, by: scale))
+            }
+        }
+        return SpendReport.make(records: records, days: weekShape.count) { ($0 as NSString?)?.lastPathComponent ?? "Unknown folder" }
+    }
+
+    private static func scaled(_ tokens: TokenTotals, by scale: Double) -> TokenTotals {
+        TokenTotals(input: Int(Double(tokens.input) * scale), output: Int(Double(tokens.output) * scale),
+                    cacheRead: Int(Double(tokens.cacheRead) * scale), cacheWrite: Int(Double(tokens.cacheWrite) * scale))
+    }
+
     static var snapshot: SystemSnapshot {
         let gigabyte: UInt64 = 1 << 30
         return SystemSnapshot(

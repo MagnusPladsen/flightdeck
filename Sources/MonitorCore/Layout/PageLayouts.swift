@@ -11,13 +11,15 @@ public enum SectionKind: Codable, Hashable, Sendable {
     case devServers, otherPorts
     case agentSessions, usageLimits
     case worktrees
+    /// Token and estimated spend tracking; only available while it is turned on in Settings.
+    case spend
     case processTable
     case widget(UUID)
 
     /// Every kind except widgets, which come from the user's widget list.
     public static let builtIn: [SectionKind] = [
         .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects,
-        .devServers, .otherPorts, .agentSessions, .usageLimits, .worktrees, .processTable,
+        .devServers, .otherPorts, .agentSessions, .usageLimits, .spend, .worktrees, .processTable,
     ]
 
     /// Where the kind goes when it is new or re-added without a page.
@@ -25,7 +27,7 @@ public enum SectionKind: Codable, Hashable, Sendable {
         switch self {
         case .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
         case .devServers, .otherPorts: .ports
-        case .agentSessions, .usageLimits: .agents
+        case .agentSessions, .usageLimits, .spend: .agents
         case .worktrees: .worktrees
         case .processTable: .processes
         case .widget: .widgets

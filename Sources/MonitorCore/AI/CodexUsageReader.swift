@@ -72,7 +72,7 @@ public struct CodexUsageReader: Sendable {
         return "\(minutes)m"
     }
 
-    private static func parseTotals(_ usage: [String: Any]?) -> TokenTotals? {
+    static func parseTotals(_ usage: [String: Any]?) -> TokenTotals? {
         guard let usage else { return nil }
         let input = usage["input_tokens"] as? Int ?? 0
         let cached = usage["cached_input_tokens"] as? Int ?? 0
