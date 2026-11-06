@@ -21,7 +21,22 @@ public enum AgentState: String, Sendable {
     case needsApproval
     /// Finished its turn; waiting for the next prompt.
     case yourTurn
+    /// Mid-turn but making no progress; `AgentSession.stuckReason` says why.
+    case possiblyStuck
     case idle
+}
+
+/// Why an agent that looks busy may be stuck.
+public enum StuckReason: Sendable, Hashable {
+    case quiet(minutes: Int)
+    case repeatingTool(name: String, times: Int)
+
+    public var summary: String {
+        switch self {
+        case .quiet(let minutes): "No transcript writes for \(minutes) min"
+        case .repeatingTool(let name, let times): "Same \(name) call \(times) times in a row"
+        }
+    }
 }
 
 /// The latest thing an agent did, e.g. verb "Running", detail "swift test".
@@ -45,8 +60,12 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
     public var cpuPercent: Double
     public var lastActivity: Date?
     public var lastAction: AgentAction?
+    public var stuckReason: StuckReason?
+    /// CPU and memory of the agent together with the builds, tests and tools it started.
+    public var resources: ProcessTreeUsage?
 
-    public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?, lastAction: AgentAction? = nil) {
+    public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?, lastAction: AgentAction? = nil,
+                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil) {
         self.tool = tool
         self.pid = pid
         self.workingDirectory = workingDirectory
@@ -55,6 +74,8 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
         self.cpuPercent = cpuPercent
         self.lastActivity = lastActivity
         self.lastAction = lastAction
+        self.stuckReason = stuckReason
+        self.resources = resources
     }
 }
 

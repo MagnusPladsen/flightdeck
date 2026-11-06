@@ -2,7 +2,7 @@ import Foundation
 
 /// Decides which agents deserve an alert: those that just started waiting on the user.
 public enum AgentAlerts {
-    public static let waitingStates: Set<AgentState> = [.needsApproval, .yourTurn]
+    public static let waitingStates: Set<AgentState> = [.needsApproval, .yourTurn, .possiblyStuck]
 
     /// Agents whose state moved into one of `states` since the previous poll, one per folder.
     /// With no previous poll nothing is new, so launching the app doesn't alert on old sessions.

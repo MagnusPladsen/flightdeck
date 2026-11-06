@@ -50,7 +50,7 @@ enum OverviewResource: String, CaseIterable, Codable, Identifiable {
 
 /// Lines an agent card can show under the project name.
 enum AgentCardField: String, CaseIterable, Codable, Identifiable {
-    case action, tool, folder, branch
+    case action, tool, folder, branch, resources
 
     var id: String { rawValue }
 
@@ -60,6 +60,7 @@ enum AgentCardField: String, CaseIterable, Codable, Identifiable {
         case .tool: "Agent and status"
         case .folder: "Folder"
         case .branch: "Branch or worktree"
+        case .resources: "CPU and memory"
         }
     }
 }

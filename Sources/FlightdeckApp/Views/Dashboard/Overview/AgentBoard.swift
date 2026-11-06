@@ -108,6 +108,22 @@ struct AgentColumnSection: View {
 
 }
 
+/// Says an agent looks busy but is making no progress, and why.
+private struct StuckBadge: View {
+    @Environment(\.theme) private var theme
+    var reason: StuckReason
+
+    var body: some View {
+        Label("Possibly stuck · \(reason.summary)", systemImage: "exclamationmark.triangle.fill")
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(theme.warning)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(theme.warning.opacity(0.14), in: Capsule())
+            .lineLimit(1)
+    }
+}
+
 /// One agent: project, what it is doing, and where. Featured cards are larger and carry actions.
 private struct AgentCard: View {
     @Environment(MonitorStore.self) private var store
@@ -130,6 +146,7 @@ private struct AgentCard: View {
                         .foregroundStyle(theme.muted)
                 }
             }
+            if let stuckReason = agent.stuckReason { StuckBadge(reason: stuckReason) }
             fields
             if isFeatured {
                 HStack(spacing: 10) {
@@ -175,6 +192,10 @@ private struct AgentCard: View {
         }
         if shown.contains(.branch), let checkout = agent.checkoutLabel {
             Text(checkout).font(.system(size: smallSize)).foregroundStyle(agent.isWorktree ? theme.info : theme.muted).lineLimit(1)
+        }
+        if shown.contains(.resources), let resources = agent.resourceText {
+            Text(resources).font(.system(size: smallSize).monospacedDigit()).foregroundStyle(theme.muted).lineLimit(1)
+                .help("The agent plus the builds, tests and tools it started")
         }
     }
 

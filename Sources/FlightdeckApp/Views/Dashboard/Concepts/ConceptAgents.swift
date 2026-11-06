@@ -240,6 +240,7 @@ private struct AgentStatusTable: View {
         case .working: "●"
         case .needsApproval: "◆"
         case .yourTurn: "○"
+        case .possiblyStuck: "▲"
         case .idle: "·"
         }
     }
@@ -249,6 +250,7 @@ private struct AgentStatusTable: View {
         case .working: "RUN"
         case .needsApproval: "APR"
         case .yourTurn: "USR"
+        case .possiblyStuck: "STK"
         case .idle: "IDL"
         }
     }

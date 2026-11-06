@@ -16,14 +16,24 @@ enum DemoData {
         DevProject(name: name, rootPath: "/Users/alex/code/\(name)", branch: branch, isWorktree: worktree != nil, worktreeName: worktree)
     }
 
-    private static func agent(_ tool: AgentTool, _ pid: Int32, _ project: DevProject, _ state: AgentState, minutesAgo: Double, _ verb: String, _ detail: String) -> AgentSession {
+    private static func agent(_ tool: AgentTool, _ pid: Int32, _ project: DevProject, _ state: AgentState, minutesAgo: Double, _ verb: String, _ detail: String,
+                              stuckReason: StuckReason? = nil) -> AgentSession {
         AgentSession(tool: tool, pid: pid, workingDirectory: project.rootPath, project: project, state: state, cpuPercent: state == .working ? 38 : 0,
-                     lastActivity: Date().addingTimeInterval(-minutesAgo * 60), lastAction: AgentAction(verb: verb, detail: detail))
+                     lastActivity: Date().addingTimeInterval(-minutesAgo * 60), lastAction: AgentAction(verb: verb, detail: detail),
+                     stuckReason: stuckReason, resources: resources(pid: pid, state: state))
+    }
+
+    private static func resources(pid: Int32, state: AgentState) -> ProcessTreeUsage {
+        let spread = Double(pid % 7)
+        guard state == .working else { return ProcessTreeUsage(cpuPercent: 0.3 * spread, memoryBytes: UInt64(260 + 20 * spread) << 20, processCount: 2) }
+        return ProcessTreeUsage(cpuPercent: 90 + 25 * spread, memoryBytes: UInt64(900 + 150 * spread) << 20, processCount: 4 + Int(spread))
     }
 
     static var agents: [AgentSession] {
         [
             agent(.claude, 4101, project("storefront", branch: "feat/checkout"), .needsApproval, minutesAgo: 1, "Running", "bun run db:migrate"),
+            agent(.claude, 4109, project("analytics", branch: "feat/export"), .possiblyStuck, minutesAgo: 2, "Running", "pytest tests/test_export.py",
+                  stuckReason: .repeatingTool(name: "Bash", times: 4)),
             agent(.claude, 4102, project("payments-api", branch: "fix/token-refresh", worktree: "token-refresh"), .yourTurn, minutesAgo: 4, "Said", "Token refresh is fixed and all 212 tests pass. Want me to open a PR?"),
             agent(.codex, 4103, project("docs-site", branch: "main"), .yourTurn, minutesAgo: 12, "Asked", "Should the new guides go under /learn or /docs?"),
             agent(.claude, 4104, project("storefront", branch: "feat/search", worktree: "search"), .working, minutesAgo: 0, "Editing", "SearchResults.tsx"),

@@ -90,6 +90,7 @@ enum AskContext {
         case .working: "working"
         case .needsApproval: "needs approval"
         case .yourTurn: "needs you"
+        case .possiblyStuck: "possibly stuck"
         case .idle: "idle"
         }
     }

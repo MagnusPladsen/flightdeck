@@ -18,7 +18,8 @@ public struct ClaudeSessionLogs: Sendable {
         guard let newest = LogFiles.newestFile(in: directory, withExtension: "jsonl") else { return nil }
         let tail = Self.tailWithLastTurn(of: newest.path)
         let block = Self.lastAssistantBlock(inTranscriptTail: tail)
-        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action), pendingTool: block?.type == "tool_use" ? block?.name : nil)
+        return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action),
+                               pendingTool: block?.type == "tool_use" ? block?.name : nil, repeatedToolCall: Self.repeatedToolCall(inTranscriptTail: tail))
     }
 
     /// Attachments such as skill lists and CLAUDE.md can push the last prompt or reply past a small tail,
@@ -43,12 +44,50 @@ public struct ClaudeSessionLogs: Sendable {
                 // Text or thinking written before the tool call: the call itself is still being generated
                 return entry.message?.hasToolCall == false ? .waitingOnModel : .waitingOnTool
             case "user":
-                return .waitingOnModel
+                // Pressing Esc logs an interruption and hands the turn back without a new prompt.
+                return entry.message?.isOnlyInterruption == true ? .finished : .waitingOnModel
             default:
                 continue
             }
         }
         return .unknown
+    }
+
+    /// The newest tool call of the current turn and how many times in a row it was made with the same input.
+    static func repeatedToolCall(inTranscriptTail tail: String) -> RepeatedToolCall? {
+        var calls: [ToolCall] = []
+        for line in tail.split(separator: "\n").reversed() {
+            guard let entry = try? JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any] else { continue }
+            let blocks = (entry["message"] as? [String: Any])?["content"] as? [[String: Any]] ?? []
+            switch entry["type"] as? String {
+            case "user":
+                guard blocks.contains(where: { $0["type"] as? String == "tool_result" }) else { return repeated(calls) }
+            case "assistant":
+                guard let call = ToolCall(lastIn: blocks) else { continue }
+                guard calls.isEmpty || calls[0] == call else { return repeated(calls) }
+                calls.append(call)
+            default:
+                continue
+            }
+        }
+        return repeated(calls)
+    }
+
+    private static func repeated(_ calls: [ToolCall]) -> RepeatedToolCall? {
+        calls.first.map { RepeatedToolCall(name: $0.name, count: calls.count) }
+    }
+
+    /// A tool call with its input re-encoded with sorted keys, so equal inputs compare equal.
+    private struct ToolCall: Equatable {
+        let name: String
+        let input: Data
+
+        init?(lastIn blocks: [[String: Any]]) {
+            guard let call = blocks.last(where: { $0["type"] as? String == "tool_use" }),
+                  let name = call["name"] as? String else { return nil }
+            self.name = name
+            input = (try? JSONSerialization.data(withJSONObject: call["input"] ?? [:], options: [.sortedKeys, .fragmentsAllowed])) ?? Data()
+        }
     }
 
     /// Describes the newest assistant step: the tool it called, or the first line of what it said.
@@ -147,11 +186,16 @@ public struct ClaudeSessionLogs: Sendable {
 
     private struct TranscriptEntry: Decodable {
         struct Message: Decodable {
-            struct Block: Decodable { let type: String }
+            struct Block: Decodable {
+                let type: String
+                let text: String?
+            }
 
             let stopReason: String?
             /// Nil when the content is missing or plain text, as in user prompts.
             let hasToolCall: Bool?
+            /// The user pressed Esc and wrote nothing else.
+            let isOnlyInterruption: Bool
 
             enum CodingKeys: String, CodingKey { case stopReason = "stop_reason", content }
 
@@ -160,6 +204,8 @@ public struct ClaudeSessionLogs: Sendable {
                 stopReason = try container.decodeIfPresent(String.self, forKey: .stopReason)
                 let blocks = try? container.decodeIfPresent([Block].self, forKey: .content)
                 hasToolCall = blocks.map { $0.contains { $0.type == "tool_use" } }
+                let texts = blocks?.compactMap(\.text) ?? [(try? container.decodeIfPresent(String.self, forKey: .content)) ?? nil].compactMap { $0 }
+                isOnlyInterruption = !texts.isEmpty && texts.allSatisfy { $0.hasPrefix("[Request interrupted by user") }
             }
         }
 

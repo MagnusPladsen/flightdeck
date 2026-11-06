@@ -17,6 +17,7 @@ struct AlertSettings: View {
             Section("Alert when") {
                 Toggle("An agent asks to run something", isOn: $settings.alertsOnApproval)
                 Toggle("An agent finishes and waits for your next prompt", isOn: $settings.alertsOnYourTurn)
+                Toggle("An agent seems stuck", isOn: $settings.alertsOnStuck)
                 Toggle("Play a sound", isOn: $settings.alertSound)
             }
             .disabled(!settings.alertsEnabled)

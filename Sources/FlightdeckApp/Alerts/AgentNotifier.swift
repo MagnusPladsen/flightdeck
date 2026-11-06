@@ -62,12 +62,20 @@ final class AgentNotifier: NSObject {
         post(about: sample, playsSound: playsSound)
     }
 
+    private func title(for agent: AgentSession) -> String {
+        switch agent.state {
+        case .needsApproval: "\(agent.displayName) needs your approval"
+        case .possiblyStuck: "\(agent.displayName) may be stuck"
+        default: "\(agent.displayName) needs you"
+        }
+    }
+
     private func content(for agent: AgentSession, playsSound: Bool) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
-        content.title = agent.state == .needsApproval ? "\(agent.displayName) needs your approval" : "\(agent.displayName) needs you"
+        content.title = title(for: agent)
         content.subtitle = [agent.tool.displayName, agent.checkoutLabel].compactMap { $0 }.joined(separator: " · ")
         let action = agent.actionLine
-        content.body = [action.verb, action.detail].filter { !$0.isEmpty }.joined(separator: " ")
+        content.body = agent.stuckReason?.summary ?? [action.verb, action.detail].filter { !$0.isEmpty }.joined(separator: " ")
         content.threadIdentifier = agent.workingDirectory
         content.categoryIdentifier = Self.categoryID
         content.userInfo = [Self.folderKey: agent.workingDirectory]

@@ -94,6 +94,7 @@ final class AppSettings {
     var alertsEnabled: Bool { didSet { defaults.set(alertsEnabled, forKey: "alertsEnabled") } }
     var alertsOnApproval: Bool { didSet { defaults.set(alertsOnApproval, forKey: "alertsOnApproval") } }
     var alertsOnYourTurn: Bool { didSet { defaults.set(alertsOnYourTurn, forKey: "alertsOnYourTurn") } }
+    var alertsOnStuck: Bool { didSet { defaults.set(alertsOnStuck, forKey: "alertsOnStuck") } }
     var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
     /// Raw values of the agent tools the user turned alerts off for.
     var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
@@ -119,6 +120,7 @@ final class AppSettings {
         alertsEnabled = defaults.object(forKey: "alertsEnabled") as? Bool ?? true
         alertsOnApproval = defaults.object(forKey: "alertsOnApproval") as? Bool ?? true
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
+        alertsOnStuck = defaults.object(forKey: "alertsOnStuck") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
         migrateLegacyCustomColors()
@@ -136,7 +138,7 @@ final class AppSettings {
     }
 
     var alertStates: Set<AgentState> {
-        Set([alertsOnApproval ? AgentState.needsApproval : nil, alertsOnYourTurn ? AgentState.yourTurn : nil].compactMap { $0 })
+        Set([alertsOnApproval ? AgentState.needsApproval : nil, alertsOnYourTurn ? AgentState.yourTurn : nil, alertsOnStuck ? AgentState.possiblyStuck : nil].compactMap { $0 })
     }
 
     var alertTools: Set<AgentTool> {

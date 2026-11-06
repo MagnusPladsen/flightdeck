@@ -29,8 +29,16 @@ extension AgentSession {
         case .working: return AgentAction(verb: "Working", detail: "")
         case .needsApproval: return AgentAction(verb: "Waiting", detail: "for your approval")
         case .yourTurn: return AgentAction(verb: "Finished", detail: "waiting for your next prompt")
+        case .possiblyStuck: return AgentAction(verb: "Stuck", detail: stuckReason?.summary ?? "")
         case .idle: return AgentAction(verb: "Idle", detail: "")
         }
+    }
+
+    /// CPU and memory of the agent and everything it started, e.g. "CPU 204% · 1.5 GB · 4 processes".
+    var resourceText: String? {
+        guard let resources else { return nil }
+        let processes = resources.processCount == 1 ? "1 process" : "\(resources.processCount) processes"
+        return "CPU \(Int(resources.cpuPercent.rounded()))% · \(Formatters.bytes(resources.memoryBytes)) · \(processes)"
     }
 
     func ageText(now: Date = Date()) -> String {

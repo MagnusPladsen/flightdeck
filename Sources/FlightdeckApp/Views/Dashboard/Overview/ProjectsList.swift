@@ -10,7 +10,7 @@ struct ProjectSummary: Identifiable {
     let agents: [AgentSession]
 
     var urgentState: AgentState? {
-        let priority: [AgentState] = [.needsApproval, .yourTurn, .working, .idle]
+        let priority: [AgentState] = [.needsApproval, .possiblyStuck, .yourTurn, .working, .idle]
         return priority.first { state in agents.contains { $0.state == state } }
     }
 
@@ -42,7 +42,7 @@ struct ProjectSummary: Identifiable {
 
     private static func rank(_ state: AgentState?) -> Int {
         switch state {
-        case .needsApproval?, .yourTurn?: 0
+        case .needsApproval?, .yourTurn?, .possiblyStuck?: 0
         case .working?: 1
         default: 2
         }
@@ -88,6 +88,7 @@ struct ProjectsList: View {
         let count = project.agents.filter { $0.state == state }.count
         switch state {
         case .needsApproval: return "needs you"
+        case .possiblyStuck: return "possibly stuck"
         case .yourTurn: return count > 1 ? "\(count) need you" : "needs you"
         case .working: return count > 1 ? "\(count) working" : "\(project.agents.first { $0.state == .working }?.tool.displayName ?? "agent") working"
         case .idle: return "idle"

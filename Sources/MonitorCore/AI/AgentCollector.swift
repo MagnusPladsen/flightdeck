@@ -29,24 +29,34 @@ public final class AgentCollector: @unchecked Sendable {
         }
         let detectedPIDs = Dictionary(detected.map { ($0.0.pid, $0.1) }, uniquingKeysWith: { first, _ in first })
         let childrenByParent = Dictionary(grouping: samples, by: \.parentPID)
+        let samplesByPID = Dictionary(samples.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first })
 
         return detected.compactMap { sample, tool in
             // Agents spawn helper copies of themselves; only report the outermost one.
             if detectedPIDs[sample.parentPID] == tool { return nil }
-            guard let directory = processes.workingDirectory(of: sample.pid) else { return nil }
-            let activity = activity(for: tool, directory: directory)
-            return AgentSession(
-                tool: tool,
-                pid: sample.pid,
-                workingDirectory: directory,
-                project: projects.project(containing: directory),
-                state: Self.state(cpuPercent: sample.cpuPercent, activity: activity, isRunningCommand: Self.hasShellDescendant(of: sample.pid, in: childrenByParent), now: Date()),
-                cpuPercent: sample.cpuPercent,
-                lastActivity: activity?.lastWrite,
-                lastAction: activity?.lastAction
-            )
+            return session(for: sample, tool: tool, childrenByParent: childrenByParent, samplesByPID: samplesByPID)
         }
         .sorted { ($0.lastActivity ?? .distantPast) > ($1.lastActivity ?? .distantPast) }
+    }
+
+    private func session(for sample: ProcessSample, tool: AgentTool, childrenByParent: [Int32: [ProcessSample]], samplesByPID: [Int32: ProcessSample]) -> AgentSession? {
+        guard let directory = processes.workingDirectory(of: sample.pid) else { return nil }
+        let activity = activity(for: tool, directory: directory)
+        let isRunningCommand = Self.hasShellDescendant(of: sample.pid, in: childrenByParent)
+        let now = Date()
+        let stuckReason = Self.stuckReason(activity: activity, isRunningCommand: isRunningCommand, now: now)
+        return AgentSession(
+            tool: tool,
+            pid: sample.pid,
+            workingDirectory: directory,
+            project: projects.project(containing: directory),
+            state: stuckReason == nil ? Self.state(cpuPercent: sample.cpuPercent, activity: activity, isRunningCommand: isRunningCommand, now: now) : .possiblyStuck,
+            cpuPercent: sample.cpuPercent,
+            lastActivity: activity?.lastWrite,
+            lastAction: activity?.lastAction,
+            stuckReason: stuckReason,
+            resources: ProcessTreeUsage.of(pid: sample.pid, childrenByParent: childrenByParent, samplesByPID: samplesByPID)
+        )
     }
 
     private func activity(for tool: AgentTool, directory: String) -> SessionActivity? {
@@ -71,12 +81,33 @@ public final class AgentCollector: @unchecked Sendable {
         if quietFor < 3 { return .working }
         if quietFor > idleAfter { return .idle }
         switch activity.lastTurn {
-        case .waitingOnTool:
-            let isSafeTool = activity.pendingTool.map(toolsThatNeverAsk.contains) == true
-            return isRunningCommand || isSafeTool ? .working : .needsApproval
+        case .waitingOnTool: return isMidTurn(activity, isRunningCommand: isRunningCommand) ? .working : .needsApproval
         case .waitingOnModel: return .working
         case .finished, .unknown: return .yourTurn
         }
+    }
+
+    /// The agent, not the user, is expected to act: the model is thinking or a tool is running.
+    static func isMidTurn(_ activity: SessionActivity, isRunningCommand: Bool) -> Bool {
+        switch activity.lastTurn {
+        case .waitingOnModel: true
+        case .waitingOnTool: isRunningCommand || activity.pendingTool.map(toolsThatNeverAsk.contains) == true
+        case .finished, .unknown: false
+        }
+    }
+
+    /// Across 427 real transcripts no identical call ran more than twice in a row.
+    static let stuckRepeatCount = 3
+    /// Bash gives up after 10 minutes and subagents keep logging progress, so 15 silent minutes mid-turn is
+    /// rare in real transcripts (a few pauses over thousands of turns) and long builds stay below it.
+    static let stuckQuietAfter: TimeInterval = 15 * 60
+
+    static func stuckReason(activity: SessionActivity?, isRunningCommand: Bool, now: Date) -> StuckReason? {
+        guard let activity, isMidTurn(activity, isRunningCommand: isRunningCommand) else { return nil }
+        let quietFor = now.timeIntervalSince(activity.lastWrite)
+        if quietFor >= stuckQuietAfter { return .quiet(minutes: Int(quietFor / 60)) }
+        guard let repeated = activity.repeatedToolCall, repeated.count >= stuckRepeatCount else { return nil }
+        return .repeatingTool(name: repeated.name, times: repeated.count)
     }
 }
 
@@ -95,11 +126,24 @@ public struct SessionActivity: Sendable, Equatable {
     public var lastAction: AgentAction?
     /// Name of the tool the agent called last, e.g. "Bash".
     public var pendingTool: String?
+    /// The newest tool call and how many times in a row it was made with the same input.
+    public var repeatedToolCall: RepeatedToolCall?
 
-    public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil, pendingTool: String? = nil) {
+    public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil, pendingTool: String? = nil, repeatedToolCall: RepeatedToolCall? = nil) {
         self.lastWrite = lastWrite
         self.lastTurn = lastTurn
         self.lastAction = lastAction
         self.pendingTool = pendingTool
+        self.repeatedToolCall = repeatedToolCall
+    }
+}
+
+public struct RepeatedToolCall: Sendable, Equatable {
+    public var name: String
+    public var count: Int
+
+    public init(name: String, count: Int) {
+        self.name = name
+        self.count = count
     }
 }
