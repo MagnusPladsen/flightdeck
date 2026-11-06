@@ -62,7 +62,13 @@ struct NeedsYouAvatarRow: View {
 }
 
 private struct NeedsYouAvatar: View {
+    /// Seconds between hops, and how long one hop lasts.
+    private static let hopInterval = 1.8
+    private static let hopDuration = 0.45
+    private static let hopHeight = 4.0
+
     @Environment(\.theme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var agent: AgentSession
     var avatarSpace: Namespace.ID
     var walk: () -> Void
@@ -70,18 +76,32 @@ private struct NeedsYouAvatar: View {
 
     var body: some View {
         Button(action: walk) {
-            OfficeAvatar(agent: agent)
-                .matchedGeometryEffect(id: agent.pid, in: avatarSpace)
-                .frame(width: 36, height: 36)
-                .overlay { Circle().strokeBorder(theme.warning, lineWidth: 2.5) }
-                .scaleEffect(isHovering ? 1.08 : 1)
-                .shadow(color: theme.warning.opacity(0.5), radius: 5)
-                .contentShape(Circle())
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: reduceMotion || isHovering)) { timeline in
+                face.offset(y: reduceMotion || isHovering ? 0 : hop(at: timeline.date))
+            }
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
         .animation(.smooth(duration: 0.15), value: isHovering)
         .help("\(agent.tool.displayName) @\(agent.displayName) · \(agent.state.label) · \(agent.ageText()) — click to walk there")
+    }
+
+    private var face: some View {
+        OfficeAvatar(agent: agent)
+            .matchedGeometryEffect(id: agent.pid, in: avatarSpace)
+            .frame(width: 36, height: 36)
+            .overlay { Circle().strokeBorder(theme.warning, lineWidth: 2.5) }
+            .scaleEffect(isHovering ? 1.08 : 1)
+            .shadow(color: theme.warning.opacity(0.5), radius: 5)
+            .contentShape(Circle())
+    }
+
+    /// A short hop now and then, each agent on its own beat so the row doesn't bounce in step.
+    private func hop(at date: Date) -> Double {
+        let offset = Double(agent.pid.magnitude % 7) * 0.25
+        let phase = (date.timeIntervalSinceReferenceDate + offset).truncatingRemainder(dividingBy: Self.hopInterval)
+        guard phase < Self.hopDuration else { return 0 }
+        return -Self.hopHeight * sin(.pi * phase / Self.hopDuration)
     }
 }
 
