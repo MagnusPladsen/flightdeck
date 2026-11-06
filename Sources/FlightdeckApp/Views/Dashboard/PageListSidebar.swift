@@ -46,7 +46,7 @@ private struct PageButton: View {
     var body: some View {
         Button(action: select) {
             HStack(spacing: 14) {
-                Image(systemName: page.symbolName).frame(width: 22)
+                SidebarIcon(systemName: page.symbolName)
                 Text(page.title).font(.system(size: 16, weight: isSelected ? .heavy : .medium)).lineLimit(1).fixedSize()
                 Spacer()
                 if count > 0 {
@@ -86,7 +86,10 @@ private struct FooterButton: View {
 
     var body: some View {
         Button(action: select) {
-            Label(title, systemImage: systemImage)
+            HStack(spacing: 14) {
+                SidebarIcon(systemName: systemImage)
+                Text(title).lineLimit(1)
+            }
                 .font(.system(size: 15, weight: isSelected ? .heavy : .medium))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14)
@@ -97,5 +100,14 @@ private struct FooterButton: View {
         .buttonStyle(.plain)
         .foregroundStyle(isSelected ? theme.foreground : theme.muted)
         .onHover { isHovering = $0 }
+    }
+}
+
+/// A page-list icon in a fixed-width slot, so every item's icon and label start at the same x.
+private struct SidebarIcon: View {
+    var systemName: String
+
+    var body: some View {
+        Image(systemName: systemName).frame(width: 22, alignment: .center)
     }
 }
