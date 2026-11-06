@@ -27,6 +27,7 @@ final class MonitorStore {
     /// Agents cleared from "Your turn", with the activity time they were cleared at.
     private var clearedTurns: [Int32: Date] = [:]
     private var hasCollectedAgents = false
+    private var alertBatcher = AlertBatcher()
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -98,15 +99,27 @@ final class MonitorStore {
 
     func setAlertsEnabled(_ isEnabled: Bool) {
         settings.alertsEnabled = isEnabled
-        if isEnabled { Task { await notifier.requestAuthorization() } }
+        if isEnabled { Task { await notifier.requestAuthorization() } } else { alertBatcher.discard() }
+    }
+
+    func pauseAlerts(until date: Date) {
+        settings.alertsPausedUntil = date
+    }
+
+    /// Ends a pause; alerts held during it go out on the next poll.
+    func resumeAlerts() {
+        settings.alertsPausedUntil = nil
     }
 
     private func alertAboutChanges(since previous: [AgentSession]?) {
         notifier.withdraw(folders: AgentAlerts.stoppedWaiting(previous: previous, current: agents))
         guard settings.alertsEnabled else { return }
-        for agent in AgentAlerts.newlyWaiting(previous: previous, current: agents, states: settings.alertStates, tools: settings.alertTools) {
+        let newAlerts = AgentAlerts.newlyWaiting(previous: previous, current: agents, states: settings.alertStates, tools: settings.alertTools)
+        let delivery = alertBatcher.deliver(newAlerts, current: agents, isQuiet: settings.isQuietForAlerts(), handling: settings.quietAlertHandling)
+        for agent in delivery.individual {
             notifier.post(about: agent, playsSound: settings.alertSound)
         }
+        notifier.postSummary(of: delivery.summary, playsSound: settings.alertSound)
     }
 
     /// Takes an agent out of "Your turn" until it does something new.

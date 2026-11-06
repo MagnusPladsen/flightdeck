@@ -61,10 +61,7 @@ struct MenuBarPanel: View {
                 }
             }
             Spacer()
-            IconButton(systemImage: store.settings.alertsEnabled ? "bell.fill" : "bell.slash", help: store.settings.alertsEnabled ? "Alerts on. Click to turn off" : "Alerts off. Click to turn on") {
-                store.setAlertsEnabled(!store.settings.alertsEnabled)
-            }
-            .foregroundStyle(store.settings.alertsEnabled ? theme.foreground : theme.muted)
+            AlertBellMenu()
             IconButton(systemImage: "arrow.clockwise", help: "Refresh now") { Task { await store.refreshAll() } }
         }
     }

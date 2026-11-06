@@ -97,6 +97,10 @@ final class AppSettings {
     var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
     /// Raw values of the agent tools the user turned alerts off for.
     var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
+    var quietHours: QuietHours { didSet { save(quietHours, forKey: "quietHours") } }
+    var quietAlertHandling: QuietAlertHandling { didSet { defaults.set(quietAlertHandling.rawValue, forKey: "quietAlertHandling") } }
+    /// Set from the menu bar bell; nil when alerts aren't paused.
+    var alertsPausedUntil: Date? { didSet { defaults.set(alertsPausedUntil, forKey: "alertsPausedUntil") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -121,6 +125,9 @@ final class AppSettings {
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
+        quietHours = Self.load(QuietHours.self, forKey: "quietHours", from: defaults) ?? QuietHours()
+        quietAlertHandling = defaults.string(forKey: "quietAlertHandling").flatMap(QuietAlertHandling.init(rawValue:)) ?? .summarize
+        alertsPausedUntil = defaults.object(forKey: "alertsPausedUntil") as? Date
         migrateLegacyCustomColors()
     }
 
@@ -141,6 +148,15 @@ final class AppSettings {
 
     var alertTools: Set<AgentTool> {
         Set(AgentTool.allCases.filter { !mutedAlertTools.contains($0.rawValue) })
+    }
+
+    func isAlertPaused(at now: Date = Date()) -> Bool {
+        AlertPause.isPaused(until: alertsPausedUntil, at: now)
+    }
+
+    /// Paused from the bell or inside the quiet hours schedule.
+    func isQuietForAlerts(at now: Date = Date()) -> Bool {
+        isAlertPaused(at: now) || quietHours.contains(now)
     }
 
     func setAlerts(_ isEnabled: Bool, for tool: AgentTool) {

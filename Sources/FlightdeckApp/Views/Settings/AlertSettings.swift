@@ -26,6 +26,8 @@ struct AlertSettings: View {
                 }
             }
             .disabled(!settings.alertsEnabled)
+            QuietHoursSettings()
+                .disabled(!settings.alertsEnabled)
             permissionSection
             Section {
                 VStack(alignment: .leading, spacing: 6) {
