@@ -9,6 +9,7 @@ extension DashboardPage: Identifiable {
         case .overview: "Overview"
         case .ports: "Servers & Ports"
         case .agents: "AI Agents"
+        case .worktrees: "Worktrees"
         case .processes: "Processes"
         case .widgets: "Widgets"
         }
@@ -19,6 +20,7 @@ extension DashboardPage: Identifiable {
         case .overview: "gauge.with.dots.needle.33percent"
         case .ports: "network"
         case .agents: "sparkles"
+        case .worktrees: "arrow.triangle.branch"
         case .processes: "cpu"
         case .widgets: "square.grid.2x2"
         }
@@ -97,6 +99,7 @@ struct DashboardView: View {
         switch section {
         case .ports: store.devServers.count
         case .agents: store.activeAgents.count
+        case .worktrees: store.staleWorktrees.count
         default: 0
         }
     }

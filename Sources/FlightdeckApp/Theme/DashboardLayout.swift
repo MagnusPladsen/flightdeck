@@ -72,6 +72,7 @@ enum DashboardLayout: String, CaseIterable, Identifiable {
             .overview: overviewPlacements.map { SectionPlacement(kind: $0.0, span: $0.1) },
             .ports: [SectionPlacement(kind: .devServers), SectionPlacement(kind: .otherPorts)],
             .agents: [SectionPlacement(kind: .agentSessions, span: 8), SectionPlacement(kind: .usageLimits, span: 4)],
+            .worktrees: [SectionPlacement(kind: .worktrees)],
             .processes: [SectionPlacement(kind: .processTable)],
         ])
     }

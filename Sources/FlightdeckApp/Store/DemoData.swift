@@ -13,7 +13,12 @@ enum DemoData {
     private static let docker = Framework(id: "docker", displayName: "Docker")
 
     private static func project(_ name: String, branch: String, worktree: String? = nil) -> DevProject {
-        DevProject(name: name, rootPath: "/Users/alex/code/\(name)", branch: branch, isWorktree: worktree != nil, worktreeName: worktree)
+        DevProject(name: name, rootPath: worktreePath(name, worktree), branch: branch, isWorktree: worktree != nil, worktreeName: worktree)
+    }
+
+    private static func worktreePath(_ repository: String, _ worktree: String?) -> String {
+        let root = "/Users/alex/code/\(repository)"
+        return worktree.map { "\(root)/.claude/worktrees/\($0)" } ?? root
     }
 
     private static func agent(_ tool: AgentTool, _ pid: Int32, _ project: DevProject, _ state: AgentState, minutesAgo: Double, _ verb: String, _ detail: String) -> AgentSession {
@@ -31,6 +36,32 @@ enum DemoData {
             agent(.gemini, 4106, project("infra", branch: "main"), .working, minutesAgo: 1, "Reading", "main.tf"),
             agent(.claude, 4107, project("blog", branch: "main"), .idle, minutesAgo: 95, "Said", "Published the draft."),
             agent(.aider, 4108, project("scripts", branch: "main"), .idle, minutesAgo: 240, "Said", "Done."),
+        ]
+    }
+
+    private static func worktree(_ repository: String, _ folder: String?, branch: String, changes: Int = 0, ahead: Int = 0, behind: Int = 0,
+                                 isPushed: Bool = true, daysAgo: Double, pullRequest: PullRequestLookup = .none) -> Worktree {
+        let root = worktreePath(repository, nil)
+        return Worktree(repositoryName: repository, repositoryRoot: root, path: worktreePath(repository, folder), branch: branch, isMain: folder == nil,
+                        status: GitStatusSummary(upstream: isPushed ? "origin/\(branch)" : nil, ahead: ahead, behind: behind, changedFileCount: changes),
+                        lastCommitDate: Date().addingTimeInterval(-daysAgo * 86_400), pullRequest: pullRequest)
+    }
+
+    private static func pullRequest(_ number: Int, _ state: PullRequestState) -> PullRequestLookup {
+        .found(PullRequestInfo(number: number, state: state, url: "https://github.com/alex/storefront/pull/\(number)"))
+    }
+
+    static var worktrees: [Worktree] {
+        [
+            worktree("storefront", nil, branch: "feat/checkout", changes: 2, ahead: 1, daysAgo: 0.1, pullRequest: pullRequest(479, .open)),
+            worktree("storefront", "search", branch: "feat/search", changes: 4, ahead: 2, daysAgo: 0.02, pullRequest: pullRequest(482, .open)),
+            worktree("storefront", "brave-turing-1a2b3c", branch: "claude/brave-turing", daysAgo: 23, pullRequest: pullRequest(451, .merged)),
+            worktree("storefront", "holiday-banner", branch: "feat/holiday-banner", isPushed: false, daysAgo: 41),
+            worktree("payments-api", nil, branch: "main", behind: 3, daysAgo: 2),
+            worktree("payments-api", "token-refresh", branch: "fix/token-refresh", ahead: 5, daysAgo: 0.05),
+            worktree("payments-api", "spike-grpc", branch: "spike/grpc", changes: 7, isPushed: false, daysAgo: 60),
+            worktree("payments-api", "webhook-retry", branch: "fix/webhook-retry", daysAgo: 30, pullRequest: pullRequest(97, .closed)),
+            worktree("payments-api", "rate-limits", branch: "feat/rate-limits", daysAgo: 19, pullRequest: pullRequest(88, .merged)),
         ]
     }
 

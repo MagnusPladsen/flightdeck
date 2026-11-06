@@ -15,6 +15,7 @@ extension SectionKind {
         case .otherPorts: "Other listening ports"
         case .agentSessions: "Agent sessions"
         case .usageLimits: "Usage limits"
+        case .worktrees: "Worktrees"
         case .processTable: "Process table"
         case .widget(let id): settings.customWidgets.first { $0.id == id }?.title ?? "Widget"
         }

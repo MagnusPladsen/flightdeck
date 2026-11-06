@@ -97,6 +97,10 @@ final class AppSettings {
     var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
     /// Raw values of the agent tools the user turned alerts off for.
     var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
+    /// Days without a commit before a clean worktree counts as stale.
+    var staleWorktreeDays: Int { didSet { defaults.set(staleWorktreeDays, forKey: "staleWorktreeDays") } }
+    /// Folders of repositories seen through ports and agents, so their worktrees stay listed after those stop.
+    var worktreeRepositoryFolders: [String] { didSet { defaults.set(worktreeRepositoryFolders, forKey: "worktreeRepositoryFolders") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -121,6 +125,8 @@ final class AppSettings {
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
+        staleWorktreeDays = defaults.object(forKey: "staleWorktreeDays") as? Int ?? 14
+        worktreeRepositoryFolders = defaults.stringArray(forKey: "worktreeRepositoryFolders") ?? []
         migrateLegacyCustomColors()
     }
 
