@@ -16,6 +16,8 @@ struct SectionHost: View {
             ClockSection()
         case .resources:
             LayoutResources()
+        case .nowPlaying:
+            NowPlayingSection()
         case .yourTurn:
             LayoutAgentColumn(column: .yourTurn, groups: AgentBoardColumn.yourTurn.groups(from: agents), navigate: context.navigate)
         case .workingAgents:

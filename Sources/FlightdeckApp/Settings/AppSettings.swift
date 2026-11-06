@@ -114,6 +114,9 @@ final class AppSettings {
     var dailySpendBudget: Double { didSet { defaults.set(dailySpendBudget, forKey: "dailySpendBudget") } }
     /// Start of the day the budget alert last fired, so it fires once per day.
     var spendBudgetAlertedDay: Date? { didSet { defaults.set(spendBudgetAlertedDay, forKey: "spendBudgetAlertedDay") } }
+    var nowPlayingEnabled: Bool { didSet { defaults.set(nowPlayingEnabled, forKey: "nowPlayingEnabled") } }
+    /// Off by default: hearing the audio needs the system audio recording permission.
+    var nowPlayingUsesSystemAudio: Bool { didSet { defaults.set(nowPlayingUsesSystemAudio, forKey: "nowPlayingUsesSystemAudio") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -149,6 +152,8 @@ final class AppSettings {
         spendTrackingEnabled = defaults.bool(forKey: "spendTrackingEnabled")
         dailySpendBudget = defaults.double(forKey: "dailySpendBudget")
         spendBudgetAlertedDay = defaults.object(forKey: "spendBudgetAlertedDay") as? Date
+        nowPlayingEnabled = defaults.object(forKey: "nowPlayingEnabled") as? Bool ?? true
+        nowPlayingUsesSystemAudio = defaults.bool(forKey: "nowPlayingUsesSystemAudio")
         migrateLegacyCustomColors()
     }
 
@@ -275,9 +280,17 @@ final class AppSettings {
         customLayouts[layout.rawValue] = nil
     }
 
-    /// The spend section exists only while spend tracking is on, so it never shows up otherwise.
+    /// The spend and now-playing sections exist only while they are turned on, so they never show up otherwise.
     var availableSections: [SectionKind] {
-        SectionKind.builtIn.filter { $0 != .spend || spendTrackingEnabled } + customWidgets.map { .widget($0.id) }
+        SectionKind.builtIn.filter { isAvailable($0) } + customWidgets.map { .widget($0.id) }
+    }
+
+    private func isAvailable(_ kind: SectionKind) -> Bool {
+        switch kind {
+        case .spend: spendTrackingEnabled
+        case .nowPlaying: nowPlayingEnabled
+        default: true
+        }
     }
 
     func upsertWidget(_ widget: CustomWidget) {

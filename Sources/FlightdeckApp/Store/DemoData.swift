@@ -124,6 +124,11 @@ enum DemoData {
                     cacheRead: Int(Double(tokens.cacheRead) * scale), cacheWrite: Int(Double(tokens.cacheWrite) * scale))
     }
 
+    static var nowPlaying: NowPlayingTrack {
+        NowPlayingTrack(title: "Midnight Commute", artist: "Low Orbit", album: "Night Shift Tapes", isPlaying: true,
+                        sourceBundleID: "com.apple.Music", sourceName: "Music", duration: 227, elapsed: 83, reportedAt: Date(), identifier: "demo")
+    }
+
     static var snapshot: SystemSnapshot {
         let gigabyte: UInt64 = 1 << 30
         return SystemSnapshot(

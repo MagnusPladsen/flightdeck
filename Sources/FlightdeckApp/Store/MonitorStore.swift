@@ -24,6 +24,7 @@ final class MonitorStore {
     let settings: AppSettings
     let notifier = AgentNotifier()
     let worktreeOverview: WorktreeOverview
+    let nowPlaying = NowPlayingMonitor()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -74,7 +75,9 @@ final class MonitorStore {
     func start() {
         guard pollingTasks.isEmpty else { return }
         applyNextAgentHotkey()
+        nowPlaying.setUsesSystemAudio(settings.nowPlayingUsesSystemAudio)
         if DemoData.isEnabled { return loadDemo() }
+        if settings.nowPlayingEnabled { nowPlaying.start() }
         if settings.alertsEnabled { Task { await notifier.requestAuthorization() } }
         pollingTasks = [
             poll(every: .seconds(2)) { await $0.refreshSystem() },
@@ -180,6 +183,17 @@ final class MonitorStore {
         alertIfOverBudget()
     }
 
+    func setNowPlayingEnabled(_ isEnabled: Bool) {
+        settings.nowPlayingEnabled = isEnabled
+        guard !DemoData.isEnabled else { return }
+        if isEnabled { nowPlaying.start() } else { nowPlaying.stop() }
+    }
+
+    func setNowPlayingUsesSystemAudio(_ isEnabled: Bool) {
+        settings.nowPlayingUsesSystemAudio = isEnabled
+        nowPlaying.setUsesSystemAudio(isEnabled)
+    }
+
     func setSpendTrackingEnabled(_ isEnabled: Bool) {
         settings.spendTrackingEnabled = isEnabled
         Task { await refreshSpend() }
@@ -233,6 +247,7 @@ final class MonitorStore {
         usage = DemoData.usage
         worktreeOverview.showDemo(DemoData.worktrees)
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
+        nowPlaying.showDemo(DemoData.nowPlaying)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)
