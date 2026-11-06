@@ -27,10 +27,18 @@ final class MonitorStore {
     /// Agents cleared from "Your turn", with the activity time they were cleared at.
     private var clearedTurns: [Int32: Date] = [:]
     private var hasCollectedAgents = false
+    private let nextAgentHotkey = GlobalHotkey()
+    /// The agent the next-agent hotkey focused last, so repeated presses move on to the next one.
+    private var lastCycledAgentPID: Int32?
+    /// True when another app already owns the chosen next-agent shortcut.
+    private(set) var isNextAgentHotkeyTaken = false
 
     init(settings: AppSettings) {
         self.settings = settings
-        notifier.openTerminal = { [weak self] in self?.openInTerminal($0) }
+        notifier.openTerminal = { [weak self] pid, folder in
+            guard let self else { return }
+            if let agent = agents.first(where: { $0.pid == pid }) { openTerminal(for: agent) } else { openInTerminal(folder) }
+        }
     }
 
     var devServers: [ListeningPort] { ports.filter(\.isDevServer) }
@@ -52,6 +60,7 @@ final class MonitorStore {
 
     func start() {
         guard pollingTasks.isEmpty else { return }
+        applyNextAgentHotkey()
         if DemoData.isEnabled { return loadDemo() }
         if settings.alertsEnabled { Task { await notifier.requestAuthorization() } }
         pollingTasks = [
@@ -182,6 +191,54 @@ final class MonitorStore {
             try? await Task.sleep(for: .milliseconds(600))
             await refreshPortsAndAgents()
         }
+    }
+
+    /// Focuses the agent's own terminal window or tab; opens a new terminal in its folder when that can't be found.
+    func openTerminal(for agent: AgentSession) {
+        guard !DemoData.isEnabled else { return }
+        Task {
+            if await !AgentTerminalFocuser.focus(agentPID: agent.pid) { openInTerminal(agent.workingDirectory) }
+        }
+    }
+
+    /// Repeated hotkey presses shouldn't pile up new terminal windows, so an unreachable terminal only beeps.
+    private func focusExistingTerminal(of agent: AgentSession) {
+        guard !DemoData.isEnabled else { return }
+        Task {
+            if await !AgentTerminalFocuser.focus(agentPID: agent.pid) { NSSound.beep() }
+        }
+    }
+
+    /// Interrupts the agent like Ctrl-C. CLIs that only cancel the turn on the first interrupt get a second one.
+    func stopAgent(_ agent: AgentSession) {
+        guard !DemoData.isEnabled else { return }
+        kill(agent.pid, SIGINT)
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            if kill(agent.pid, 0) == 0 { kill(agent.pid, SIGINT) }
+            try? await Task.sleep(for: .milliseconds(600))
+            await refreshPortsAndAgents()
+        }
+    }
+
+    /// Focuses the next agent waiting on the user, longest-waiting first; beeps when nobody is waiting.
+    func focusNextAgentNeedingYou() {
+        guard let next = NeedsYouCycle.next(after: lastCycledAgentPID, among: agents) else {
+            NSSound.beep()
+            return
+        }
+        lastCycledAgentPID = next.pid
+        focusExistingTerminal(of: next)
+    }
+
+    func applyNextAgentHotkey() {
+        let shortcut = settings.nextAgentHotkeyEnabled ? settings.nextAgentHotkey : nil
+        isNextAgentHotkeyTaken = !nextAgentHotkey.register(shortcut) { [weak self] in self?.focusNextAgentNeedingYou() }
+    }
+
+    /// Lets the shortcut recorder capture the current shortcut instead of triggering it.
+    func suspendNextAgentHotkey() {
+        nextAgentHotkey.unregister()
     }
 
     func openInBrowser(port: Int) {

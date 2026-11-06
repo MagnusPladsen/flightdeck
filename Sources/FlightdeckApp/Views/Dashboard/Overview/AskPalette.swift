@@ -97,7 +97,7 @@ struct AskPalette: View {
         if !agents.isEmpty {
             VStack(spacing: 2) {
                 ForEach(agents) { agent in
-                    Button { store.openInTerminal(agent.workingDirectory) } label: { agentRow(agent) }
+                    Button { store.openTerminal(for: agent) } label: { agentRow(agent) }
                         .buttonStyle(.plain)
                         .help("Open \(agent.displayName) in the terminal")
                 }

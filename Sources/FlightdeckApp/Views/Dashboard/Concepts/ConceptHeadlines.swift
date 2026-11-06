@@ -50,7 +50,7 @@ private struct SentenceHeadline: View {
             Text(summary).font(.system(size: 17)).foregroundStyle(theme.muted).lineSpacing(4).fixedSize(horizontal: false, vertical: true)
             if let agent {
                 HStack(spacing: 12) {
-                    Button("Go to terminal") { store.openInTerminal(agent.workingDirectory) }.buttonStyle(PillButtonStyle(isProminent: true, size: 14))
+                    Button("Go to terminal") { store.openTerminal(for: agent) }.buttonStyle(PillButtonStyle(isProminent: true, size: 14))
                     Button("Later") { snooze(agent) }.buttonStyle(PillButtonStyle(size: 14))
                 }
             }
@@ -100,7 +100,7 @@ private struct CrewActionCard: View {
                 Text("\(agent.tool.displayName.uppercased()) · AWAITING CREW \(agent.ageText().uppercased())\(othersCount > 0 ? " · +\(othersCount) MORE" : "")")
                     .font(.system(size: 11, weight: .semibold)).tracking(1.4).foregroundStyle(theme.muted)
                 HStack(spacing: 10) {
-                    Button("OPEN TERMINAL") { store.openInTerminal(agent.workingDirectory) }.buttonStyle(OutlineCommandStyle(color: theme.warning, isFilled: true))
+                    Button("OPEN TERMINAL") { store.openTerminal(for: agent) }.buttonStyle(OutlineCommandStyle(color: theme.warning, isFilled: true))
                     Button("HOLD") { snooze(agent) }.buttonStyle(OutlineCommandStyle(color: theme.foreground))
                 }
             } else {
@@ -137,7 +137,7 @@ private struct MasterCaution: View {
                 Text("\(agent.state == .needsApproval ? "APR" : "USR") · \(agent.actionLine.verb.uppercased()) \(agent.actionLine.detail)")
                     .font(.system(size: 14, design: .monospaced)).lineLimit(2)
                 HStack(spacing: 10) {
-                    Button("ENGAGE TERMINAL") { store.openInTerminal(agent.workingDirectory) }.buttonStyle(OutlineCommandStyle(color: theme.primary, isFilled: true))
+                    Button("ENGAGE TERMINAL") { store.openTerminal(for: agent) }.buttonStyle(OutlineCommandStyle(color: theme.primary, isFilled: true))
                     Button("DEFER") { snooze(agent) }.buttonStyle(OutlineCommandStyle(color: theme.foreground))
                 }
             } else {
@@ -162,7 +162,7 @@ private struct PromptHeadline: View {
             }
             ForEach(store.needsYouGroups.prefix(5)) { group in
                 let agent = group.agent
-                Button { store.openInTerminal(agent.workingDirectory) } label: {
+                Button { store.openTerminal(for: agent) } label: {
                     HStack(spacing: 10) {
                         Text(agent.state == .needsApproval ? "◆" : "○").foregroundStyle(agent.state.color(in: theme))
                         Text(agent.displayName).fontWeight(.bold).frame(width: 180, alignment: .leading).lineLimit(1)

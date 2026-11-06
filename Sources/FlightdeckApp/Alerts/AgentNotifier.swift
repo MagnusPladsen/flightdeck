@@ -11,9 +11,10 @@ final class AgentNotifier: NSObject {
     nonisolated private static let openTerminalActionID = "openTerminal"
     nonisolated private static let showDashboardActionID = "showDashboard"
     nonisolated private static let folderKey = "folder"
+    nonisolated private static let pidKey = "pid"
 
     private(set) var authorization: UNAuthorizationStatus = .notDetermined
-    @ObservationIgnored var openTerminal: (String) -> Void = { _ in }
+    @ObservationIgnored var openTerminal: (_ pid: Int32?, _ folder: String) -> Void = { _, _ in }
 
     /// Notifications need a bundled app; `swift run` has no bundle identifier and would crash.
     let isAvailable = Bundle.main.bundleIdentifier != nil
@@ -70,7 +71,7 @@ final class AgentNotifier: NSObject {
         content.body = [action.verb, action.detail].filter { !$0.isEmpty }.joined(separator: " ")
         content.threadIdentifier = agent.workingDirectory
         content.categoryIdentifier = Self.categoryID
-        content.userInfo = [Self.folderKey: agent.workingDirectory]
+        content.userInfo = [Self.folderKey: agent.workingDirectory, Self.pidKey: Int(agent.pid)]
         content.sound = playsSound ? .default : nil
         content.interruptionLevel = .active
         return content
@@ -90,12 +91,13 @@ extension AgentNotifier: UNUserNotificationCenterDelegate {
     /// Clicking the notification opens the agent's terminal; "Show in Flightdeck" opens the dashboard.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let folder = response.notification.request.content.userInfo[Self.folderKey] as? String
+        let pid = (response.notification.request.content.userInfo[Self.pidKey] as? Int).map(Int32.init)
         let actionID = response.actionIdentifier
         await MainActor.run {
             if actionID == Self.showDashboardActionID || folder == nil {
                 DashboardOpener.open()
             } else if let folder {
-                openTerminal(folder)
+                openTerminal(pid, folder)
             }
         }
     }

@@ -77,7 +77,7 @@ private struct KanbanCard: View {
                 if let checkout = agent.checkoutLabel { Chip(text: checkout) }
             }
             Text(agent.abbreviatedPath).font(.system(size: 11, design: .monospaced)).foregroundStyle(theme.muted).lineLimit(1).truncationMode(.middle)
-            Button(column == .yourTurn ? "Reply" : "Open terminal") { store.openInTerminal(agent.workingDirectory) }
+            Button(column == .yourTurn ? "Reply" : "Open terminal") { store.openTerminal(for: agent) }
                 .buttonStyle(KanbanActionStyle(color: column.color(in: theme)))
         }
         .padding(12)
@@ -151,9 +151,9 @@ private struct FeedPost: View {
                 message
                 HStack(spacing: 10) {
                     if agent.state.needsYou {
-                        Button("Reply") { store.openInTerminal(agent.workingDirectory) }.buttonStyle(PillButtonStyle(isProminent: true))
+                        Button("Reply") { store.openTerminal(for: agent) }.buttonStyle(PillButtonStyle(isProminent: true))
                     }
-                    Button("Go to terminal") { store.openInTerminal(agent.workingDirectory) }.buttonStyle(PillButtonStyle())
+                    Button("Go to terminal") { store.openTerminal(for: agent) }.buttonStyle(PillButtonStyle())
                 }
                 .padding(.top, 4)
             }
@@ -194,7 +194,7 @@ private struct AgentStatusTable: View {
             }
             ForEach(groups) { group in
                 let agent = group.agent
-                Button { store.openInTerminal(agent.workingDirectory) } label: {
+                Button { store.openTerminal(for: agent) } label: {
                     HStack(spacing: 12) {
                         badge(agent.state)
                         Text(agent.displayName).fontWeight(.bold).frame(width: 160, alignment: .leading).lineLimit(1)
