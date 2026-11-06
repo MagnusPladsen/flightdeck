@@ -3,6 +3,13 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.2.0 — 2026-11-06
+
+- Settings is now a page in the dashboard instead of a separate window.
+- Built-in themes can't be edited anymore. Copy one to make your own theme, which you can rename, duplicate and delete. Colours you changed in 1.1 become a custom theme.
+- Colour swatches in the theme editor line up in a column.
+- Agents no longer show as needing you while Claude is still thinking after a long prompt.
+
 ## 1.1.1 — 2026-11-05
 
 - Ring labels have more room, so reset times are no longer cut off.
