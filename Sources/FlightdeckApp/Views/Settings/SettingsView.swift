@@ -92,6 +92,7 @@ private struct GeneralSettings: View {
             Section("Ports") {
                 Toggle("Show system ports, not just dev servers", isOn: $settings.showSystemPorts)
             }
+            NextAgentHotkeySection()
             Section("Startup") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, isEnabled in setLaunchAtLogin(isEnabled) }

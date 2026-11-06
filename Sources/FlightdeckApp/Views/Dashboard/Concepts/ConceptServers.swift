@@ -234,7 +234,7 @@ private struct ProjectCard: View {
         checkout.ports.map { port in
             TintedChip.Item(id: "port\(port.id)", text: ":\(port.port) \(port.framework?.displayName ?? "")", color: theme.primary) { store.openInBrowser(port: port.port) }
         } + checkout.agents.map { agent in
-            TintedChip.Item(id: "agent\(agent.pid)", text: "\(agent.tool.displayName) · \(agent.state.label.lowercased())", color: agent.state.color(in: theme)) { store.openInTerminal(agent.workingDirectory) }
+            TintedChip.Item(id: "agent\(agent.pid)", text: "\(agent.tool.displayName) · \(agent.state.label.lowercased())", color: agent.state.color(in: theme)) { store.openTerminal(for: agent) }
         }
     }
 }

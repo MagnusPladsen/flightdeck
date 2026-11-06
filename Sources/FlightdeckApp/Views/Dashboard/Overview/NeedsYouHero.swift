@@ -9,6 +9,7 @@ struct NeedsYouHero: View {
     /// Other folders with agents waiting on you, for "X and 2 others need you."
     var othersCount = 0
     var snooze: (AgentSession) -> Void
+    @State private var isConfirmingStop = false
 
     var body: some View {
         if let agent {
@@ -35,12 +36,16 @@ struct NeedsYouHero: View {
                     .truncationMode(.middle)
             }
             HStack(spacing: 12) {
-                Button("Go to terminal") { store.openInTerminal(agent.workingDirectory) }
+                Button("Go to terminal") { store.openTerminal(for: agent) }
                     .buttonStyle(PillButtonStyle(isProminent: true, size: 15))
                 Button("Later") { snooze(agent) }
                     .buttonStyle(PillButtonStyle(size: 15))
+                Button("Stop") { isConfirmingStop = true }
+                    .buttonStyle(PillButtonStyle(size: 15))
+                    .help("Stop this agent")
             }
         }
+        .confirmingStop(of: agent, isPresented: $isConfirmingStop)
     }
 
     private var othersSuffix: String {

@@ -98,6 +98,8 @@ final class AppSettings {
     var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
     /// Raw values of the agent tools the user turned alerts off for.
     var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
+    var nextAgentHotkeyEnabled: Bool { didSet { defaults.set(nextAgentHotkeyEnabled, forKey: "nextAgentHotkeyEnabled") } }
+    var nextAgentHotkey: HotkeyShortcut { didSet { save(nextAgentHotkey, forKey: "nextAgentHotkey") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -123,6 +125,8 @@ final class AppSettings {
         alertsOnStuck = defaults.object(forKey: "alertsOnStuck") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
+        nextAgentHotkeyEnabled = defaults.object(forKey: "nextAgentHotkeyEnabled") as? Bool ?? true
+        nextAgentHotkey = Self.load(HotkeyShortcut.self, forKey: "nextAgentHotkey", from: defaults) ?? .nextAgentDefault
         migrateLegacyCustomColors()
     }
 

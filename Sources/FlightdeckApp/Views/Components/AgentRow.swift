@@ -32,8 +32,8 @@ struct AgentRow: View {
                 .font(.caption.weight(.medium))
                 .foregroundStyle(agent.state.color(in: theme))
                 .help(agent.stuckReason?.summary ?? "")
+            AgentControlButtons(agent: agent, confirmsInline: isCompact)
             if !isCompact {
-                IconButton(systemImage: "terminal", help: "Open folder in terminal") { store.openInTerminal(agent.workingDirectory) }
                 IconButton(systemImage: "chevron.left.forwardslash.chevron.right", help: "Open folder in editor") { store.openInEditor(agent.workingDirectory) }
             }
         }

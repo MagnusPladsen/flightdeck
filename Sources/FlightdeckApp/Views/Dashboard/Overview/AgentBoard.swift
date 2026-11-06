@@ -131,6 +131,7 @@ private struct AgentCard: View {
     var group: AgentGroup
     var isFeatured: Bool
     @State private var isHovering = false
+    @State private var isConfirmingStop = false
 
     private var agent: AgentSession { group.agent }
 
@@ -150,10 +151,13 @@ private struct AgentCard: View {
             fields
             if isFeatured {
                 HStack(spacing: 10) {
-                    Button("Reply") { store.openInTerminal(agent.workingDirectory) }
+                    Button("Reply") { store.openTerminal(for: agent) }
                         .buttonStyle(PillButtonStyle(isProminent: true))
                         .help("Reply in the terminal")
                     EditorButton(path: agent.project?.rootPath ?? agent.workingDirectory)
+                    Button("Stop") { isConfirmingStop = true }
+                        .buttonStyle(PillButtonStyle())
+                        .help("Stop this agent")
                 }
                 .padding(.top, 4)
             }
@@ -164,10 +168,13 @@ private struct AgentCard: View {
         .contentShape(Rectangle())
         .onHover { isHovering = $0 }
         .contextMenu {
-            Button("Open in terminal") { store.openInTerminal(agent.workingDirectory) }
+            Button("Go to terminal") { store.openTerminal(for: agent) }
             Button("Open in editor") { store.openInEditor(agent.project?.rootPath ?? agent.workingDirectory) }
             Button("Reveal in Finder") { store.revealInFinder(agent.workingDirectory) }
+            Divider()
+            Button("Stop Agent…") { isConfirmingStop = true }
         }
+        .confirmingStop(of: agent, isPresented: $isConfirmingStop)
     }
 
     @ViewBuilder
@@ -201,7 +208,7 @@ private struct AgentCard: View {
 
     private var quickActions: some View {
         HStack(spacing: 2) {
-            IconButton(systemImage: "terminal", help: "Open in terminal") { store.openInTerminal(agent.workingDirectory) }
+            AgentControlButtons(agent: agent)
             IconButton(systemImage: "chevron.left.forwardslash.chevron.right", help: "Open in editor") { store.openInEditor(agent.project?.rootPath ?? agent.workingDirectory) }
         }
         .foregroundStyle(theme.muted)
