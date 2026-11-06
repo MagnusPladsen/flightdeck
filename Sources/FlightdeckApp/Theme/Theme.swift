@@ -3,8 +3,8 @@ import SwiftUI
 
 /// A colour palette for the whole app. Roles follow the sexy-claude theme format.
 struct Theme: Identifiable, Hashable {
-    let id: String
-    let name: String
+    var id: String
+    var name: String
     let isDark: Bool
     var background: Color
     var foreground: Color

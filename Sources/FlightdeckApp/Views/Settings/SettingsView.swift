@@ -185,6 +185,17 @@ private struct AppearanceSettings: View {
                         }
                     }
                 }
+                if !store.settings.customThemes.isEmpty {
+                    Text("Your themes").font(.headline)
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                        ForEach(store.settings.customThemes) { custom in
+                            let theme = store.settings.theme(for: custom)
+                            ThemeOptionButton(title: custom.name, subtitle: "Custom · \(theme.isDark ? "Dark" : "Light")", themes: [theme], isSelected: store.settings.themeID == custom.id) {
+                                store.settings.themeID = custom.id
+                            }
+                        }
+                    }
+                }
                 CustomColorsEditor()
                 LayoutCustomization()
             }

@@ -1,3 +1,4 @@
+import MonitorCore
 import SwiftUI
 
 /// One colour of a theme the user can replace with their own.
@@ -66,6 +67,18 @@ extension Theme {
         for role in ThemeColorRole.allCases {
             if let color = customColors[role.rawValue].flatMap(Color.init(hexString:)) { theme[role] = color }
         }
+        return theme
+    }
+
+    var palette: CustomThemePalette {
+        CustomThemePalette(name: name, colors: Dictionary(uniqueKeysWithValues: ThemeColorRole.allCases.map { ($0.rawValue, self[$0].hexString) }))
+    }
+
+    /// This built-in theme with a custom theme's name, id and colours.
+    func customized(as custom: CustomTheme) -> Theme {
+        var theme = applying(custom.colors)
+        theme.id = custom.id
+        theme.name = custom.name
         return theme
     }
 }

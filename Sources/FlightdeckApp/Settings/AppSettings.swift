@@ -81,8 +81,8 @@ final class AppSettings {
     var menuBarLabelStyle: MenuBarLabelStyle { didSet { defaults.set(menuBarLabelStyle.rawValue, forKey: "menuBarLabelStyle") } }
     var themeID: String { didSet { defaults.set(themeID, forKey: "themeID") } }
     var dashboardLayout: DashboardLayout { didSet { defaults.set(dashboardLayout.rawValue, forKey: "dashboardLayout") } }
-    /// The user's own colours: theme id → role raw value → "#RRGGBB".
-    var customColors: [String: [String: String]] { didSet { save(customColors, forKey: "customColors") } }
+    /// Editable copies of built-in themes, in the order they were made.
+    var customThemes: [CustomTheme] { didSet { save(customThemes, forKey: "customThemes") } }
     var overviewResources: [OverviewResource] { didSet { save(overviewResources, forKey: "overviewResources") } }
     var resourcesInSidebar: Bool { didSet { defaults.set(resourcesInSidebar, forKey: "resourcesInSidebar") } }
     var agentCardFields: [AgentCardField] { didSet { save(agentCardFields, forKey: "agentCardFields") } }
@@ -109,7 +109,7 @@ final class AppSettings {
         menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .text
         themeID = defaults.string(forKey: "themeID") ?? Theme.ignition.id
         dashboardLayout = defaults.string(forKey: "dashboardLayout").flatMap(DashboardLayout.init(rawValue:)) ?? .ignition
-        customColors = Self.load([String: [String: String]].self, forKey: "customColors", from: defaults) ?? [:]
+        customThemes = Self.load([CustomTheme].self, forKey: "customThemes", from: defaults) ?? []
         overviewResources = Self.load([OverviewResource].self, forKey: "overviewResources", from: defaults) ?? OverviewResource.defaultSelection
         resourcesInSidebar = defaults.bool(forKey: "resourcesInSidebar")
         agentCardFields = Self.load([AgentCardField].self, forKey: "agentCardFields", from: defaults) ?? AgentCardField.allCases
@@ -121,6 +121,18 @@ final class AppSettings {
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
+        migrateLegacyCustomColors()
+    }
+
+    /// 1.1 kept colour overrides on the built-in themes; those become custom themes now that built-ins are read-only.
+    private func migrateLegacyCustomColors() {
+        guard let legacy = Self.load([String: [String: String]].self, forKey: "customColors", from: defaults) else { return }
+        let palettes = Dictionary(uniqueKeysWithValues: Theme.all.map { ($0.id, $0.palette) })
+        for migrated in CustomTheme.migrating(legacyOverrides: legacy, palettes: palettes) {
+            customThemes.append(migrated.theme)
+            if themeID == migrated.replacesThemeID { themeID = migrated.theme.id }
+        }
+        defaults.removeObject(forKey: "customColors")
     }
 
     var alertStates: Set<AgentState> {
@@ -141,14 +153,54 @@ final class AppSettings {
         themeID = layout.defaultThemeID
     }
 
-    func setCustomColor(_ color: Color?, for role: ThemeColorRole, inTheme themeID: String) {
-        var colors = customColors[themeID] ?? [:]
-        colors[role.rawValue] = color?.hexString
-        customColors[themeID] = colors.isEmpty ? nil : colors
+    /// The selected theme, custom colours included.
+    func currentTheme(systemScheme: ColorScheme) -> Theme {
+        if let custom = customTheme(id: themeID) { return theme(for: custom) }
+        return Theme.resolve(id: themeID, systemScheme: systemScheme)
     }
 
-    func resetCustomColors(inTheme themeID: String) {
-        customColors[themeID] = nil
+    func customTheme(id: String) -> CustomTheme? {
+        customThemes.first { $0.id == id }
+    }
+
+    func theme(for custom: CustomTheme) -> Theme {
+        Theme.resolve(id: custom.baseThemeID, systemScheme: .dark).customized(as: custom)
+    }
+
+    /// Duplicates a built-in or custom theme into a new custom theme and selects it.
+    func copyToCustomTheme(_ theme: Theme) {
+        let baseThemeID = customTheme(id: theme.id)?.baseThemeID ?? theme.id
+        let copy = CustomTheme.copy(of: baseThemeID, palette: theme.palette, existingNames: customThemes.map(\.name))
+        customThemes.append(copy)
+        themeID = copy.id
+    }
+
+    func renameCustomTheme(id: String, to name: String) {
+        updateCustomTheme(id: id) { $0.name = name }
+    }
+
+    /// Falls back to the theme it was copied from when the deleted one was selected.
+    func deleteCustomTheme(id: String) {
+        guard let custom = customTheme(id: id) else { return }
+        customThemes.removeAll { $0.id == id }
+        if themeID == id { themeID = custom.baseThemeID }
+    }
+
+    func setColor(_ color: Color, for role: ThemeColorRole, inCustomTheme id: String) {
+        updateCustomTheme(id: id) { $0.colors[role.rawValue] = color.hexString }
+    }
+
+    /// Puts one role, or every role when nil, back to the colour of the theme it was copied from.
+    func resetColors(_ role: ThemeColorRole? = nil, inCustomTheme id: String) {
+        updateCustomTheme(id: id) { custom in
+            let base = Theme.resolve(id: custom.baseThemeID, systemScheme: .dark).palette.colors
+            for role in role.map({ [$0] }) ?? ThemeColorRole.allCases { custom.colors[role.rawValue] = base[role.rawValue] }
+        }
+    }
+
+    private func updateCustomTheme(id: String, _ change: (inout CustomTheme) -> Void) {
+        guard let index = customThemes.firstIndex(where: { $0.id == id }) else { return }
+        change(&customThemes[index])
     }
 
     func isShowingInMenuBar(_ metric: MenuBarMetric) -> Bool {

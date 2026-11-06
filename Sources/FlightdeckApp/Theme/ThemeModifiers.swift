@@ -6,8 +6,7 @@ struct ThemedRoot: ViewModifier {
     @Environment(\.colorScheme) private var systemScheme
 
     func body(content: Content) -> some View {
-        let base = Theme.resolve(id: settings.themeID, systemScheme: systemScheme)
-        let theme = base.applying(settings.customColors[base.id] ?? [:])
+        let theme = settings.currentTheme(systemScheme: systemScheme)
         content
             .environment(\.theme, theme)
             .environment(\.dashboardLayout, settings.dashboardLayout)
