@@ -31,7 +31,7 @@ struct DashboardView: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     @Environment(\.dashboardLayout) private var layout
-    @State private var selection: DashboardPage = .overview
+    @Environment(DashboardNavigation.self) private var navigation
     @State private var layoutEditor = LayoutEditor()
     @Environment(ClaudeAsker.self) private var asker
     @Environment(WhatsNew.self) private var whatsNew
@@ -41,10 +41,10 @@ struct DashboardView: View {
             sidebar
                 .navigationSplitViewColumnWidth(min: sidebarWidth, ideal: sidebarWidth, max: layout.style.navigation == .rail ? sidebarWidth : 320)
         } detail: {
-            detail(for: selection)
-                .navigationTitle(selection.title)
+            detail(for: navigation.destination)
+                .navigationTitle(title(for: navigation.destination))
                 .toolbar {
-                    LayoutLockButton()
+                    if navigation.destination != .settings { LayoutLockButton() }
                     Button { Task { await store.refreshAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 }
         }
@@ -65,9 +65,10 @@ struct DashboardView: View {
     /// The page list in the style of the chosen layout.
     @ViewBuilder
     private var sidebar: some View {
+        @Bindable var navigation = navigation
         switch layout.style.navigation {
-        case .list: PageListSidebar(selection: $selection, count: badgeCount)
-        case .rail: RailSidebar(selection: $selection, count: badgeCount)
+        case .list: PageListSidebar(selection: $navigation.destination, count: badgeCount)
+        case .rail: RailSidebar(selection: $navigation.destination, count: badgeCount)
         }
     }
 
@@ -76,11 +77,19 @@ struct DashboardView: View {
     }
 
     @ViewBuilder
-    private func detail(for section: DashboardPage) -> some View {
-        switch section {
-        case .overview: LayoutOverview { selection = $0 }
-        case .ports, .agents, .processes: GridPage(page: section) { selection = $0 }
-        case .widgets: WidgetsPage { selection = $0 }
+    private func detail(for destination: DashboardDestination) -> some View {
+        switch destination {
+        case .page(.overview): LayoutOverview(navigate: navigation.show)
+        case .page(.widgets): WidgetsPage(navigate: navigation.show)
+        case .page(let page): GridPage(page: page, navigate: navigation.show)
+        case .settings: SettingsView()
+        }
+    }
+
+    private func title(for destination: DashboardDestination) -> String {
+        switch destination {
+        case .page(let page): page.title
+        case .settings: "Settings"
         }
     }
 

@@ -4,7 +4,7 @@ import SwiftUI
 /// Narrow page list of icons, for layouts that give the whole window to their sections.
 struct RailSidebar: View {
     @Environment(\.theme) private var theme
-    @Binding var selection: DashboardPage
+    @Binding var selection: DashboardDestination
     var count: (DashboardPage) -> Int
 
     var body: some View {
@@ -13,15 +13,10 @@ struct RailSidebar: View {
                 .frame(width: 22, height: 22)
                 .padding(.bottom, 16)
             ForEach(DashboardPage.allCases) { page in
-                RailButton(page: page, count: count(page), isSelected: page == selection) { selection = page }
+                RailButton(symbolName: page.symbolName, title: page.title, count: count(page), isSelected: selection == .page(page)) { selection = .page(page) }
             }
             Spacer()
-            SettingsLink {
-                Image(systemName: "gearshape").font(.system(size: 16)).frame(width: 44, height: 40)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(theme.muted)
-            .help("Settings")
+            RailButton(symbolName: "gearshape", title: "Settings", count: 0, isSelected: selection == .settings) { selection = .settings }
         }
         .padding(.top, 44)
         .padding(.bottom, 18)
@@ -33,7 +28,8 @@ struct RailSidebar: View {
 
 private struct RailButton: View {
     @Environment(\.theme) private var theme
-    var page: DashboardPage
+    var symbolName: String
+    var title: String
     var count: Int
     var isSelected: Bool
     var select: () -> Void
@@ -41,7 +37,7 @@ private struct RailButton: View {
 
     var body: some View {
         Button(action: select) {
-            Image(systemName: page.symbolName)
+            Image(systemName: symbolName)
                 .font(.system(size: 16, weight: isSelected ? .bold : .regular))
                 .frame(width: 44, height: 40)
                 .background(isSelected ? theme.overlay : (isHovering ? theme.surface : .clear), in: RoundedRectangle(cornerRadius: 10))
@@ -55,6 +51,6 @@ private struct RailButton: View {
         .buttonStyle(.plain)
         .foregroundStyle(isSelected ? theme.foreground : theme.foreground.opacity(0.7))
         .onHover { isHovering = $0 }
-        .help(page.title)
+        .help(title)
     }
 }

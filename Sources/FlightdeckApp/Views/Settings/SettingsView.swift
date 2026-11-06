@@ -2,17 +2,62 @@ import MonitorCore
 import ServiceManagement
 import SwiftUI
 
+/// The dashboard's settings page: a tab bar over one settings section, filling the window.
 struct SettingsView: View {
+    @Environment(\.theme) private var theme
+    @State private var tab: SettingsTab = .general
+
     var body: some View {
-        TabView {
-            GeneralSettings().tabItem { Label("General", systemImage: "gearshape") }
-            AppearanceSettings().tabItem { Label("Appearance", systemImage: "paintpalette") }
-            AlertSettings().tabItem { Label("Alerts", systemImage: "bell") }
-            AISettings().tabItem { Label("AI", systemImage: "sparkles") }
-            WidgetSettings().tabItem { Label("Widgets", systemImage: "square.grid.2x2") }
+        VStack(spacing: 0) {
+            Picker("Section", selection: $tab) {
+                ForEach(SettingsTab.allCases) { Label($0.title, systemImage: $0.symbolName).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 560)
+            .padding(.vertical, 14)
+            content
+                .frame(maxWidth: 760, maxHeight: .infinity)
         }
-        .frame(width: 480)
-        .frame(minHeight: 380)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(theme.background)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch tab {
+        case .general: GeneralSettings()
+        case .appearance: AppearanceSettings()
+        case .alerts: AlertSettings()
+        case .ai: AISettings()
+        case .widgets: WidgetSettings()
+        }
+    }
+}
+
+private enum SettingsTab: String, CaseIterable, Identifiable {
+    case general, appearance, alerts, ai, widgets
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .general: "General"
+        case .appearance: "Appearance"
+        case .alerts: "Alerts"
+        case .ai: "AI"
+        case .widgets: "Widgets"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .general: "gearshape"
+        case .appearance: "paintpalette"
+        case .alerts: "bell"
+        case .ai: "sparkles"
+        case .widgets: "square.grid.2x2"
+        }
     }
 }
 

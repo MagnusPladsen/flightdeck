@@ -6,6 +6,7 @@ struct MenuBarPanel: View {
 
     @Environment(MonitorStore.self) private var store
     @Environment(AppUpdater.self) private var updater
+    @Environment(DashboardNavigation.self) private var navigation
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
@@ -71,7 +72,7 @@ struct MenuBarPanel: View {
     private var footer: some View {
         HStack(spacing: 8) {
             Button("Dashboard") { openDashboard() }.buttonStyle(PillButtonStyle(isProminent: true, size: 12))
-            SettingsLink { Text("Settings") }.buttonStyle(PillButtonStyle(size: 12))
+            Button("Settings") { openSettings() }.buttonStyle(PillButtonStyle(size: 12))
             Spacer()
             if updater.isAvailable {
                 IconButton(systemImage: "arrow.down.circle", help: "Check for Updates…") { checkForUpdates() }
@@ -112,6 +113,11 @@ struct MenuBarPanel: View {
         dismiss()
         openWindow(id: DashboardView.windowID)
         DockPresence.dashboardDidOpen()
+    }
+
+    private func openSettings() {
+        navigation.showSettings()
+        openDashboard()
     }
 }
 
