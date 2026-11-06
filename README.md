@@ -49,11 +49,15 @@ brew install --cask magnuspladsen/tap/flightdeck
 |---|---|
 | <img src="docs/screenshots/worktrees.png" alt="Worktrees page with stale worktrees and Clean up" width="420"> | <img src="docs/screenshots/settings.png" alt="Settings page in the dashboard" width="420"> |
 
+| The Office | Now playing |
+|---|---|
+| <img src="docs/screenshots/office.png" alt="Office: pixel-art rooms per repo, waiting agents as avatars at the top and a jukebox" width="420"> | <img src="docs/screenshots/now-playing.png" alt="Now playing with player controls and the adjust menu" width="420"> |
+
 Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the same.
 
 ## Features
 
-- **System**: CPU, memory, network and disk, with live sparklines.
+- **System**: CPU, memory, network and disk, with live sparklines. Collapse the section when you don't need it.
 - **Dev servers**: every listening port mapped to its git project, branch and worktree, with the framework detected (e.g. "Next.js · shop · worktree checkout · :3000"). Open in browser, editor or terminal, or stop the process.
 - **AI agents**: which folders Claude Code, Codex and other agents are working in, and whether each is working, waiting for approval or waiting for you. Agents that look stuck (e.g. the same tool call over and over) get a badge with the reason and count as needing you. Cards can show CPU and memory for the agent and everything it started.
 - **Agent controls**: Go to terminal focuses the agent's own Ghostty, iTerm2, Terminal or tmux tab; Stop interrupts it. Press ⌃⌥N anywhere to jump to the next agent that needs you (change the shortcut in Settings › General).
@@ -62,6 +66,8 @@ Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the sam
 - **Usage limits**: Codex 5h and weekly limits from local logs; Claude token counts from local logs, and optionally Claude limit percentages.
 - **Token spend**: optional, off by default. Estimated cost per project and model from Claude Code and Codex logs, with a daily budget alert. Turn it on in Settings › AI.
 - **Ask Claude**: type a question in the overview's search bar and press Return, or press ⌘K anywhere in the dashboard. The answer opens in a palette with follow-ups, and agents it names open their terminal in one click. It runs your installed `claude` CLI with read-only tools and a snapshot of what the dashboard shows.
+- **Office**: a walkable pixel-art office with a room per repo, where each agent is posed by what it's doing. Agents that need you show as bouncing avatars along the top, and a jukebox plays what's on. Walk up to an agent to go to its terminal or stop it. Open it from Office in the sidebar or the Visualize button.
+- **Now playing**: what's playing in any player, with a visualiser in your theme's colours. Previous, play/pause and next, plus a volume slider for Spotify and Music. The adjust menu switches between Minimal and Expanded, five visualiser styles and six palettes. Live audio levels are opt-in; otherwise the bars follow play and pause. The section collapses like System.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 
 Ships 13 layouts and 22 themes, and any theme works on any layout. Ignition is the default layout (a near-black agent board that leads with whichever agent needs you); the others are macOS, Terminal, Glass, Bento, Cockpit, Editorial, Neon, Agent focus, Projects, Zen, Mission control and Timeline. Each layout switches to the theme it was designed in, and Settings › Appearance lets you pick another theme (Clean Dark, Clean Light, "match system", Tokyo Night, Catppuccin, Dracula and other coding palettes). Built-in themes are read-only: copy one to make your own theme, which you can recolour, rename, duplicate and delete.

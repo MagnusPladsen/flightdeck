@@ -36,7 +36,13 @@ const PINS = [
   },
   {
     x: 22,
-    y: 63,
+    y: 62,
+    title: "Now playing",
+    body: "What's playing in any player, with previous, play/pause, next and a volume slider for Spotify and Music. Collapse it, or System, when you need the room.",
+  },
+  {
+    x: 22,
+    y: 80.5,
     title: "Needs you",
     body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new.",
   },
@@ -44,7 +50,7 @@ const PINS = [
     x: 10,
     y: 40,
     title: "Pages",
-    body: "Servers and ports, AI agents, worktrees, processes and widgets. Settings sits at the bottom of the sidebar.",
+    body: "Servers and ports, AI agents, worktrees, processes and widgets. The Office and Settings sit at the bottom of the sidebar.",
   },
 ];
 
@@ -54,6 +60,18 @@ const FEATURE_ROWS = [
     title: "Every agent, one glance.",
     body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on.",
     image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1180, height: 917 },
+  },
+  {
+    label: "Office",
+    title: "Walk around your agents.",
+    body: "A pixel-art office with a room per repo, where every agent is posed by what it's doing. Agents that need you wait as bouncing avatars along the top, and a jukebox plays what's on. Walk up to an agent to go to its terminal or stop it.",
+    image: { src: "/screenshots/office.png", alt: "Office with a room per repo, waiting agents as avatars at the top and a jukebox", width: 1180, height: 860 },
+  },
+  {
+    label: "Now playing",
+    title: "Music in your theme.",
+    body: "What's playing in any player, with a visualiser in your theme's colours. The adjust menu switches between Minimal and Expanded, five visualiser styles and six palettes. Live audio levels are opt-in; otherwise the bars follow play and pause.",
+    image: { src: "/screenshots/now-playing.png", alt: "Now playing with player controls and the adjust menu open", width: 1024, height: 362 },
   },
   {
     label: "Worktrees",
@@ -150,7 +168,7 @@ export default function Home() {
             <Image
               className="shot"
               src="/screenshots/overview.png"
-              alt="Flightdeck overview with numbered labels: search and ask, who needs you, go to terminal, clock, system and limits, the Needs you list and pages"
+              alt="Flightdeck overview with numbered labels: search and ask, who needs you, go to terminal, clock, system and limits, now playing, the Needs you list and pages"
               width={1180}
               height={1060}
               priority
