@@ -16,9 +16,20 @@ public struct ClaudeSessionLogs: Sendable {
     public func latestActivity(forWorkingDirectory workingDirectory: String) -> SessionActivity? {
         let directory = projectsDirectory + "/" + Self.encodedDirectoryName(for: workingDirectory)
         guard let newest = LogFiles.newestFile(in: directory, withExtension: "jsonl") else { return nil }
-        let tail = LogFiles.readTail(of: newest.path, maxBytes: 64 * 1024)
+        let tail = Self.tailWithLastTurn(of: newest.path)
         let block = Self.lastAssistantBlock(inTranscriptTail: tail)
         return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action), pendingTool: block?.type == "tool_use" ? block?.name : nil)
+    }
+
+    /// Attachments such as skill lists and CLAUDE.md can push the last prompt or reply past a small tail,
+    /// which would read as "your turn" while Claude is still thinking, so widen until one is in view.
+    private static func tailWithLastTurn(of path: String) -> String {
+        var tail = ""
+        for maxBytes: UInt64 in [64 * 1024, 1024 * 1024, 8 * 1024 * 1024] {
+            tail = LogFiles.readTail(of: path, maxBytes: maxBytes)
+            if lastTurn(inTranscriptTail: tail) != .unknown { break }
+        }
+        return tail
     }
 
     /// Looks at the last user/assistant message to tell who is expected to act next.

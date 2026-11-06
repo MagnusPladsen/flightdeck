@@ -127,6 +127,19 @@ struct AgentLogTests {
         #expect(ClaudeSessionLogs.lastTurn(inTranscriptTail: textFirst + "\n" + toolCall) == .waitingOnTool)
     }
 
+    @Test func claudePromptBehindLargeAttachmentsIsStillWorking() throws {
+        let projects = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let directory = projects.appendingPathComponent(ClaudeSessionLogs.encodedDirectoryName(for: "/work/app"))
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: projects) }
+        let attachment = #"{"type":"attachment","content":""# + String(repeating: "x", count: 100_000) + #""}"#
+        let transcript = [#"{"type":"user","message":{"content":"Fix the build"}}"#, attachment, attachment].joined(separator: "\n") + "\n"
+        try transcript.write(to: directory.appendingPathComponent("session.jsonl"), atomically: true, encoding: .utf8)
+
+        let activity = ClaudeSessionLogs(projectsDirectory: projects.path).latestActivity(forWorkingDirectory: "/work/app")
+        #expect(activity?.lastTurn == .waitingOnModel)
+    }
+
     @Test func claudeLastActionDescribesNewestToolCallOrText() {
         let tail = """
         {"type":"assistant","message":{"content":[{"type":"text","text":"Done."}]}}
