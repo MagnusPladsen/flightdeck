@@ -2,7 +2,7 @@ import Foundation
 
 /// A page of the dashboard window.
 public enum DashboardPage: String, Codable, CodingKeyRepresentable, CaseIterable, Sendable {
-    case overview, ports, agents, processes, widgets
+    case overview, ports, agents, worktrees, processes, widgets
 }
 
 /// A block that can be placed on a dashboard page.
@@ -10,13 +10,14 @@ public enum SectionKind: Codable, Hashable, Sendable {
     case needsYou, clock, resources, yourTurn, workingAgents, idleAgents, projects
     case devServers, otherPorts
     case agentSessions, usageLimits
+    case worktrees
     case processTable
     case widget(UUID)
 
     /// Every kind except widgets, which come from the user's widget list.
     public static let builtIn: [SectionKind] = [
         .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects,
-        .devServers, .otherPorts, .agentSessions, .usageLimits, .processTable,
+        .devServers, .otherPorts, .agentSessions, .usageLimits, .worktrees, .processTable,
     ]
 
     /// Where the kind goes when it is new or re-added without a page.
@@ -25,6 +26,7 @@ public enum SectionKind: Codable, Hashable, Sendable {
         case .needsYou, .clock, .resources, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
         case .devServers, .otherPorts: .ports
         case .agentSessions, .usageLimits: .agents
+        case .worktrees: .worktrees
         case .processTable: .processes
         case .widget: .widgets
         }

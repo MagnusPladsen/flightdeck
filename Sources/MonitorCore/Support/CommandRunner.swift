@@ -10,10 +10,11 @@ public struct CommandResult: Sendable {
 public enum CommandRunner {
     static let searchPath = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
-    public static func run(_ executable: String, _ arguments: [String], timeout: TimeInterval = 5) -> CommandResult {
+    public static func run(_ executable: String, _ arguments: [String], timeout: TimeInterval = 5, in directory: String? = nil) -> CommandResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
+        process.currentDirectoryURL = directory.map { URL(fileURLWithPath: $0) }
         var environment = ProcessInfo.processInfo.environment
         environment["PATH"] = searchPath + ":" + (environment["PATH"] ?? "")
         process.environment = environment

@@ -104,6 +104,10 @@ final class AppSettings {
     var quietAlertHandling: QuietAlertHandling { didSet { defaults.set(quietAlertHandling.rawValue, forKey: "quietAlertHandling") } }
     /// Set from the menu bar bell; nil when alerts aren't paused.
     var alertsPausedUntil: Date? { didSet { defaults.set(alertsPausedUntil, forKey: "alertsPausedUntil") } }
+    /// Days without a commit before a clean worktree counts as stale.
+    var staleWorktreeDays: Int { didSet { defaults.set(staleWorktreeDays, forKey: "staleWorktreeDays") } }
+    /// Folders of repositories seen through ports and agents, so their worktrees stay listed after those stop.
+    var worktreeRepositoryFolders: [String] { didSet { defaults.set(worktreeRepositoryFolders, forKey: "worktreeRepositoryFolders") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -134,6 +138,8 @@ final class AppSettings {
         quietHours = Self.load(QuietHours.self, forKey: "quietHours", from: defaults) ?? QuietHours()
         quietAlertHandling = defaults.string(forKey: "quietAlertHandling").flatMap(QuietAlertHandling.init(rawValue:)) ?? .summarize
         alertsPausedUntil = defaults.object(forKey: "alertsPausedUntil") as? Date
+        staleWorktreeDays = defaults.object(forKey: "staleWorktreeDays") as? Int ?? 14
+        worktreeRepositoryFolders = defaults.stringArray(forKey: "worktreeRepositoryFolders") ?? []
         migrateLegacyCustomColors()
     }
 

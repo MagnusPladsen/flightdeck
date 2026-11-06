@@ -21,7 +21,8 @@ final class MonitorStore {
 
     let settings: AppSettings
     let notifier = AgentNotifier()
-    private let engine = MonitorEngine()
+    let worktreeOverview: WorktreeOverview
+    private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
     /// Agents cleared from "Your turn", with the activity time they were cleared at.
@@ -36,6 +37,9 @@ final class MonitorStore {
 
     init(settings: AppSettings) {
         self.settings = settings
+        let engine = MonitorEngine()
+        self.engine = engine
+        worktreeOverview = WorktreeOverview(engine: engine, settings: settings)
         notifier.openTerminal = { [weak self] pid, folder in
             guard let self else { return }
             if let agent = agents.first(where: { $0.pid == pid }) { openTerminal(for: agent) } else { openInTerminal(folder) }
@@ -46,6 +50,12 @@ final class MonitorStore {
     var visiblePorts: [ListeningPort] { settings.showSystemPorts ? ports : devServers }
     var activeAgents: [AgentSession] { agents.filter { $0.state != .idle } }
     var visibleAgents: [AgentSession] { settings.showIdleAgents ? agents : activeAgents }
+    var staleWorktrees: [Worktree] { worktreeOverview.staleWorktrees(agents: agents) }
+
+    /// Checkouts that servers and agents run in; their repositories feed the worktree overview.
+    var projectFolders: [String] {
+        ports.compactMap(\.project?.rootPath) + agents.compactMap { $0.project?.rootPath ?? $0.workingDirectory }
+    }
 
     /// The agent whose limits the default limit resources show: the default agent when it has
     /// limit data, otherwise Claude Code, then Codex, then any other agent that reports limits.
@@ -70,6 +80,7 @@ final class MonitorStore {
             poll(every: .seconds(60)) { await $0.refreshUsage() },
             poll(every: .seconds(5)) { await $0.refreshDueWidgets() },
             poll(every: .seconds(30)) { await $0.refreshProjectCache() },
+            poll(every: .seconds(60)) { await $0.refreshWorktrees() },
         ]
     }
 
@@ -104,6 +115,7 @@ final class MonitorStore {
         self.agents = applyingClearedTurns(to: collected)
         hasCollectedAgents = true
         alertAboutChanges(since: previous)
+        if previous == nil { await refreshWorktrees() }
     }
 
     func setAlertsEnabled(_ isEnabled: Bool) {
@@ -162,6 +174,15 @@ final class MonitorStore {
         await refreshPortsAndAgents()
         await refreshUsage()
         await refreshDueWidgets(force: true)
+        await refreshWorktrees()
+    }
+
+    func refreshWorktrees() async {
+        await worktreeOverview.refresh(projectFolders: projectFolders)
+    }
+
+    func cleanUpWorktrees(_ targets: [Worktree]) async {
+        await worktreeOverview.cleanUp(targets, projectFolders: projectFolders)
     }
 
     private func refreshProjectCache() async {
@@ -185,6 +206,7 @@ final class MonitorStore {
         ports = DemoData.ports
         agents = DemoData.agents
         usage = DemoData.usage
+        worktreeOverview.showDemo(DemoData.worktrees)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)

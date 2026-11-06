@@ -11,6 +11,7 @@ final class MonitorEngine: @unchecked Sendable {
     private let codexUsage = CodexUsageReader()
     private let claudeLimits = ClaudeLimitsClient()
     private var claudeLimitsSchedule = ClaudeLimitsSchedule()
+    private let worktrees = WorktreeCollector()
 
     func collectSystem() -> SystemSnapshot {
         system.collect()
@@ -22,6 +23,18 @@ final class MonitorEngine: @unchecked Sendable {
 
     func collectAgents(from processes: [ProcessSample]) -> [AgentSession] {
         agents.collect(from: processes)
+    }
+
+    func collectWorktrees(repositoriesContaining folders: [String]) -> [Worktree] {
+        worktrees.collect(repositoriesContaining: folders)
+    }
+
+    func repositoryRoot(containing folder: String) -> String? {
+        worktrees.repositoryRoot(containing: folder)
+    }
+
+    func removeWorktree(_ worktree: Worktree) -> WorktreeRemovalResult {
+        worktrees.remove(worktree)
     }
 
     func refreshProjectCache() {
