@@ -8,6 +8,7 @@ struct FlightdeckApp: App {
     @State private var updater = AppUpdater()
     @State private var asker = ClaudeAsker()
     @State private var whatsNew = WhatsNew()
+    @State private var navigation = DashboardNavigation()
 
     init() {
         let store = MonitorStore(settings: AppSettings())
@@ -20,18 +21,21 @@ struct FlightdeckApp: App {
             MenuBarPanel()
                 .environment(store)
                 .environment(updater)
+                .environment(navigation)
                 .themedRoot(store.settings)
         } label: {
             MenuBarLabel(store: store)
-                .modifier(DashboardOpenerBridge())
+                .modifier(DashboardOpenerBridge(navigation: navigation))
         }
         .menuBarExtraStyle(.window)
 
         Window("Dashboard", id: DashboardView.windowID) {
             DashboardView()
                 .environment(store)
+                .environment(updater)
                 .environment(asker)
                 .environment(whatsNew)
+                .environment(navigation)
                 .themedRoot(store.settings)
                 .onAppear { DockPresence.dashboardDidOpen() }
                 .onDisappear { DockPresence.dashboardDidClose() }
@@ -39,6 +43,10 @@ struct FlightdeckApp: App {
         .defaultSize(width: 1180, height: 780)
         .windowStyle(.hiddenTitleBar)
         .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button("Settings…") { DashboardOpener.openSettings() }
+                    .keyboardShortcut(",", modifiers: .command)
+            }
             CommandGroup(after: .textEditing) {
                 Button("Ask Claude…") {
                     DashboardOpener.open()
@@ -46,14 +54,6 @@ struct FlightdeckApp: App {
                 }
                 .keyboardShortcut("k", modifiers: .command)
             }
-        }
-
-        Settings {
-            SettingsView()
-                .environment(store)
-                .environment(updater)
-                .environment(whatsNew)
-                .themedRoot(store.settings)
         }
     }
 }
@@ -78,11 +78,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @MainActor
 enum DashboardOpener {
     private static var openWindow: OpenWindowAction?
+    private static var navigation: DashboardNavigation?
 
     /// Stores the action and opens the dashboard the first time, so it appears on launch.
-    static func register(_ action: OpenWindowAction) {
+    static func register(_ action: OpenWindowAction, navigation: DashboardNavigation) {
         let isFirstRegistration = openWindow == nil
         openWindow = action
+        self.navigation = navigation
         if isFirstRegistration { open() }
     }
 
@@ -91,14 +93,21 @@ enum DashboardOpener {
         openWindow?(id: DashboardView.windowID)
         DockPresence.dashboardDidOpen()
     }
+
+    /// Opens the dashboard on its settings page.
+    static func openSettings() {
+        navigation?.showSettings()
+        open()
+    }
 }
 
 /// Hands the scene's `openWindow` action to `DashboardOpener` from the always-rendered menu bar label.
 private struct DashboardOpenerBridge: ViewModifier {
     @Environment(\.openWindow) private var openWindow
+    var navigation: DashboardNavigation
 
     func body(content: Content) -> some View {
-        content.onAppear { DashboardOpener.register(openWindow) }
+        content.onAppear { DashboardOpener.register(openWindow, navigation: navigation) }
     }
 }
 

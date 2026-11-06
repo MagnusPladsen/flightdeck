@@ -7,7 +7,7 @@ struct PageListSidebar: View {
     @Environment(MonitorStore.self) private var store
     @Environment(LayoutEditor.self) private var editor
     @Environment(\.theme) private var theme
-    @Binding var selection: DashboardPage
+    @Binding var selection: DashboardDestination
     var count: (DashboardPage) -> Int
 
     var body: some View {
@@ -18,15 +18,10 @@ struct PageListSidebar: View {
             .padding(.horizontal, 14)
             .padding(.bottom, 18)
             ForEach(DashboardPage.allCases) { page in
-                PageButton(page: page, count: count(page), isSelected: page == selection) { selection = page }
+                PageButton(page: page, count: count(page), isSelected: selection == .page(page)) { selection = .page(page) }
             }
             Spacer()
-            SettingsLink {
-                Label("Settings", systemImage: "gearshape").font(.system(size: 15, weight: .medium))
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(theme.muted)
-            .padding(.horizontal, 14)
+            SettingsButton(isSelected: selection == .settings) { selection = .settings }
         }
         .padding(.top, 44)
         .padding(.bottom, 18)
@@ -76,5 +71,27 @@ private struct PageButton: View {
     private var background: Color {
         if isSelected { return theme.overlay }
         return isHovering ? theme.surface : .clear
+    }
+}
+
+private struct SettingsButton: View {
+    @Environment(\.theme) private var theme
+    var isSelected: Bool
+    var select: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: select) {
+            Label("Settings", systemImage: "gearshape")
+                .font(.system(size: 15, weight: isSelected ? .heavy : .medium))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(isSelected ? theme.overlay : (isHovering ? theme.surface : .clear), in: Capsule())
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(isSelected ? theme.foreground : theme.muted)
+        .onHover { isHovering = $0 }
     }
 }
