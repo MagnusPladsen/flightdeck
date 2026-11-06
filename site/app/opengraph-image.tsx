@@ -51,7 +51,7 @@ export default async function OpenGraphImage(): Promise<ImageResponse> {
         <img
           src={readScreenshot("overview.png")}
           width={573}
-          height={543}
+          height={515}
           style={{ marginTop: 72, borderRadius: 18, border: `2px solid ${COLORS.line}` }}
           alt=""
         />

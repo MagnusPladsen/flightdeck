@@ -16,34 +16,50 @@ import {
 const PINS = [
   {
     x: 22,
-    y: 8,
+    y: 8.5,
     title: "Search and ask",
     body: "Type to find any agent or project across Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider. Press Return or ⌘K to ask Claude about what's running. The picker sets your default agent, whose limits show below.",
   },
-  { x: 22, y: 19, title: "Who needs you", body: "The agent waiting on you leads, with a count of the others." },
-  { x: 22, y: 36.5, title: "Go to terminal", body: "Opens that agent's own terminal. Later sets it aside." },
-  { x: 70.5, y: 21, title: "A big clock", body: "Readable from across the room on a second screen." },
+  { x: 22, y: 20, title: "Who needs you", body: "The agent waiting on you leads, with a count of the others." },
   {
     x: 22,
-    y: 50,
+    y: 37.5,
+    title: "Go to terminal",
+    body: "Focuses that agent's own Ghostty, iTerm2, Terminal or tmux tab. Later sets it aside, Stop interrupts it. ⌃⌥N jumps to the next agent that needs you from any app.",
+  },
+  { x: 73, y: 21, title: "A big clock", body: "Readable from across the room on a second screen." },
+  {
+    x: 22,
+    y: 51.5,
     title: "System and limits",
     body: "CPU and memory, plus your default agent's 5h and week limits. Add disk, network, battery or Claude Code and Codex limits side by side.",
   },
   {
     x: 22,
-    y: 61,
+    y: 63,
     title: "Needs you",
-    body: "Every waiting agent: what it said or wants to run, its folder and branch. Hover a card and clear it until that agent does something new.",
+    body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new.",
   },
-  { x: 10, y: 33.5, title: "Pages", body: "Servers and ports, AI agents, processes and widgets." },
+  {
+    x: 10,
+    y: 40,
+    title: "Pages",
+    body: "Servers and ports, AI agents, worktrees, processes and widgets. Settings sits at the bottom of the sidebar.",
+  },
 ];
 
 const FEATURE_ROWS = [
   {
     label: "AI agents",
     title: "Every agent, one glance.",
-    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval or waiting for you.",
+    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on.",
     image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1180, height: 917 },
+  },
+  {
+    label: "Worktrees",
+    title: "Clear out old worktrees.",
+    body: "Every git worktree with its changes, ahead/behind, PR and the agent working in it. Clean ones with no agent, no open PR and no recent commits are marked stale, and one click cleans them up.",
+    image: { src: "/screenshots/worktrees.png", alt: "Worktrees page with stale worktrees and Clean up", width: 1180, height: 720 },
   },
   {
     label: "Dev servers",
@@ -54,14 +70,20 @@ const FEATURE_ROWS = [
   {
     label: "Menu bar",
     title: "One click away.",
-    body: "The panel shows who needs you, CPU and memory, and your dev servers, without opening the dashboard.",
-    image: { src: "/screenshots/menu-bar-panel.png", alt: "Flightdeck menu bar panel", width: 380, height: 739 },
+    body: "The panel shows who needs you, CPU and memory, and your dev servers, without opening the dashboard. Its bell pauses alerts for a while.",
+    image: { src: "/screenshots/menu-bar-panel.png", alt: "Flightdeck menu bar panel", width: 380, height: 740 },
     isPanel: true,
+  },
+  {
+    label: "Settings",
+    title: "Settings, in the dashboard.",
+    body: "Settings is a page in the dashboard, not a separate window. Set quiet hours, and alerts held back arrive as one summary afterwards. Change the next-agent shortcut, or turn on token spend with a daily budget alert.",
+    image: { src: "/screenshots/settings.png", alt: "Settings page in the dashboard", width: 1180, height: 917 },
   },
   {
     label: "Your layout",
     title: "Rearrange any page.",
-    body: "13 themes, each with its own layout. Unlock any page to drag, resize or hide sections on a 12-column grid.",
+    body: "13 layouts and 22 themes. Copy a built-in theme to make your own colours. Unlock any page to drag, resize or hide sections on a 12-column grid.",
     image: { src: "/screenshots/edit-layout.png", alt: "Layout editing with the page unlocked", width: 1180, height: 917 },
   },
 ];
@@ -129,8 +151,8 @@ export default function Home() {
               className="shot"
               src="/screenshots/overview.png"
               alt="Flightdeck overview with numbered labels: search and ask, who needs you, go to terminal, clock, system and limits, the Needs you list and pages"
-              width={1146}
-              height={1085}
+              width={1180}
+              height={1060}
               priority
             />
             {PINS.map((pin, index) => (

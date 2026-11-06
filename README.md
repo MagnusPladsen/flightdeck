@@ -45,18 +45,28 @@ brew install --cask magnuspladsen/tap/flightdeck
 |---|---|
 | <img src="docs/screenshots/edit-layout.png" alt="Layout editing with the page unlocked" width="420"> | <img src="docs/screenshots/ports.png" alt="Servers and ports page" width="420"> |
 
+| Worktrees and stale clean-up | Settings in the dashboard |
+|---|---|
+| <img src="docs/screenshots/worktrees.png" alt="Worktrees page with stale worktrees and Clean up" width="420"> | <img src="docs/screenshots/settings.png" alt="Settings page in the dashboard" width="420"> |
+
 Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the same.
 
 ## Features
 
 - **System**: CPU, memory, network and disk, with live sparklines.
 - **Dev servers**: every listening port mapped to its git project, branch and worktree, with the framework detected (e.g. "Next.js · shop · worktree checkout · :3000"). Open in browser, editor or terminal, or stop the process.
-- **AI agents**: which folders Claude Code, Codex and other agents are working in, and whether each is working, waiting for approval or waiting for you.
+- **AI agents**: which folders Claude Code, Codex and other agents are working in, and whether each is working, waiting for approval or waiting for you. Agents that look stuck (e.g. the same tool call over and over) get a badge with the reason and count as needing you. Cards can show CPU and memory for the agent and everything it started.
+- **Agent controls**: Go to terminal focuses the agent's own Ghostty, iTerm2, Terminal or tmux tab; Stop interrupts it. Press ⌃⌥N anywhere to jump to the next agent that needs you (change the shortcut in Settings › General).
+- **Worktrees**: every git worktree with its changes, ahead/behind, PR and the agent in it. Clean worktrees with no agent, no open PR and no commits for 14 days (adjustable) are marked stale, and Clean up removes them.
+- **Alerts**: a notification when an agent needs you. Set quiet hours, or pause alerts from the bell in the menu bar panel; alerts held back arrive as one summary afterwards.
 - **Usage limits**: Codex 5h and weekly limits from local logs; Claude token counts from local logs, and optionally Claude limit percentages.
+- **Token spend**: optional, off by default. Estimated cost per project and model from Claude Code and Codex logs, with a daily budget alert. Turn it on in Settings › AI.
 - **Ask Claude**: type a question in the overview's search bar and press Return, or press ⌘K anywhere in the dashboard. The answer opens in a palette with follow-ups, and agents it names open their terminal in one click. It runs your installed `claude` CLI with read-only tools and a snapshot of what the dashboard shows.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 
-Ships 13 layouts and 22 themes, and any theme works on any layout. Ignition is the default layout (a near-black agent board that leads with whichever agent needs you); the others are macOS, Terminal, Glass, Bento, Cockpit, Editorial, Neon, Agent focus, Projects, Zen, Mission control and Timeline. Each layout switches to the theme it was designed in, and Settings › Appearance lets you pick another theme (Clean Dark, Clean Light, "match system", Tokyo Night, Catppuccin, Dracula and other coding palettes) or replace any colour with your own.
+Ships 13 layouts and 22 themes, and any theme works on any layout. Ignition is the default layout (a near-black agent board that leads with whichever agent needs you); the others are macOS, Terminal, Glass, Bento, Cockpit, Editorial, Neon, Agent focus, Projects, Zen, Mission control and Timeline. Each layout switches to the theme it was designed in, and Settings › Appearance lets you pick another theme (Clean Dark, Clean Light, "match system", Tokyo Night, Catppuccin, Dracula and other coding palettes). Built-in themes are read-only: copy one to make your own theme, which you can recolour, rename, duplicate and delete.
+
+Settings is a dashboard page at the bottom of the sidebar, not a separate window.
 
 A big clock sits beside the "needs you" headline on the overview; like every section it can be moved, resized or hidden. Hover a "Needs you" card and click its X to clear it until that agent does something new.
 
