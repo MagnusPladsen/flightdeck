@@ -3,6 +3,16 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.3.0 — 2026-11-06
+
+- Go to terminal and Stop on agent cards. Go to terminal focuses the agent's own Ghostty, iTerm2, Terminal or tmux tab.
+- Press ⌃⌥N anywhere to jump to the next agent that needs you. Change the shortcut in Settings › General.
+- Agents that look stuck get a badge with the reason and count as needing you.
+- Agent cards can show CPU and memory for the agent and everything it started.
+- A Worktrees page lists your worktrees with changes, ahead/behind, PR and agent, and cleans up stale ones.
+- Quiet hours, and pausing alerts from the menu bar bell. Alerts held back arrive as one summary afterwards.
+- Optional token and spend tracking per project and model, with a daily budget alert. Turn it on in Settings › AI.
+
 ## 1.2.0 — 2026-11-06
 
 - Settings is now a page in the dashboard instead of a separate window.
