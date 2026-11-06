@@ -10,6 +10,7 @@ struct OfficeScene {
     var memory: MemoryUsage?
     /// Remaining share of the most-used limit window, 0...1; nil without limit data.
     var limitsHeadroom: Double?
+    var isMusicPlaying: Bool
     var player: OfficePoint
     var isPlayerWalking: Bool
     var playerFacesLeft: Bool
@@ -97,6 +98,7 @@ struct OfficeRenderer {
         }
         items.append(OfficeDrawable(depth: Double(scene.map.cpuRack.maxY) - 0.1) { furniture.drawCPURack() })
         items.append(OfficeDrawable(depth: Double(scene.map.waterCooler.y) + 0.9) { furniture.drawWaterCooler() })
+        items.append(OfficeDrawable(depth: Double(scene.map.jukebox.y) + 0.9) { furniture.drawJukebox() })
         items.append(OfficeDrawable(depth: scene.player.y + OfficeMotion.radius) { people.drawPlayer() })
         return items
     }

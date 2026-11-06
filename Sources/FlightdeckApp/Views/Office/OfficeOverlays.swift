@@ -1,19 +1,25 @@
 import MonitorCore
 import SwiftUI
 
-/// A post-style card for an agent that needs you, with a button that walks you over.
+/// A post-style card for an agent that needs you, with a button that walks you over and one that shrinks it into an avatar.
 struct NeedsYouPost: View {
     @Environment(\.theme) private var theme
     var agent: AgentSession
+    var avatarSpace: Namespace.ID
     var walk: () -> Void
+    var shrink: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            OfficeAvatar(agent: agent).frame(width: 34, height: 34)
+            OfficeAvatar(agent: agent)
+                .matchedGeometryEffect(id: agent.pid, in: avatarSpace)
+                .frame(width: 34, height: 34)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 4) {
                     Text(agent.tool.displayName).font(.callout.weight(.bold))
                     Text("@\(agent.displayName) · \(agent.ageText())").font(.callout).foregroundStyle(theme.muted).lineLimit(1)
+                    Spacer(minLength: 4)
+                    IconButton(systemImage: "minus", help: "Shrink to an avatar", action: shrink)
                 }
                 Text(message).font(.callout).fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 14) {
@@ -37,6 +43,45 @@ struct NeedsYouPost: View {
         let action = agent.actionLine
         if agent.state == .possiblyStuck { return "Might be stuck: \(agent.stuckReason?.summary ?? action.detail)" }
         return action.detail.isEmpty ? "Waiting for your approval" : "Waiting for your approval: \(action.detail)"
+    }
+}
+
+/// Agents still waiting on you after their post shrank: faces in a row, ringed in the Needs-you colour.
+struct NeedsYouAvatarRow: View {
+    var agents: [AgentSession]
+    var avatarSpace: Namespace.ID
+    var walk: (Int32) -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(agents) { agent in
+                NeedsYouAvatar(agent: agent, avatarSpace: avatarSpace) { walk(agent.pid) }
+            }
+        }
+    }
+}
+
+private struct NeedsYouAvatar: View {
+    @Environment(\.theme) private var theme
+    var agent: AgentSession
+    var avatarSpace: Namespace.ID
+    var walk: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: walk) {
+            OfficeAvatar(agent: agent)
+                .matchedGeometryEffect(id: agent.pid, in: avatarSpace)
+                .frame(width: 36, height: 36)
+                .overlay { Circle().strokeBorder(theme.warning, lineWidth: 2.5) }
+                .scaleEffect(isHovering ? 1.08 : 1)
+                .shadow(color: theme.warning.opacity(0.5), radius: 5)
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+        .animation(.smooth(duration: 0.15), value: isHovering)
+        .help("\(agent.tool.displayName) @\(agent.displayName) · \(agent.state.label) · \(agent.ageText()) — click to walk there")
     }
 }
 

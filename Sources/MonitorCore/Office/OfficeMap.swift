@@ -50,6 +50,7 @@ public enum OfficeObject: Hashable, Sendable {
     case cpuRack
     case waterCooler
     case wallClock
+    case jukebox
 }
 
 /// The whole office, laid out from the current agents and dev servers.
@@ -62,6 +63,8 @@ public struct OfficeMap: Hashable, Sendable {
     /// Servers that don't belong to a checkout, e.g. Docker containers.
     public var closetRacks: [OfficeRack]
     public var waterCooler: TilePoint
+    /// Next to the water cooler; plays whatever the Mac is playing.
+    public var jukebox: TilePoint
     /// Wall tile holding the clock; the limits battery hangs on the tile to its right.
     public var wallClock: TilePoint
     public var playerStart: OfficePoint
@@ -94,6 +97,7 @@ public struct OfficeMap: Hashable, Sendable {
         if let rack = racks.first(where: { $0.tile == tile }) { return .rack(rack.port) }
         if cpuRack.contains(tile) { return .cpuRack }
         if tile == waterCooler { return .waterCooler }
+        if tile == jukebox { return .jukebox }
         if tile == wallClock || tile == TilePoint(x: wallClock.x + 1, y: wallClock.y) { return .wallClock }
         return nil
     }
@@ -208,7 +212,7 @@ private struct OfficeMapBuilder {
         let closetRacks = orphans.enumerated().map { OfficeRack(port: $1, tile: TilePoint(x: closet.x + 4 + $0, y: closet.y + 1)) }
         let map = OfficeMap(
             grid: OfficeGrid(width: width, height: Self.mapHeight), rooms: rooms, closet: closet, hallway: hallway, cpuRack: cpuRack,
-            closetRacks: closetRacks, waterCooler: TilePoint(x: closet.maxX - 2, y: hallway.y), wallClock: TilePoint(x: closet.maxX - 4, y: closet.maxY - 1),
+            closetRacks: closetRacks, waterCooler: TilePoint(x: closet.maxX - 2, y: hallway.y), jukebox: TilePoint(x: closet.maxX - 1, y: hallway.y), wallClock: TilePoint(x: closet.maxX - 4, y: closet.maxY - 1),
             playerStart: TilePoint(x: closet.x + 3, y: hallway.y + 1).center, poses: Dictionary(agents.map { ($0.pid, OfficePose(state: $0.state)) }, uniquingKeysWith: { first, _ in first }))
         return carved(map)
     }
@@ -225,7 +229,7 @@ private struct OfficeMapBuilder {
         grid.fill(map.hallway, with: .hallFloor)
         grid[TilePoint(x: map.closet.x + 3, y: map.closet.maxY - 1)] = .closetFloor
         grid.fill(map.cpuRack, with: .furniture)
-        for tile in map.closetRacks.map(\.tile) + [map.waterCooler] { grid[tile] = .furniture }
+        for tile in map.closetRacks.map(\.tile) + [map.waterCooler, map.jukebox] { grid[tile] = .furniture }
         var result = map
         result.grid = grid
         return result

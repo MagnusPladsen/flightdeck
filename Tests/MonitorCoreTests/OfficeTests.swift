@@ -134,6 +134,16 @@ struct OfficeTests {
         let seat = map.position(of: 1)!
         #expect(map.object(at: OfficePoint(x: seat.x, y: seat.y - 0.5)) == .agent(1))
         #expect(map.object(at: map.waterCooler.center) == .waterCooler)
+        #expect(map.object(at: map.jukebox.center) == .jukebox)
         #expect(map.object(at: TilePoint(x: map.cpuRack.x, y: map.cpuRack.y).center) == .cpuRack)
+    }
+
+    @Test func jukeboxSitsInTheHallwayWithoutBlockingDoors() {
+        let map = OfficeMap.build(agents: ["a", "b", "c"].enumerated().map { agent(Int32($0), project($1)) }, ports: [])
+        #expect(map.hallway.contains(map.jukebox))
+        #expect(map.grid[map.jukebox] == .furniture)
+        for room in map.rooms {
+            #expect(OfficePathfinder.path(in: map.grid, from: map.playerStart.tile, to: room.door) != nil)
+        }
     }
 }
