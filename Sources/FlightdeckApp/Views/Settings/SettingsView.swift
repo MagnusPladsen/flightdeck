@@ -360,7 +360,7 @@ private struct NowPlayingSettings: View {
         } header: {
             Text("Now playing")
         } footer: {
-            Text("Shows the track, artist and artwork from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays. Without the actual audio the visualiser animates to play and pause; following the audio asks for the system audio recording permission and only listens while the visualiser is on screen.")
+            Text("Shows the track, artist, artwork and playback controls from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays.\n\nWith \"Visualiser follows the actual audio\" off, the bars are an animation that only follows play and pause, not the beat; the section marks this as Animated. Turn it on for real levels, marked Live audio: it asks for the system audio recording permission and only listens while the visualiser is on screen. Mode, style and colour are in the adjust menu on the section.")
         }
     }
 }

@@ -15,9 +15,9 @@ struct SectionHost: View {
         case .clock:
             ClockSection()
         case .resources:
-            LayoutResources()
+            CollapsibleSectionHost(section: .system, title: "System") { LayoutResources() }
         case .nowPlaying:
-            NowPlayingSection()
+            CollapsibleSectionHost(section: .nowPlaying, title: "Now playing", collapsedDetail: store.nowPlaying.track?.title) { NowPlayingSection() }
         case .yourTurn:
             LayoutAgentColumn(column: .yourTurn, groups: AgentBoardColumn.yourTurn.groups(from: agents), navigate: context.navigate)
         case .workingAgents:

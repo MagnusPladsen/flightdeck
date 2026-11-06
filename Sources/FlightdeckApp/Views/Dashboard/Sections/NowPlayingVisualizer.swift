@@ -1,10 +1,8 @@
 import MonitorCore
 import SwiftUI
 
-/// How the visualiser draws, picked to suit each layout.
-enum VisualizerStyle {
-    case bars, segments, waveform, rings
-
+/// Each layout's own visualiser style, used until the user picks one.
+extension VisualizerStyle {
     init(layout: DashboardLayout) {
         switch layout {
         case .terminal, .cockpit, .mission: self = .segments
@@ -13,6 +11,25 @@ enum VisualizerStyle {
         default: self = .bars
         }
     }
+}
+
+/// Gradient stops for the visualiser: the theme's own unless the user picked a palette.
+struct VisualizerColors {
+    var stops: [Color]
+    var glow: Color
+
+    init(palette: VisualizerPalette?, theme: Theme) {
+        switch palette {
+        case nil: stops = [theme.primary, theme.secondary, theme.accent]
+        case .accent: stops = [theme.accent.opacity(0.65), theme.accent, theme.accent]
+        case .mono: stops = [theme.foreground.opacity(0.5), theme.foreground.opacity(0.75), theme.foreground]
+        case let fixed?: stops = (fixed.hexStops ?? []).compactMap(Color.init(hexString:))
+        }
+        glow = stops.last ?? theme.accent
+    }
+
+    var first: Color { stops.first ?? glow }
+    var middle: Color { stops.isEmpty ? glow : stops[stops.count / 2] }
 }
 
 /// Live bars for the playing track: real levels from the system audio tap when it is on and
@@ -28,10 +45,11 @@ struct NowPlayingVisualizer: View {
     @State private var isSettling = false
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: !track.isPlaying && !isSettling)) { context in
-            let levels = feed.levels(at: context.date, track: track, audio: store.nowPlaying.audio)
+        let colors = VisualizerColors(palette: store.settings.visualizerPalette, theme: theme)
+        TimelineView(.animation(minimumInterval: 1 / 60, paused: !track.isPlaying && !isSettling)) { context in
+            let frame = feed.frame(at: context.date, track: track, audio: store.nowPlaying.audio)
             Canvas { canvas, size in
-                VisualizerDrawing(levels: levels, size: size, theme: theme).draw(style, in: &canvas)
+                VisualizerDrawing(levels: frame.levels, peaks: frame.peaks, size: size, theme: theme, colors: colors).draw(style, in: &canvas)
             }
         }
         .onAppear { store.nowPlaying.visualizerAppeared() }
@@ -48,14 +66,19 @@ struct NowPlayingVisualizer: View {
     }
 }
 
-/// Smoothed band levels from whichever source is live.
+/// Smoothed band levels, and the peaks above them, from whichever source is live.
 @MainActor
 final class SpectrumFeed {
     static let bandCount = 32
     private var smoother = SpectrumSmoother(bandCount: bandCount)
+    private var peakHold = PeakHold(bandCount: bandCount)
+    private var lastFrame: Date?
 
-    func levels(at date: Date, track: NowPlayingTrack, audio: SystemAudioTap) -> [Double] {
-        smoother.update(with: target(at: date, track: track, audio: audio))
+    func frame(at date: Date, track: NowPlayingTrack, audio: SystemAudioTap) -> (levels: [Double], peaks: [Double]) {
+        let elapsed = lastFrame.map { date.timeIntervalSince($0) } ?? SpectrumSmoother.referenceFrame
+        lastFrame = date
+        let levels = smoother.update(with: target(at: date, track: track, audio: audio), elapsed: elapsed)
+        return (levels, peakHold.update(with: levels, elapsed: elapsed))
     }
 
     private func target(at date: Date, track: NowPlayingTrack, audio: SystemAudioTap) -> [Double] {
@@ -68,14 +91,16 @@ final class SpectrumFeed {
     }
 }
 
-/// Draws band levels into a canvas in the theme's primary, secondary and accent colours.
+/// Draws band levels into a canvas in the visualiser's colours.
 private struct VisualizerDrawing {
     var levels: [Double]
+    var peaks: [Double]
     var size: CGSize
     var theme: Theme
+    var colors: VisualizerColors
 
     private var shading: GraphicsContext.Shading {
-        .linearGradient(Gradient(colors: [theme.primary, theme.secondary, theme.accent]), startPoint: .zero, endPoint: CGPoint(x: size.width, y: 0))
+        .linearGradient(Gradient(colors: colors.stops), startPoint: .zero, endPoint: CGPoint(x: size.width, y: 0))
     }
 
     func draw(_ style: VisualizerStyle, in canvas: inout GraphicsContext) {
@@ -84,7 +109,27 @@ private struct VisualizerDrawing {
         case .segments: drawSegments(in: &canvas)
         case .waveform: drawWaveform(in: &canvas)
         case .rings: drawRings(in: &canvas)
+        case .peaks: drawPeaks(in: &canvas)
         }
+    }
+
+    /// Thin bars with a cap on each band's recent peak that holds, then drops.
+    private func drawPeaks(in canvas: inout GraphicsContext) {
+        let slot = size.width / CGFloat(levels.count)
+        let capHeight = max(size.height * 0.035, 2)
+        var bars = Path(), caps = Path()
+        for (index, level) in levels.enumerated() {
+            let x = CGFloat(index) * slot + slot * 0.3
+            let height = max(CGFloat(level) * (size.height - capHeight * 2), 1)
+            bars.addRect(CGRect(x: x, y: size.height - height, width: slot * 0.4, height: height))
+            let peakY = size.height - CGFloat(peaks.indices.contains(index) ? peaks[index] : level) * (size.height - capHeight * 2) - capHeight * 2
+            caps.addRoundedRect(in: CGRect(x: x - slot * 0.1, y: peakY, width: slot * 0.6, height: capHeight), cornerSize: CGSize(width: capHeight / 2, height: capHeight / 2))
+        }
+        canvas.opacity = 0.85
+        canvas.fill(bars, with: shading)
+        canvas.opacity = 1
+        canvas.addFilter(.shadow(color: colors.glow.opacity(0.5), radius: 3))
+        canvas.fill(caps, with: .color(colors.glow))
     }
 
     private func drawBars(in canvas: inout GraphicsContext) {
@@ -146,9 +191,9 @@ private struct VisualizerDrawing {
     private func drawRings(in canvas: inout GraphicsContext) {
         let center = CGPoint(x: size.width / 2, y: size.height / 2)
         let inner = size.height * 0.2
-        canvas.addFilter(.shadow(color: theme.accent.opacity(0.6), radius: 5))
+        canvas.addFilter(.shadow(color: colors.glow.opacity(0.6), radius: 5))
         drawRays(around: center, inner: inner, outer: size.height / 2 - 2, in: &canvas)
-        canvas.stroke(Path(ellipseIn: CGRect(x: center.x - inner, y: center.y - inner, width: inner * 2, height: inner * 2)), with: .color(theme.accent.opacity(0.8)), lineWidth: 1.5)
+        canvas.stroke(Path(ellipseIn: CGRect(x: center.x - inner, y: center.y - inner, width: inner * 2, height: inner * 2)), with: .color(colors.glow.opacity(0.8)), lineWidth: 1.5)
         drawSideBars(from: center, gap: size.height / 2 + 10, in: &canvas)
     }
 
@@ -162,7 +207,7 @@ private struct VisualizerDrawing {
             rays.move(to: CGPoint(x: center.x + direction.x * (inner + 3), y: center.y + direction.y * (inner + 3)))
             rays.addLine(to: CGPoint(x: center.x + direction.x * length, y: center.y + direction.y * length))
         }
-        canvas.stroke(rays, with: .radialGradient(Gradient(colors: [theme.primary, theme.accent]), center: center, startRadius: inner, endRadius: outer),
+        canvas.stroke(rays, with: .radialGradient(Gradient(colors: [colors.first, colors.glow]), center: center, startRadius: inner, endRadius: outer),
                       style: StrokeStyle(lineWidth: max(2 * .pi * inner / CGFloat(mirrored.count) * 0.55, 1.5), lineCap: .round))
     }
 
@@ -178,6 +223,6 @@ private struct VisualizerDrawing {
             }
         }
         canvas.opacity = 0.75
-        canvas.fill(bars, with: .radialGradient(Gradient(colors: [theme.secondary, theme.primary.opacity(0.2)]), center: center, startRadius: gap, endRadius: center.x))
+        canvas.fill(bars, with: .radialGradient(Gradient(colors: [colors.middle, colors.first.opacity(0.2)]), center: center, startRadius: gap, endRadius: center.x))
     }
 }

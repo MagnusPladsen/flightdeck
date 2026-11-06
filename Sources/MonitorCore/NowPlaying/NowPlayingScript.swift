@@ -34,6 +34,7 @@ public enum NowPlayingScript {
         timestamp: timestamp.isNil() ? null : timestamp.timeIntervalSince1970, id: value(info, 'ContentItemIdentifier'),
         bundleID: client.isNil() ? null : ObjC.unwrap(client.bundleIdentifier),
         app: client.isNil() ? null : ObjC.unwrap(client.displayName),
+        pid: client.isNil() ? null : client.processIdentifier,
         hasArtwork: !info.objectForKey('kMRMediaRemoteNowPlayingInfoArtworkData').isNil()
       }, info];
     };

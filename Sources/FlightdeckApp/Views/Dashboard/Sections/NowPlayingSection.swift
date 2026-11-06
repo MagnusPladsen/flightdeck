@@ -2,41 +2,69 @@ import AppKit
 import MonitorCore
 import SwiftUI
 
-/// What the Mac is playing: artwork, track and a live visualiser in the theme's colours.
+/// What the Mac is playing: artwork, track, playback controls and, when expanded, a live
+/// visualiser in the theme's colours.
 struct NowPlayingSection: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.dashboardLayout) private var layout
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            ConceptHeading(title: "Now playing")
-            if let track = store.nowPlaying.track {
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 20) {
-                        NowPlayingDetails(track: track).frame(width: 300, alignment: .leading)
-                        visualizer(for: track)
-                    }
-                    VStack(alignment: .leading, spacing: 14) {
-                        NowPlayingDetails(track: track)
-                        visualizer(for: track)
-                    }
+            HStack {
+                ConceptHeading(title: "Now playing")
+                if let track = store.nowPlaying.track, store.settings.nowPlayingMode == .expanded {
+                    VisualizerSourceBadge(track: track)
                 }
+                NowPlayingAdjustButton()
+            }
+            if let track = store.nowPlaying.track {
+                content(for: track)
             } else {
                 NowPlayingPlaceholder()
             }
         }
     }
 
+    @ViewBuilder
+    private func content(for track: NowPlayingTrack) -> some View {
+        if store.settings.nowPlayingMode == .minimal {
+            NowPlayingDetails(track: track).frame(maxWidth: 420, alignment: .leading)
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 20) {
+                    NowPlayingDetails(track: track).frame(width: 300, alignment: .leading)
+                    visualizer(for: track)
+                }
+                VStack(alignment: .leading, spacing: 14) {
+                    NowPlayingDetails(track: track)
+                    visualizer(for: track)
+                }
+            }
+        }
+    }
+
     private func visualizer(for track: NowPlayingTrack) -> some View {
-        let style = VisualizerStyle(layout: layout)
+        let style = VisualizerStyle.resolved(choice: store.settings.visualizerStyle, layoutDefault: VisualizerStyle(layout: layout))
         return NowPlayingVisualizer(track: track, style: style)
             .frame(minWidth: 220, maxWidth: .infinity)
             .frame(height: style == .rings ? 96 : 72)
     }
 }
 
-/// Artwork, title, artist and where it plays, with a progress line when the length is known.
+/// Artwork, title, artist and where it plays, with a progress line when the length is known and
+/// the playback controls underneath.
 private struct NowPlayingDetails: View {
+    var track: NowPlayingTrack
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            NowPlayingSummary(track: track)
+            NowPlayingTransport(track: track)
+        }
+    }
+}
+
+private struct NowPlayingSummary: View {
     @Environment(\.theme) private var theme
     var track: NowPlayingTrack
 

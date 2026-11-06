@@ -52,24 +52,45 @@ private struct CustomizeResourcesButton: View {
     }
 }
 
-/// Section title with the customize button at the far end.
+/// Section title with the customize button at the far end. Inside a collapsible section the
+/// title also folds the section away.
 struct ConceptHeading: View {
     @Environment(\.theme) private var theme
     @Environment(\.dashboardLayout) private var layout
+    @Environment(\.sectionCollapse) private var collapse
     var title: String
     var count: Int?
     var showsCustomize = false
+    /// Muted text after the title, such as what plays in a collapsed now-playing section.
+    var detail: String?
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
+            if let collapse {
+                Button(action: collapse.toggle) { titleRow(chevron: collapse.isCollapsed ? "chevron.right" : "chevron.down") }
+                    .buttonStyle(.plain)
+                    .help(collapse.isCollapsed ? "Expand" : "Collapse")
+            } else {
+                titleRow(chevron: nil)
+            }
+            Spacer()
+            if showsCustomize { CustomizeResourcesButton() }
+        }
+    }
+
+    private func titleRow(chevron: String?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            if let chevron {
+                Image(systemName: chevron).font(.system(size: 10, weight: .bold)).foregroundStyle(theme.muted).frame(width: 12)
+            }
             Text(layout.style.uppercaseLabels ? title.uppercased() : title)
                 .font(.system(size: layout.style.uppercaseLabels ? 12 : 15, weight: .bold))
                 .tracking(layout.style.uppercaseLabels ? 1.4 : 0)
                 .foregroundStyle(layout.style.uppercaseLabels ? theme.muted : theme.foreground)
             if let count { Text("\(count)").font(.system(size: 13, weight: .medium)).foregroundStyle(theme.muted) }
-            Spacer()
-            if showsCustomize { CustomizeResourcesButton() }
+            if let detail { Text(detail).font(.system(size: 13)).foregroundStyle(theme.muted).lineLimit(1) }
         }
+        .contentShape(Rectangle())
     }
 }
 

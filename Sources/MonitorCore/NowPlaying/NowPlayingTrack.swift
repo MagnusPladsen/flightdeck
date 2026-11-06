@@ -8,6 +8,8 @@ public struct NowPlayingTrack: Equatable, Sendable {
     public var isPlaying: Bool
     public var sourceBundleID: String?
     public var sourceName: String?
+    /// The player's process, for its own controls such as volume.
+    public var sourceProcessID: Int32?
     public var duration: TimeInterval?
     /// Elapsed time at `reportedAt`; playback has moved on by `rate` seconds per second since.
     public var elapsed: TimeInterval?
@@ -17,7 +19,7 @@ public struct NowPlayingTrack: Equatable, Sendable {
     public var artwork: Data?
     public var hasArtwork: Bool
 
-    public init(title: String, artist: String? = nil, album: String? = nil, isPlaying: Bool, sourceBundleID: String? = nil, sourceName: String? = nil,
+    public init(title: String, artist: String? = nil, album: String? = nil, isPlaying: Bool, sourceBundleID: String? = nil, sourceName: String? = nil, sourceProcessID: Int32? = nil,
                 duration: TimeInterval? = nil, elapsed: TimeInterval? = nil, reportedAt: Date? = nil, rate: Double = 1,
                 identifier: String? = nil, artwork: Data? = nil, hasArtwork: Bool = false) {
         self.title = title
@@ -26,6 +28,7 @@ public struct NowPlayingTrack: Equatable, Sendable {
         self.isPlaying = isPlaying
         self.sourceBundleID = sourceBundleID
         self.sourceName = sourceName
+        self.sourceProcessID = sourceProcessID
         self.duration = duration
         self.elapsed = elapsed
         self.reportedAt = reportedAt
@@ -59,6 +62,23 @@ public struct NowPlayingTrack: Equatable, Sendable {
     /// "Artist · Album", leaving out whichever is empty.
     public var subtitle: String {
         [artist, album].compactMap { $0?.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    /// What a play or pause looks like straight away, before the player reports back. Skips change
+    /// nothing until the next track arrives.
+    public func applying(_ command: NowPlayingCommand, at now: Date) -> NowPlayingTrack {
+        let playing: Bool
+        switch command {
+        case .play: playing = true
+        case .pause: playing = false
+        case .togglePlayPause: playing = !isPlaying
+        case .nextTrack, .previousTrack: return self
+        }
+        var next = self
+        next.elapsed = position(at: now)
+        next.reportedAt = now
+        next.isPlaying = playing
+        return next
     }
 
     /// The script sends artwork once per track, so later updates of the same track keep it.

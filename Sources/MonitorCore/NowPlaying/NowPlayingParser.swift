@@ -21,6 +21,7 @@ public enum NowPlayingParser {
         var id: String?
         var bundleID: String?
         var app: String?
+        var pid: Int32?
         var hasArtwork: Bool?
         var artwork: String?
     }
@@ -42,6 +43,7 @@ public enum NowPlayingParser {
         return NowPlayingTrack(
             title: title, artist: nonEmpty(line.artist), album: nonEmpty(line.album),
             isPlaying: line.playing ?? (rate > 0), sourceBundleID: nonEmpty(line.bundleID), sourceName: nonEmpty(line.app),
+            sourceProcessID: line.pid.flatMap { $0 > 0 ? $0 : nil },
             duration: line.duration.flatMap { $0 > 0 ? $0 : nil }, elapsed: line.elapsed,
             reportedAt: line.timestamp.map(Date.init(timeIntervalSince1970:)), rate: rate > 0 ? rate : 1,
             identifier: nonEmpty(line.id), artwork: line.artwork.flatMap { Data(base64Encoded: $0) },

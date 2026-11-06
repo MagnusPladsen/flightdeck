@@ -117,6 +117,12 @@ final class AppSettings {
     var nowPlayingEnabled: Bool { didSet { defaults.set(nowPlayingEnabled, forKey: "nowPlayingEnabled") } }
     /// Off by default: hearing the audio needs the system audio recording permission.
     var nowPlayingUsesSystemAudio: Bool { didSet { defaults.set(nowPlayingUsesSystemAudio, forKey: "nowPlayingUsesSystemAudio") } }
+    var nowPlayingMode: NowPlayingMode { didSet { defaults.set(nowPlayingMode.rawValue, forKey: "nowPlayingMode") } }
+    /// Nil follows the layout's own style.
+    var visualizerStyle: VisualizerStyle? { didSet { defaults.set(visualizerStyle?.rawValue, forKey: "visualizerStyle") } }
+    /// Nil follows the theme's colours.
+    var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
+    var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -154,6 +160,10 @@ final class AppSettings {
         spendBudgetAlertedDay = defaults.object(forKey: "spendBudgetAlertedDay") as? Date
         nowPlayingEnabled = defaults.object(forKey: "nowPlayingEnabled") as? Bool ?? true
         nowPlayingUsesSystemAudio = defaults.bool(forKey: "nowPlayingUsesSystemAudio")
+        nowPlayingMode = defaults.string(forKey: "nowPlayingMode").flatMap(NowPlayingMode.init(rawValue:)) ?? .expanded
+        visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
+        visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
+        collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
         migrateLegacyCustomColors()
     }
 
@@ -243,6 +253,14 @@ final class AppSettings {
     private func updateCustomTheme(id: String, _ change: (inout CustomTheme) -> Void) {
         guard let index = customThemes.firstIndex(where: { $0.id == id }) else { return }
         change(&customThemes[index])
+    }
+
+    func isCollapsed(_ section: CollapsibleSection) -> Bool {
+        collapsedSections.contains(section)
+    }
+
+    func toggleCollapsed(_ section: CollapsibleSection) {
+        collapsedSections = CollapsibleSection.toggling(section, in: collapsedSections)
     }
 
     func isShowingInMenuBar(_ metric: MenuBarMetric) -> Bool {

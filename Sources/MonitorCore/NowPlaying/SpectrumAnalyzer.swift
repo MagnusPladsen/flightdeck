@@ -108,24 +108,78 @@ public struct SpectrumAnalyzer: Sendable {
     }
 }
 
-/// Bars rise quickly and fall slowly, the way hardware level meters move.
+/// Bars rise quickly and fall slowly, the way hardware level meters move. `attack` and `release`
+/// are the share of the gap closed per reference frame (1/30 s); `update(with:elapsed:)` scales them
+/// to the real time between frames so the motion is the same at any frame rate.
 public struct SpectrumSmoother: Sendable {
+    public static let referenceFrame: TimeInterval = 1.0 / 30
     public var attack: Double
     public var release: Double
     public private(set) var levels: [Double]
 
-    public init(bandCount: Int, attack: Double = 0.65, release: Double = 0.14) {
+    public init(bandCount: Int, attack: Double = 0.8, release: Double = 0.3) {
         self.attack = attack
         self.release = release
         levels = Array(repeating: 0, count: bandCount)
     }
 
+    /// One reference frame.
     public mutating func update(with target: [Double]) -> [Double] {
+        update(with: target, elapsed: Self.referenceFrame)
+    }
+
+    public mutating func update(with target: [Double], elapsed: TimeInterval) -> [Double] {
         if target.count != levels.count { levels = Array(repeating: 0, count: target.count) }
+        let frames = min(max(elapsed, 0), 0.25) / Self.referenceFrame
+        let rise = 1 - pow(1 - attack, frames), fall = 1 - pow(1 - release, frames)
         levels = zip(levels, target).map { current, next in
-            current + (next - current) * (next > current ? attack : release)
+            current + (next - current) * (next > current ? rise : fall)
         }
         return levels
+    }
+
+    /// Seconds a jump from 0 to 1 takes to cover `share` of the way, for a given frame interval.
+    public func responseTime(reaching share: Double, rising: Bool, frameInterval: TimeInterval) -> TimeInterval {
+        var probe = SpectrumSmoother(bandCount: 1, attack: attack, release: release)
+        if !rising { _ = probe.update(with: [1], elapsed: 10) }
+        let goal = rising ? share : 1 - share
+        var time = 0.0
+        while rising ? probe.levels[0] < goal : probe.levels[0] > goal {
+            _ = probe.update(with: [rising ? 1 : 0], elapsed: frameInterval)
+            time += frameInterval
+        }
+        return time
+    }
+}
+
+/// Little caps that sit on each band's highest recent level, hold there a moment, then drop.
+public struct PeakHold: Sendable {
+    public var holdTime: TimeInterval = 0.45
+    /// Full heights per second.
+    public var fallSpeed = 1.4
+    public private(set) var peaks: [Double]
+    private var heldFor: [TimeInterval]
+
+    public init(bandCount: Int) {
+        peaks = Array(repeating: 0, count: bandCount)
+        heldFor = Array(repeating: 0, count: bandCount)
+    }
+
+    public mutating func update(with levels: [Double], elapsed: TimeInterval) -> [Double] {
+        if levels.count != peaks.count {
+            peaks = Array(repeating: 0, count: levels.count)
+            heldFor = Array(repeating: 0, count: levels.count)
+        }
+        for (band, level) in levels.enumerated() {
+            if level >= peaks[band] {
+                peaks[band] = level
+                heldFor[band] = 0
+            } else {
+                heldFor[band] += elapsed
+                if heldFor[band] > holdTime { peaks[band] = max(peaks[band] - fallSpeed * elapsed, level) }
+            }
+        }
+        return peaks
     }
 }
 

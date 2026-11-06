@@ -5,10 +5,15 @@ import SwiftUI
 struct ResourceStrip: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
+    @Environment(\.sectionCollapse) private var collapse
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            ResourceControls(moveTitle: "Send to sidebar", moveImage: "sidebar.right")
+            HStack {
+                // The strip has no title of its own; one shows where it can collapse to it.
+                if collapse != nil { ConceptHeading(title: "System") }
+                ResourceControls(moveTitle: "Send to sidebar", moveImage: "sidebar.right")
+            }
             VStack(spacing: 0) {
                 Hairline()
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 16, alignment: .leading)], alignment: .leading, spacing: 0) {
@@ -157,7 +162,7 @@ struct ThinBar: View {
 }
 
 /// Small muted icon button that lights up on hover, for secondary controls.
-private struct IconButtonStyle: ButtonStyle {
+struct IconButtonStyle: ButtonStyle {
     @Environment(\.theme) private var theme
     @State private var isHovered = false
 
