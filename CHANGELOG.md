@@ -3,6 +3,14 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.5.0 — 2026-11-09
+
+- Now playing: play, pause, skip and change the volume for Spotify and Music from the dashboard. Pick Minimal or Expanded, five visualiser styles and six palettes from its adjust menu. A badge shows whether the visualiser is animated or follows live audio.
+- The System and Now playing sections can be collapsed.
+- Office: agents that need you show as avatars that bounce until you look, and a jukebox shows what's playing.
+- Sidebar icons line up in a fixed-width column.
+- The README and site cover the new Now playing and Office, with fresh screenshots.
+
 ## 1.4.0 — 2026-11-06
 
 - Office: a walkable pixel-art office where each project is a room and you can see what every agent is up to. Walk over to an agent to go to its terminal or stop it. Open it from Office in the sidebar or the Visualize button.
