@@ -16,7 +16,7 @@ One Swift package with two targets.
 - **Collectors/** — `SystemCollector` (CPU, memory, disks, network, battery, processes) and `PortCollector` (listening ports enriched with project, framework and Docker container).
 - **Projects/** — `ProjectResolver` maps a working directory to its git repo, branch and worktree; `FrameworkDetector` recognises dev servers from the command line and `package.json`.
 - **Layout/** — `PageLayouts` (which sections sit on which dashboard page, their column spans and the hidden ones), `SectionKind` and `GridPacking` (12-column row packing with spans of 3, 4, 6, 8 or 12).
-- **AI/** — `AgentCollector` finds Claude, Codex and other agent processes and derives their state from CPU and session logs. `ClaudeTokenTracker` and `CodexUsageReader` read local logs; `ClaudeLimitsClient` optionally calls Anthropic's unofficial usage endpoint.
+- **AI/** — `AgentCollector` finds Claude, Codex and other agent processes and derives their state from CPU and session logs. `ClaudeTokenTracker` and `CodexUsageReader` read local logs; `ClaudeLimitsClient` optionally calls Anthropic's unofficial usage endpoint. `UsageHistory` keeps the last 45 minutes of limit readings and `LimitForecast` projects from them when a limit runs out.
 
 ## FlightdeckApp
 
