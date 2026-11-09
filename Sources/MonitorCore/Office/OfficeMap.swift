@@ -51,6 +51,13 @@ public enum OfficeObject: Hashable, Sendable {
     case waterCooler
     case wallClock
     case jukebox
+    case jukeboxPad(NowPlayingCommand)
+}
+
+/// A floor pad in front of the jukebox that sends a playback command when clicked.
+public struct OfficeJukeboxPad: Hashable, Sendable {
+    public var tile: TilePoint
+    public var command: NowPlayingCommand
 }
 
 /// The whole office, laid out from the current agents and dev servers.
@@ -77,6 +84,12 @@ public struct OfficeMap: Hashable, Sendable {
     }
 
     public var desks: [OfficeDesk] { rooms.flatMap(\.cubicles).flatMap(\.desks) }
+
+    /// Previous, play or pause, and next, on the row in front of the jukebox.
+    public var jukeboxPads: [OfficeJukeboxPad] {
+        let commands: [NowPlayingCommand] = [.previousTrack, .togglePlayPause, .nextTrack]
+        return commands.enumerated().map { OfficeJukeboxPad(tile: TilePoint(x: jukebox.x - 1 + $0.offset, y: jukebox.y + 1), command: $0.element) }
+    }
     public var racks: [OfficeRack] { closetRacks + rooms.flatMap(\.cubicles).flatMap(\.racks) }
 
     public func desk(of pid: Int32) -> OfficeDesk? {
@@ -100,6 +113,7 @@ public struct OfficeMap: Hashable, Sendable {
         if cpuRack.contains(tile) { return .cpuRack }
         if tile == waterCooler { return .waterCooler }
         if tile == jukebox || speakers.contains(tile) { return .jukebox }
+        if let pad = jukeboxPads.first(where: { $0.tile == tile }) { return .jukeboxPad(pad.command) }
         if tile == wallClock || tile == TilePoint(x: wallClock.x + 1, y: wallClock.y) { return .wallClock }
         return nil
     }

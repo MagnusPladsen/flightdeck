@@ -1,7 +1,7 @@
 import Foundation
 
 /// A transport command for whatever owns the system now-playing slot, with MediaRemote's numbers.
-public enum NowPlayingCommand: Int, Sendable, CaseIterable {
+public enum NowPlayingCommand: Int, Hashable, Sendable, CaseIterable {
     case play = 0
     case pause = 1
     case togglePlayPause = 2

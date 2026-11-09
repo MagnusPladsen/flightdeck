@@ -15,6 +15,10 @@ struct OfficeScene {
     var track: NowPlayingTrack?
     /// The rave while music plays and the party is on.
     var party: OfficeParty?
+    /// The player stands by the jukebox, so its pads light up.
+    var isAtJukebox = false
+    /// The pad pressed a moment ago, drawn pushed in.
+    var pressedPad: NowPlayingCommand?
     var player: OfficePoint
     var isPlayerWalking: Bool
     var playerFacesLeft: Bool
@@ -31,6 +35,7 @@ struct OfficeRenderer {
     func draw(size: CGSize) {
         drawTiles(size: size)
         OfficeWallDecor(scene: scene, pen: pen, time: time).draw()
+        OfficePartyGear(scene: scene, pen: pen, time: time).drawPads()
         for item in drawables().sorted(by: { $0.depth < $1.depth }) { item.draw() }
         if let party = scene.party { OfficePartyLights(scene: scene, party: party, pen: pen, time: time).draw() }
         OfficePartyGear(scene: scene, pen: pen, time: time).drawGlow()

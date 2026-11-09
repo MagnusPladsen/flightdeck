@@ -41,7 +41,38 @@ struct OfficePartyGear {
             for speaker in scene.map.speakers { drawSpeakerGlow(speaker, party: party) }
             drawDiscoBall(party)
         }
-        if let track = scene.track { drawSign(track) }
+        if let track = scene.track {
+            drawPadRims()
+            drawSign(track)
+        }
+    }
+
+    /// Floor pads in front of the jukebox: previous, play or pause, next. Click them, or Space, Q and E nearby.
+    func drawPads() {
+        guard let track = scene.track else { return }
+        for pad in scene.map.jukeboxPads {
+            let (x, y) = OfficePen.pixels(pad.tile)
+            let isPressed = scene.pressedPad == pad.command
+            let sink = isPressed ? 1.0 : 0
+            pen.fill(x + 1, y + 2, 14, 13, 0x0B0910, opacity: 0.6)
+            pen.fill(x + 1, y + 1 + sink, 14, 12, isPressed ? 0x4A3A66 : 0x2A1F3A)
+            pen.fill(x + 1, y + 1 + sink, 14, 1, 0xFFFFFF, opacity: 0.18)
+            let icon = OfficePixelIcons.icon(for: pad.command, isPlaying: track.isPlaying)
+            pen.sprite(icon, palette: OfficePixelIcons.palette, bottomCenterX: x + 8, bottomY: y + 10.5 + sink)
+            if isPressed { pen.fill(x + 1, y + 1 + sink, 14, 12, 0xFFFFFF, opacity: 0.35) }
+        }
+    }
+
+    private func drawPadRims() {
+        let color = scene.party?.color(scene.party?.beat ?? 0) ?? Color(hex: Self.signColor)
+        let strength = scene.isAtJukebox ? 0.9 : 0.35
+        var glow = pen
+        glow.context.blendMode = .plusLighter
+        for (index, pad) in scene.map.jukeboxPads.enumerated() {
+            let (x, y) = OfficePen.pixels(pad.tile)
+            let rim = scene.party.map { $0.color(index + $0.beat) } ?? color
+            glow.context.stroke(Path(glow.rect(x + 1.5, y + 1.5, 13, 12)), with: .color(rim.opacity(strength * (0.7 + 0.3 * pulse))), lineWidth: pen.camera.scale)
+        }
     }
 
     private func drawSpeakerGlow(_ tile: TilePoint, party: OfficeParty) {
@@ -82,6 +113,9 @@ struct OfficePartyGear {
         pen.context.stroke(Path(pen.rect(sign.x, sign.y, sign.width, sign.height)), with: .color(color), lineWidth: pen.camera.scale)
         drawBulbs(sign, color: color)
         drawScrollingText(track, in: pen.rect(sign.x + 2, sign.y + 1.5, sign.width - 4, sign.height - 3), color: color)
+        if let progress = track.progress(at: Date()) {
+            pen.context.fill(Path(pen.rect(sign.x + 1, sign.y + sign.height - 1, (sign.width - 2) * progress, 0.75)), with: .color(.white.opacity(0.85)))
+        }
     }
 
     private func drawBulbs(_ sign: (x: Double, y: Double, width: Double, height: Double), color: Color) {

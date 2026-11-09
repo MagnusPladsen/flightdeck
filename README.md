@@ -51,7 +51,7 @@ brew install --cask magnuspladsen/tap/flightdeck
 
 | The Office | Now playing |
 |---|---|
-| <img src="docs/screenshots/office.png" alt="Office party: dimmed rooms, dance floor, lasers, speaker stacks and the jukebox panel" width="420"> | <img src="docs/screenshots/now-playing.png" alt="Now playing with player controls and the adjust menu" width="420"> |
+| <img src="docs/screenshots/office.png" alt="Office party: dimmed rooms, dance floor, lasers, speaker stacks and the jukebox pads" width="420"> | <img src="docs/screenshots/now-playing.png" alt="Now playing with player controls and the adjust menu" width="420"> |
 
 Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the same.
 
@@ -68,7 +68,7 @@ Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the sam
 - **Today**: agent time, time spent waiting on you and turns per project, compared with yesterday.
 - **Token spend**: optional, off by default. Estimated cost per project and model from Claude Code and Codex logs, with a daily budget alert. Turn it on in Settings › AI.
 - **Ask Claude**: type a question in the overview's search bar and press Return, or press ⌘K anywhere in the dashboard. The answer opens in a palette with follow-ups, and agents it names open their terminal in one click. It runs your installed `claude` CLI with read-only tools and a snapshot of what the dashboard shows.
-- **Office**: a walkable pixel-art office with a room per repo, where each agent is posed by what it's doing. Agents that need you show as bouncing avatars along the top, and a jukebox plays what's on. While music plays the office turns into a party in your visualiser colours: the dance floor flashes, spotlights and lasers sweep, the speakers pump and every agent nods to the beat. Walk up to the jukebox for the track and controls (Space, Q and E). Walk up to an agent to go to its terminal or stop it. Open it from Office in the sidebar or the Visualize button.
+- **Office**: a walkable pixel-art office with a room per repo, where each agent is posed by what it's doing. Agents that need you show as bouncing avatars along the top, and a jukebox plays what's on. While music plays the office turns into a party in your visualiser colours: the dance floor flashes, spotlights and lasers sweep, the speakers pump and every agent nods to the beat. Click the pads in front of the jukebox to skip or pause, or stand by it and press Space, Q or E. Walk up to an agent to go to its terminal or stop it. Open it from Office in the sidebar or the Visualize button.
 - **Now playing**: what's playing in any player, with a visualiser in your theme's colours. Previous, play/pause and next, plus a volume slider for Spotify and Music. The adjust menu switches between Minimal and Expanded, five visualiser styles and six palettes. Live audio levels are opt-in; otherwise the bars follow play and pause. The section collapses like System.
 - **Custom widgets**: shell commands shown as dashboard tiles.
 - **Status command**: `flightdeck status` and a status file for SketchyBar, tmux and Raycast. See [docs/integrations.md](docs/integrations.md).

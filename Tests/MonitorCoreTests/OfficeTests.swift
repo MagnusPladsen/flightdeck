@@ -142,6 +142,8 @@ struct OfficeTests {
         let map = OfficeMap.build(agents: ["a", "b", "c"].enumerated().map { agent(Int32($0), project($1)) }, ports: [])
         #expect(map.hallway.contains(map.jukebox))
         #expect(map.grid[map.jukebox] == .furniture)
+        #expect(map.jukeboxPads.map(\.command) == [.previousTrack, .togglePlayPause, .nextTrack])
+        #expect(map.jukeboxPads.allSatisfy { map.hallway.contains($0.tile) && map.grid[$0.tile].isWalkable && map.object(at: $0.tile.center) == .jukeboxPad($0.command) })
         #expect(map.speakers.allSatisfy { map.hallway.contains($0) && map.grid[$0] == .furniture && map.object(at: $0.center) == .jukebox })
         for room in map.rooms {
             #expect(OfficePathfinder.path(in: map.grid, from: map.playerStart.tile, to: room.door) != nil)

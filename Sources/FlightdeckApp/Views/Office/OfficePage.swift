@@ -41,6 +41,7 @@ private struct OfficeStage: View {
     @State private var pointer: CGPoint = .zero
     @State private var needsYou = NeedsYouQueue()
     @State private var party = OfficePartyFeed()
+    @State private var pressedPad: (command: NowPlayingCommand, at: Date)?
     @Namespace private var avatarSpace
     @FocusState private var isFocused: Bool
 
@@ -54,7 +55,6 @@ private struct OfficeStage: View {
                     .onTapGesture(coordinateSpace: .local) { click(at: $0, camera: camera) }
                     .onContinuousHover(coordinateSpace: .local) { hover($0, camera: camera) }
                 agentCard(camera: camera, size: geometry.size)
-                jukeboxPanel(camera: camera, size: geometry.size)
                 tooltip(size: geometry.size)
                 needsYouCorner.padding(12)
                 hint.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading).padding(12)
@@ -98,6 +98,7 @@ private struct OfficeStage: View {
         return OfficeScene(map: game.map, agents: Dictionary(readings.agents.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first }),
                            cpuLoad: readings.snapshot?.cpu.total ?? 0, memory: readings.snapshot?.memory, limitsHeadroom: readings.limitsHeadroom,
                            isMusicPlaying: readings.track?.isPlaying == true, track: readings.track, party: party,
+                           isAtJukebox: isAtJukebox, pressedPad: recentlyPressedPad,
                            player: game.player, isPlayerWalking: game.isWalking, playerFacesLeft: game.facesLeft, spotlightPID: spotlight)
     }
 
@@ -118,6 +119,7 @@ private struct OfficeStage: View {
         switch map.object(at: point) {
         case .agent(let pid): game.select(pid)
         case .rack(let port): store.openInBrowser(port: port.port)
+        case .jukeboxPad(let command) where readings.track != nil: pressPad(command)
         default: game.walk(to: point.tile)
         }
     }
@@ -143,7 +145,7 @@ private struct OfficeStage: View {
             if let agent = cardAgent {
                 store.openTerminal(for: agent)
             } else if isAtJukebox {
-                store.nowPlaying.send(.togglePlayPause)
+                pressPad(.togglePlayPause)
             } else {
                 return .ignored
             }
@@ -159,8 +161,8 @@ private struct OfficeStage: View {
     private func handleJukeboxKey(_ characters: String) -> KeyPress.Result {
         guard isAtJukebox else { return .ignored }
         switch characters {
-        case "q": store.nowPlaying.send(.previousTrack)
-        case "e": store.nowPlaying.send(.nextTrack)
+        case "q": pressPad(.previousTrack)
+        case "e": pressPad(.nextTrack)
         default: return .ignored
         }
         return .handled
@@ -171,15 +173,14 @@ private struct OfficeStage: View {
         readings.track != nil && cardAgent == nil && game.player.distance(to: map.jukebox.center) < 2.4
     }
 
-    @ViewBuilder
-    private func jukeboxPanel(camera: OfficeCamera, size: CGSize) -> some View {
-        if isAtJukebox, let track = readings.track {
-            let x = camera.screenX(Double(map.jukebox.x) + 0.5) - 140
-            let y = camera.screenY(Double(map.jukebox.y)) - camera.tileSize * 2.4 - 120
-            OfficeJukeboxPanel(track: track, colors: partyColors) { store.nowPlaying.send($0) }
-                .offset(x: min(max(8, x), size.width - 288), y: min(max(8, y), size.height - 140))
-                .transition(.opacity)
-        }
+    private func pressPad(_ command: NowPlayingCommand) {
+        store.nowPlaying.send(command)
+        pressedPad = (command, Date())
+    }
+
+    private var recentlyPressedPad: NowPlayingCommand? {
+        guard let pressedPad, Date().timeIntervalSince(pressedPad.at) < 0.25 else { return nil }
+        return pressedPad.command
     }
 
     private static func direction(for press: KeyPress) -> OfficeDirection? {
@@ -251,7 +252,7 @@ private struct OfficeStage: View {
     }
 
     private var hint: some View {
-        Text(isAtJukebox ? "Space plays or pauses · Q and E skip tracks · walk away to close"
+        Text(isAtJukebox ? "Space plays or pauses · Q and E skip tracks · or click the pads"
                          : "WASD or arrows to walk · click to go somewhere · Space opens an agent's terminal")
             .font(.caption)
             .foregroundStyle(theme.muted)

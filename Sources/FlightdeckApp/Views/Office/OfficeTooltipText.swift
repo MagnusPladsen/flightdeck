@@ -13,6 +13,15 @@ enum OfficeTooltipText {
         case .waterCooler: return memory(readings.snapshot?.memory)
         case .wallClock: return limits(readings)
         case .jukebox: return jukebox(readings.track)
+        case .jukeboxPad(let command): return readings.track == nil ? nil : pad(command)
+        }
+    }
+
+    private static func pad(_ command: NowPlayingCommand) -> String {
+        switch command {
+        case .previousTrack: "Previous track (Q by the jukebox)"
+        case .nextTrack: "Next track (E by the jukebox)"
+        default: "Play or pause (Space by the jukebox)"
         }
     }
 
