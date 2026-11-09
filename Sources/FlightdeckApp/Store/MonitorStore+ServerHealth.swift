@@ -36,12 +36,14 @@ extension MonitorStore {
 
     private func relaunch(_ server: ListeningPort) {
         guard let id = server.serverIdentity, let folder = server.workingDirectory else { return }
-        let command = ServerRelaunch.shellCommand(arguments: server.arguments, logPath: serverHealth.logURL(for: id).path)
+        let logURL = serverHealth.logURL(for: id)
+        let command = ServerRelaunch.shellCommand(arguments: server.arguments, logPath: logURL.path)
         let choice = settings.launchTerminal
         let agentPIDs = agents.map(\.pid)
         Task {
             let outcome = await Task.detached { TerminalCommandLauncher.run(command, in: folder, choice: choice, agentPIDs: agentPIDs) }.value
             guard case .success = outcome else { return NSSound.beep() }
+            serverHealth.registerLog(logURL, for: id)
             try? await Task.sleep(for: .seconds(2))
             await refreshPortsAndAgents()
         }

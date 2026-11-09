@@ -6,6 +6,7 @@ struct CrashedServerRow: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     var crashed: CrashedServer
+    @State private var logLines: [String] = []
 
     private var server: ListeningPort { crashed.server }
 
@@ -22,10 +23,11 @@ struct CrashedServerRow: View {
                 Text(verbatim: ":\(crashed.id.port)").font(.system(.caption, design: .monospaced).weight(.semibold)).foregroundStyle(theme.muted)
             }
             if store.serverHealth.hasLog(for: crashed.id) {
-                ServerLogLines(lines: store.serverHealth.logLines(for: crashed.id)).foregroundStyle(theme.muted).padding(.leading, 16)
+                ServerLogLines(lines: logLines).foregroundStyle(theme.muted).padding(.leading, 16)
             }
         }
         .padding(.vertical, 3)
+        .task(id: crashed.id) { logLines = await store.serverHealth.logLines(for: crashed.id) }
     }
 
     private var details: some View {

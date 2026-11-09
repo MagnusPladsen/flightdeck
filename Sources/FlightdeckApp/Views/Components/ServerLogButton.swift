@@ -7,12 +7,20 @@ struct ServerLogButton: View {
     var id: ServerIdentity
 
     @State private var isShowing = false
+    @State private var lines: [String] = []
 
     var body: some View {
-        IconButton(systemImage: "text.alignleft", help: "Show recent output") { isShowing = true }
+        IconButton(systemImage: "text.alignleft", help: "Show recent output", action: show)
             .popover(isPresented: $isShowing, arrowEdge: .bottom) {
-                ServerLogLines(lines: store.serverHealth.logLines(for: id)).padding(12).frame(width: 460)
+                ServerLogLines(lines: lines).padding(12).frame(width: 460)
             }
+    }
+
+    private func show() {
+        Task {
+            lines = await store.serverHealth.logLines(for: id)
+            isShowing = true
+        }
     }
 }
 
