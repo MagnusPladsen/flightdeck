@@ -3,6 +3,13 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.7.0 — 2026-11-09
+
+- Office party: while music plays the office dims and turns into a rave in your visualiser colours, with a flashing dance floor, spotlights, lasers, a disco ball and a strobe on big beats. With "Visualiser follows the actual audio" on it follows the kick drum. Turn it off in Settings › Now playing; Reduce Motion turns off the strobe.
+- Big speaker stacks stand either side of the jukebox, pumping on the beat, with a scrolling sign showing the track.
+- Every agent in the office nods its head to the beat.
+- Music controls live in the office: click the glowing pads in front of the jukebox to skip or pause, or stand by it and press Space, Q or E. The sign over the speakers shows the track and how far in it is.
+
 ## 1.6.0 — 2026-11-09
 
 - Agent cards show what the agent changed since it started (files and lines added and removed), with a Diff button that opens the full diff.
