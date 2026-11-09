@@ -18,6 +18,7 @@ struct WorktreeRow: View {
                 title
                 Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
             }
+            .layoutPriority(1)
             Spacer(minLength: 8)
             if let agent = agents.first { agentLabel(agent) }
             if let pullRequest = worktree.pullRequest.pullRequest, pullRequest.state == .open { PullRequestStatusBadges(pullRequest: pullRequest) }
@@ -48,8 +49,12 @@ struct WorktreeRow: View {
     }
 
     private func agentLabel(_ agent: AgentSession) -> some View {
-        Label(agents.count > 1 ? "\(agent.tool.displayName) +\(agents.count - 1)" : agent.tool.displayName, systemImage: agent.tool.symbolName)
+        HStack(spacing: 2) {
+            Image(systemName: agent.tool.symbolName)
+            if agents.count > 1 { Text("+\(agents.count - 1)") }
+        }
             .font(.caption.weight(.medium))
+            .fixedSize()
             .foregroundStyle(agent.state.color(in: theme))
             .help("\(agent.tool.displayName) · \(agent.state.label)")
     }
@@ -64,6 +69,7 @@ struct WorktreeRow: View {
                     .padding(.vertical, 2)
                     .foregroundStyle(pullRequest.state.color(in: theme))
                     .background(pullRequest.state.color(in: theme).opacity(0.15), in: RoundedRectangle(cornerRadius: 5))
+                    .fixedSize()
             }
             .buttonStyle(.plain)
             .help("Open pull request on GitHub")
