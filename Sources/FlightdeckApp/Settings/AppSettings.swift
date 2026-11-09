@@ -124,6 +124,8 @@ final class AppSettings {
     var visualizerStyle: VisualizerStyle? { didSet { defaults.set(visualizerStyle?.rawValue, forKey: "visualizerStyle") } }
     /// Nil follows the theme's colours.
     var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
+    /// The office turns into a rave while music plays.
+    var officePartyEnabled: Bool { didSet { defaults.set(officePartyEnabled, forKey: "officePartyEnabled") } }
     var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
     /// Treats any macOS Focus as quiet hours.
     var quietDuringFocus: Bool { didSet { defaults.set(quietDuringFocus, forKey: "quietDuringFocus") } }
@@ -178,6 +180,7 @@ final class AppSettings {
         nowPlayingMode = defaults.string(forKey: "nowPlayingMode").flatMap(NowPlayingMode.init(rawValue:)) ?? .expanded
         visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
+        officePartyEnabled = defaults.object(forKey: "officePartyEnabled") as? Bool ?? true
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
         quietDuringFocus = defaults.bool(forKey: "quietDuringFocus")
         keepAwakeWhileAgentsWork = defaults.bool(forKey: "keepAwakeWhileAgentsWork")

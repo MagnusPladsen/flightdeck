@@ -11,6 +11,10 @@ struct OfficeScene {
     /// Remaining share of the most-used limit window, 0...1; nil without limit data.
     var limitsHeadroom: Double?
     var isMusicPlaying: Bool
+    /// What plays, for the sign over the jukebox; nil when nothing does.
+    var track: NowPlayingTrack?
+    /// The rave while music plays and the party is on.
+    var party: OfficeParty?
     var player: OfficePoint
     var isPlayerWalking: Bool
     var playerFacesLeft: Bool
@@ -28,6 +32,8 @@ struct OfficeRenderer {
         drawTiles(size: size)
         OfficeWallDecor(scene: scene, pen: pen, time: time).draw()
         for item in drawables().sorted(by: { $0.depth < $1.depth }) { item.draw() }
+        if let party = scene.party { OfficePartyLights(scene: scene, party: party, pen: pen, time: time).draw() }
+        OfficePartyGear(scene: scene, pen: pen, time: time).drawGlow()
         OfficeBubbles(scene: scene, pen: pen, time: time).draw()
     }
 
@@ -99,6 +105,8 @@ struct OfficeRenderer {
         items.append(OfficeDrawable(depth: Double(scene.map.cpuRack.maxY) - 0.1) { furniture.drawCPURack() })
         items.append(OfficeDrawable(depth: Double(scene.map.waterCooler.y) + 0.9) { furniture.drawWaterCooler() })
         items.append(OfficeDrawable(depth: Double(scene.map.jukebox.y) + 0.9) { furniture.drawJukebox() })
+        let gear = OfficePartyGear(scene: scene, pen: pen, time: time)
+        for speaker in scene.map.speakers { items.append(OfficeDrawable(depth: Double(speaker.y) + 0.9) { gear.drawSpeaker(speaker) }) }
         items.append(OfficeDrawable(depth: scene.player.y + OfficeMotion.radius) { people.drawPlayer() })
         return items
     }

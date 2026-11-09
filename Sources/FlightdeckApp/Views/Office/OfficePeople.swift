@@ -14,8 +14,14 @@ struct OfficePeople {
         let pose = scene.map.poses[pid] ?? .phone
         let (x, y) = OfficePen.pixels(position)
         if pose.isStanding { pen.ellipse(x - 5, y - 2, 10, 3, .black.opacity(0.25)) }
+        let palette = OfficeCharacters.palette(tool: agent.tool, pid: pid)
+        if let party = scene.party {
+            pen.sprite(OfficeCharacters.headbangSprite(isStanding: pose.isStanding, isHeadDown: party.isHeadDown), palette: palette,
+                       bottomCenterX: x, bottomY: y + (party.isHeadDown ? 1 : 0), flipped: (party.beat / 2 + Int(pid)).isMultiple(of: 2))
+            return
+        }
         let bob = pose == .impatient && frame.isMultiple(of: 2) ? -0.5 : 0
-        pen.sprite(OfficeCharacters.sprite(for: pose, frame: frame + Int(pid)), palette: OfficeCharacters.palette(tool: agent.tool, pid: pid),
+        pen.sprite(OfficeCharacters.sprite(for: pose, frame: frame + Int(pid)), palette: palette,
                    bottomCenterX: x, bottomY: y + bob, flipped: pose == .impatient && (frame / 4).isMultiple(of: 2))
     }
 
@@ -23,8 +29,9 @@ struct OfficePeople {
         let (x, y) = OfficePen.pixels(scene.player)
         let feet = y + OfficeMotion.radius * OfficeCamera.tilePixels
         pen.ellipse(x - 5, feet - 2, 10, 3, .black.opacity(0.3))
+        let bounce = scene.party?.isHeadDown == true && !scene.isPlayerWalking ? 1.0 : 0
         pen.sprite(OfficeCharacters.playerSprite(isWalking: scene.isPlayerWalking, frame: Int(time * 8)), palette: OfficeCharacters.playerPalette,
-                   bottomCenterX: x, bottomY: feet, flipped: scene.playerFacesLeft)
+                   bottomCenterX: x, bottomY: feet + bounce, flipped: scene.playerFacesLeft)
     }
 }
 

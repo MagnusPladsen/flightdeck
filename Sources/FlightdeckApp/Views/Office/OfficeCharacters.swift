@@ -77,6 +77,24 @@ enum OfficeCharacters {
         ].map { $0.replacingOccurrences(of: " ", with: ".") } + legs),
     ]
 
+    private static let seatedBody = ["..tttttttt..", ".tttttttttt.", ".tt.tttt.tt."]
+    private static let standingBody = ["..tttttttt..", ".tttttttttt.", ".ttsssssstt.", "...tttttt..."]
+
+    private static let seatedHeadbang = [
+        PixelSprite(name: "headbang-up", rows: head + seatedBody + ["..ss....ss.."]),
+        PixelSprite(name: "headbang-down", rows: headLookingDown + seatedBody + [".ss......ss."]),
+    ]
+
+    private static let standingHeadbang = [
+        PixelSprite(name: "standing-headbang-up", rows: head + standingBody + legs),
+        PixelSprite(name: "standing-headbang-down", rows: headLookingDown + standingBody + legs),
+    ]
+
+    /// Nodding to the beat at the office party, seated at the desk or standing in the aisle.
+    static func headbangSprite(isStanding: Bool, isHeadDown: Bool) -> PixelSprite {
+        (isStanding ? standingHeadbang : seatedHeadbang)[isHeadDown ? 1 : 0]
+    }
+
     private static let player = [
         PixelSprite(name: "player-a", rows: playerTop + ["...pppppp...", "...pp..pp...", "...pp..pp...", "...bb..bb..."]),
         PixelSprite(name: "player-b", rows: playerTop + ["...pppppp...", "..pp....pp..", "..pp....pp..", "..bb....bb.."]),

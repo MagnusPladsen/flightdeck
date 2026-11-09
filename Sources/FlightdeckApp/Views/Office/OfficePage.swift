@@ -33,12 +33,14 @@ struct OfficeReadings {
 private struct OfficeStage: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let map: OfficeMap
     let readings: OfficeReadings
     @State private var game = OfficeGame()
     @State private var hovered: OfficeObject?
     @State private var pointer: CGPoint = .zero
     @State private var needsYou = NeedsYouQueue()
+    @State private var party = OfficePartyFeed()
     @Namespace private var avatarSpace
     @FocusState private var isFocused: Bool
 
@@ -52,12 +54,14 @@ private struct OfficeStage: View {
                     .onTapGesture(coordinateSpace: .local) { click(at: $0, camera: camera) }
                     .onContinuousHover(coordinateSpace: .local) { hover($0, camera: camera) }
                 agentCard(camera: camera, size: geometry.size)
+                jukeboxPanel(camera: camera, size: geometry.size)
                 tooltip(size: geometry.size)
                 needsYouCorner.padding(12)
                 hint.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading).padding(12)
             }
         }
         .background(theme.background)
+        .background { if store.settings.officePartyEnabled { OfficeAudioListener() } }
         .focusable()
         .focused($isFocused)
         .focusEffectDisabled()
@@ -72,18 +76,28 @@ private struct OfficeStage: View {
 
     private func canvas(camera: OfficeCamera) -> some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30)) { timeline in
+            let party = partyFrame(at: timeline.date)
             Canvas { context, size in
-                let scene = scene()
+                let scene = scene(party: party)
                 OfficeRenderer(scene: scene, pen: OfficePen(context: context, camera: camera), time: timeline.date.timeIntervalSinceReferenceDate).draw(size: size)
             }
         }
     }
 
-    private func scene() -> OfficeScene {
+    private func partyFrame(at date: Date) -> OfficeParty? {
+        guard store.settings.officePartyEnabled, let track = readings.track, track.isPlaying else { return nil }
+        return party.frame(at: date, track: track, audio: store.nowPlaying.audio, colors: partyColors, allowsStrobe: !reduceMotion)
+    }
+
+    private var partyColors: [Color] {
+        VisualizerColors(palette: store.settings.visualizerPalette, theme: theme).stops
+    }
+
+    private func scene(party: OfficeParty?) -> OfficeScene {
         let spotlight: Int32? = if case .agent(let pid) = hovered { pid } else { game.cardPID }
         return OfficeScene(map: game.map, agents: Dictionary(readings.agents.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first }),
                            cpuLoad: readings.snapshot?.cpu.total ?? 0, memory: readings.snapshot?.memory, limitsHeadroom: readings.limitsHeadroom,
-                           isMusicPlaying: readings.track?.isPlaying == true,
+                           isMusicPlaying: readings.track?.isPlaying == true, track: readings.track, party: party,
                            player: game.player, isPlayerWalking: game.isWalking, playerFacesLeft: game.facesLeft, spotlightPID: spotlight)
     }
 
@@ -126,14 +140,45 @@ private struct OfficeStage: View {
         guard press.phase == .down else { return .ignored }
         switch press.key {
         case .space, .return:
-            guard let agent = cardAgent else { return .ignored }
-            store.openTerminal(for: agent)
+            if let agent = cardAgent {
+                store.openTerminal(for: agent)
+            } else if isAtJukebox {
+                store.nowPlaying.send(.togglePlayPause)
+            } else {
+                return .ignored
+            }
             return .handled
         case .escape:
             game.closeCard()
             return .handled
         default:
-            return .ignored
+            return handleJukeboxKey(press.characters.lowercased())
+        }
+    }
+
+    private func handleJukeboxKey(_ characters: String) -> KeyPress.Result {
+        guard isAtJukebox else { return .ignored }
+        switch characters {
+        case "q": store.nowPlaying.send(.previousTrack)
+        case "e": store.nowPlaying.send(.nextTrack)
+        default: return .ignored
+        }
+        return .handled
+    }
+
+    /// The player stands by the jukebox while something is playing or just paused.
+    private var isAtJukebox: Bool {
+        readings.track != nil && cardAgent == nil && game.player.distance(to: map.jukebox.center) < 2.4
+    }
+
+    @ViewBuilder
+    private func jukeboxPanel(camera: OfficeCamera, size: CGSize) -> some View {
+        if isAtJukebox, let track = readings.track {
+            let x = camera.screenX(Double(map.jukebox.x) + 0.5) - 140
+            let y = camera.screenY(Double(map.jukebox.y)) - camera.tileSize * 2.4 - 120
+            OfficeJukeboxPanel(track: track, colors: partyColors) { store.nowPlaying.send($0) }
+                .offset(x: min(max(8, x), size.width - 288), y: min(max(8, y), size.height - 140))
+                .transition(.opacity)
         }
     }
 
@@ -206,12 +251,24 @@ private struct OfficeStage: View {
     }
 
     private var hint: some View {
-        Text("WASD or arrows to walk · click to go somewhere · Space opens an agent's terminal")
+        Text(isAtJukebox ? "Space plays or pauses · Q and E skip tracks · walk away to close"
+                         : "WASD or arrows to walk · click to go somewhere · Space opens an agent's terminal")
             .font(.caption)
             .foregroundStyle(theme.muted)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(theme.surface.opacity(0.85), in: Capsule())
             .allowsHitTesting(false)
+    }
+}
+
+/// Keeps the system audio tap listening while the office is on screen, so the party follows the beat.
+private struct OfficeAudioListener: View {
+    @Environment(MonitorStore.self) private var store
+
+    var body: some View {
+        Color.clear
+            .onAppear { store.nowPlaying.visualizerAppeared() }
+            .onDisappear { store.nowPlaying.visualizerDisappeared() }
     }
 }

@@ -13,12 +13,13 @@ enum DashboardDestination: Hashable {
 @MainActor
 @Observable
 final class DashboardNavigation {
-    var destination: DashboardDestination = DashboardNavigation.demoStartPage.map(DashboardDestination.page) ?? .page(.overview)
+    var destination: DashboardDestination = DashboardNavigation.demoStart ?? .page(.overview)
 
-    /// `FLIGHTDECK_PAGE=agents` with `FLIGHTDECK_DEMO=1` opens the dashboard on that page, for screenshots.
-    private static var demoStartPage: DashboardPage? {
-        guard DemoData.isEnabled else { return nil }
-        return ProcessInfo.processInfo.environment["FLIGHTDECK_PAGE"].flatMap(DashboardPage.init(rawValue:))
+    /// `FLIGHTDECK_PAGE=agents` (or `office`) with `FLIGHTDECK_DEMO=1` opens the dashboard there, for screenshots.
+    private static var demoStart: DashboardDestination? {
+        guard DemoData.isEnabled, let name = ProcessInfo.processInfo.environment["FLIGHTDECK_PAGE"] else { return nil }
+        if name == "office" { return .office }
+        return DashboardPage(rawValue: name).map(DashboardDestination.page)
     }
 
     func show(_ page: DashboardPage) {
