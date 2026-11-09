@@ -3,6 +3,21 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.6.0 — 2026-11-09
+
+- Agent cards show what the agent changed since it started (files and lines added and removed), with a Diff button that opens the full diff.
+- Agents that need you show their last message or the question they're asking, so you know what they want without switching.
+- New agent: start Claude Code or Codex in a new or existing worktree, in Ghostty, iTerm2, Terminal or a tmux window.
+- Worktrees show CI and review status for open pull requests, and you get an alert when CI fails on a branch an agent is working in. Pull requests from forks are left out.
+- Limit forecast: see when a 5h or weekly limit runs out at the current pace, or that it lasts until reset.
+- Keep awake: keep the Mac from sleeping while agents work, with a toggle on the overview and the AI Agents page. Off by default.
+- Alerts can follow macOS Focus as well as your quiet hours.
+- Servers: stopped dev servers stay listed for 10 minutes with Run again, port conflicts are flagged, and Restart reruns a server in a terminal tab and keeps its log. Stop alerts are opt-in.
+- Today: a recap of agent time, time spent waiting on you and turns per project, with yesterday for comparison. An optional notification sums up the day before.
+- A `flightdeck status` command and a status file for SketchyBar, tmux and Raycast. Install the command from Settings › General.
+- The overview shows two Working and Idle cards and four projects, with See all for the rest.
+- Background git checks no longer lock your repository while you or an agent commit.
+
 ## 1.5.0 — 2026-11-09
 
 - Now playing: play, pause, skip and change the volume for Spotify and Music from the dashboard. Pick Minimal or Expanded, five visualiser styles and six palettes from its adjust menu. A badge shows whether the visualiser is animated or follows live audio.
