@@ -156,6 +156,7 @@ private struct AISettings: View {
                     .foregroundStyle(.secondary)
             }
             SpendSettings()
+            DailyRecapSettings()
         }
         .formStyle(.grouped)
         .themedScrollBackground()

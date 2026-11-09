@@ -69,6 +69,12 @@ struct PageLayoutsTests {
         #expect(clean.placements(on: .overview).last?.kind == .nowPlaying)
     }
 
+    @Test func sanitizeAddsTheDailyRecapToTheAgentsPageOfSavedLayouts() {
+        let clean = base.sanitized(available: [.needsYou, .workingAgents, .idleAgents, .agentSessions, .dailyRecap])
+        #expect(clean.placements(on: .agents).map(\.kind) == [.agentSessions, .dailyRecap])
+        #expect(clean.placements(on: .agents).last?.span == GridPacking.columns)
+    }
+
     @Test func roundTripsThroughJSON() throws {
         var layouts = base
         layouts.pages[.widgets] = [SectionPlacement(kind: .widget(UUID()))]

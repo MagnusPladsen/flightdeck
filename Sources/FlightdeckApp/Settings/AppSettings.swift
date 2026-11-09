@@ -127,6 +127,10 @@ final class AppSettings {
     var quietDuringFocus: Bool { didSet { defaults.set(quietDuringFocus, forKey: "quietDuringFocus") } }
     /// Off by default: holds a system sleep assertion while an agent works.
     var keepAwakeWhileAgentsWork: Bool { didSet { defaults.set(keepAwakeWhileAgentsWork, forKey: "keepAwakeWhileAgentsWork") } }
+    /// Off by default: a notification the next day summing up the agents' day.
+    var dailyRecapNotificationEnabled: Bool { didSet { defaults.set(dailyRecapNotificationEnabled, forKey: "dailyRecapNotificationEnabled") } }
+    /// Start of the last day the recap notification summed up, so each day is summed up once.
+    var dailyRecapAnnouncedDay: Date? { didSet { defaults.set(dailyRecapAnnouncedDay, forKey: "dailyRecapAnnouncedDay") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -170,6 +174,8 @@ final class AppSettings {
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
         quietDuringFocus = defaults.bool(forKey: "quietDuringFocus")
         keepAwakeWhileAgentsWork = defaults.bool(forKey: "keepAwakeWhileAgentsWork")
+        dailyRecapNotificationEnabled = defaults.bool(forKey: "dailyRecapNotificationEnabled")
+        dailyRecapAnnouncedDay = defaults.object(forKey: "dailyRecapAnnouncedDay") as? Date
         migrateLegacyCustomColors()
     }
 

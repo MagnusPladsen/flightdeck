@@ -38,6 +38,8 @@ struct SectionHost: View {
             WorktreesSection()
         case .spend:
             SpendSection()
+        case .dailyRecap:
+            DailyRecapSection()
         case .processTable:
             ProcessTableSection()
         case .widget(let id):

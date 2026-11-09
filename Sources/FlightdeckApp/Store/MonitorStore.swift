@@ -28,6 +28,7 @@ final class MonitorStore {
     let nowPlaying = NowPlayingMonitor()
     let focusStatus = FocusStatusMonitor()
     let sleepAssertion = SleepAssertion()
+    let dailyRecap = DailyRecapTracker()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -126,6 +127,8 @@ final class MonitorStore {
         focusStatus.refresh()
         alertAboutChanges(since: previous)
         updateKeepAwake()
+        dailyRecap.record(self.agents)
+        dailyRecap.announceYesterdayIfDue(settings: settings, notifier: notifier, spend: spend)
         if previous == nil { await refreshWorktrees() }
     }
 
@@ -255,6 +258,7 @@ final class MonitorStore {
         worktreeOverview.showDemo(DemoData.worktrees)
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         nowPlaying.showDemo(DemoData.nowPlaying)
+        dailyRecap.showDemo(DemoData.recap)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)

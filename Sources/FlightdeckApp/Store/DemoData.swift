@@ -124,6 +124,30 @@ enum DemoData {
                     cacheRead: Int(Double(tokens.cacheRead) * scale), cacheWrite: Int(Double(tokens.cacheWrite) * scale))
     }
 
+    /// Today and yesterday of agent hours, waits and turns for the Today section.
+    static var recap: RecapLedger {
+        let today = Calendar.current.startOfDay(for: Date())
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) ?? today
+        return RecapLedger(days: [
+            RecapDay(day: today, projects: [
+                "storefront": recapTally(hours: 3.4, waitMinutes: 41, longest: 14, turns: 17, sessions: [4101, 4104]),
+                "payments-api": recapTally(hours: 1.6, waitMinutes: 22, longest: 9, turns: 8, sessions: [4102]),
+                "mobile-app": recapTally(hours: 1.1, waitMinutes: 6, longest: 4, turns: 5, sessions: [4105]),
+                "docs-site": recapTally(hours: 0.5, waitMinutes: 18, longest: 12, turns: 4, sessions: [4103]),
+                "analytics": recapTally(hours: 0.4, waitMinutes: 3, longest: 2, turns: 2, sessions: [4109]),
+            ]),
+            RecapDay(day: yesterday, projects: [
+                "storefront": recapTally(hours: 2.8, waitMinutes: 55, longest: 21, turns: 15, sessions: [3901, 3902]),
+                "payments-api": recapTally(hours: 2.1, waitMinutes: 30, longest: 11, turns: 11, sessions: [3903, 3904]),
+                "infra": recapTally(hours: 0.7, waitMinutes: 8, longest: 5, turns: 3, sessions: [3905]),
+            ]),
+        ])
+    }
+
+    private static func recapTally(hours: Double, waitMinutes: Double, longest: Double, turns: Int, sessions: Set<Int32>) -> RecapTally {
+        RecapTally(workingSeconds: hours * 3600, waitingSeconds: waitMinutes * 60, longestWaitSeconds: longest * 60, turns: turns, sessionIDs: sessions)
+    }
+
     static var nowPlaying: NowPlayingTrack {
         NowPlayingTrack(title: "Midnight Commute", artist: "Low Orbit", album: "Night Shift Tapes", isPlaying: true,
                         sourceBundleID: "com.apple.Music", sourceName: "Music", duration: 227, elapsed: 83, reportedAt: Date(), identifier: "demo")
