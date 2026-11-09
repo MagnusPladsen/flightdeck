@@ -72,6 +72,25 @@ struct AgentChangeCollectorTests {
         #expect(collector.diff(since: baseline).contains("+++ b/sub/c.txt"))
     }
 
+    @Test func untrackedFilesThatAreNotRegularOrPastTheByteBudgetAreNotRead() throws {
+        let git = try #require(CommandRunner.locate("git"))
+        let repository = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).path
+        try FileManager.default.createDirectory(atPath: repository, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(atPath: repository) }
+        try "one\n".write(toFile: repository + "/a.txt", atomically: true, encoding: .utf8)
+        try runGit(git, in: repository, ["init", "-q"])
+        try commitAll(git, in: repository, at: Date())
+        #expect(mkfifo(repository + "/pipe", 0o644) == 0)
+        let bigFile = String(repeating: "line\n", count: AgentChangeCollector.maxUntrackedFileBytes / 5)
+        for index in 0..<9 { try bigFile.write(toFile: repository + "/big\(index).txt", atomically: true, encoding: .utf8) }
+
+        let collector = AgentChangeCollector(git: git)
+        let baseline = try #require(collector.baseline(forFolder: repository, startedAt: nil))
+        let files = try #require(collector.changes(since: baseline)).files
+        #expect(files.first { $0.path == "pipe" }?.added == nil)
+        #expect(files.filter { $0.path.hasPrefix("big") && $0.added != nil }.count == 8)
+    }
+
     @Test func nonGitFolderHasNoBaseline() {
         #expect(AgentChangeCollector().baseline(forFolder: FileManager.default.temporaryDirectory.path, startedAt: Date()) == nil)
     }

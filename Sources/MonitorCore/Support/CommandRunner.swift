@@ -15,9 +15,7 @@ public enum CommandRunner {
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
         process.currentDirectoryURL = directory.map { URL(fileURLWithPath: $0) }
-        var environment = ProcessInfo.processInfo.environment
-        environment["PATH"] = searchPath + ":" + (environment["PATH"] ?? "")
-        process.environment = environment
+        process.environment = environment(for: executable)
 
         let outputPipe = Pipe()
         process.standardOutput = outputPipe
@@ -38,6 +36,14 @@ public enum CommandRunner {
         timeoutItem.cancel()
 
         return CommandResult(exitCode: process.terminationStatus, output: String(decoding: data, as: UTF8.self), didTimeOut: didTimeOut)
+    }
+
+    /// Background git calls skip optional locks so they never block the user's own git commands on `index.lock`.
+    static func environment(for executable: String, inheriting inherited: [String: String] = ProcessInfo.processInfo.environment) -> [String: String] {
+        var environment = inherited
+        environment["PATH"] = searchPath + ":" + (inherited["PATH"] ?? "")
+        if URL(fileURLWithPath: executable).lastPathComponent == "git" { environment["GIT_OPTIONAL_LOCKS"] = "0" }
+        return environment
     }
 
     /// Runs a user-provided shell snippet, e.g. from a custom widget.

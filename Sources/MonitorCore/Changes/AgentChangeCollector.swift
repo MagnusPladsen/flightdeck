@@ -5,6 +5,7 @@ import Foundation
 public struct AgentChangeCollector: Sendable {
     static let maxUntrackedFiles = 200
     static let maxUntrackedFileBytes = 512 * 1024
+    static let maxUntrackedBytesPerRefresh = 4 * 1024 * 1024
     static let maxDiffBytes = 2 * 1024 * 1024
 
     private let git: String?
@@ -24,8 +25,8 @@ public struct AgentChangeCollector: Sendable {
 
     public func changes(since baseline: ChangeBaseline) -> AgentChanges? {
         guard let numstat = run(["-C", baseline.repositoryRoot, "-c", "core.quotepath=off", "diff", "--numstat", "--no-renames", baseline.commit]) else { return nil }
-        let untracked = untrackedPaths(in: baseline.repositoryRoot).prefix(Self.maxUntrackedFiles).map { path in
-            let count = contents(of: path, in: baseline.repositoryRoot).flatMap(GitChangeParser.lineCount)
+        let untracked = untrackedContents(in: baseline.repositoryRoot).map { path, data in
+            let count = data.flatMap(GitChangeParser.lineCount)
             return FileChange(path: path, added: count, removed: count.map { _ in 0 }, isUntracked: true)
         }
         return AgentChanges(baseline: baseline, files: GitChangeParser.numstat(numstat) + untracked)
@@ -34,8 +35,8 @@ public struct AgentChangeCollector: Sendable {
     /// `git diff <baseline>` followed by a new-file diff for each untracked text file.
     public func diff(since baseline: ChangeBaseline) -> String {
         let tracked = run(["-C", baseline.repositoryRoot, "-c", "core.quotepath=off", "diff", "--no-renames", "--no-color", baseline.commit], timeout: 15) ?? ""
-        let untracked = untrackedPaths(in: baseline.repositoryRoot).prefix(Self.maxUntrackedFiles).compactMap { path -> String? in
-            guard let data = contents(of: path, in: baseline.repositoryRoot), !data.contains(0) else { return nil }
+        let untracked = untrackedContents(in: baseline.repositoryRoot).compactMap { path, data -> String? in
+            guard let data, !data.contains(0) else { return nil }
             return GitChangeParser.untrackedDiff(path: path, contents: String(decoding: data, as: UTF8.self))
         }
         let diff = ([tracked.trimmingCharacters(in: .newlines)] + untracked).filter { !$0.isEmpty }.joined(separator: "\n")
@@ -46,9 +47,21 @@ public struct AgentChangeCollector: Sendable {
         GitChangeParser.paths(run(["-C", root, "-c", "core.quotepath=off", "ls-files", "--others", "--exclude-standard"]) ?? "")
     }
 
-    private func contents(of path: String, in root: String) -> Data? {
-        let url = URL(fileURLWithPath: root).appendingPathComponent(path)
-        guard let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size <= Self.maxUntrackedFileBytes else { return nil }
+    /// Untracked files with their contents, nil for those too big, not regular files, or past the byte budget.
+    private func untrackedContents(in root: String) -> [(path: String, data: Data?)] {
+        var remainingBytes = Self.maxUntrackedBytesPerRefresh
+        return untrackedPaths(in: root).prefix(Self.maxUntrackedFiles).map { path in
+            let data = contents(of: path, in: root, limit: min(Self.maxUntrackedFileBytes, remainingBytes))
+            remainingBytes -= data?.count ?? 0
+            return (path, data)
+        }
+    }
+
+    private func contents(of path: String, in root: String, limit: Int) -> Data? {
+        let url = URL(fileURLWithPath: root).appendingPathComponent(path).resolvingSymlinksInPath()
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+              attributes[.type] as? FileAttributeType == .typeRegular,
+              let size = (attributes[.size] as? NSNumber)?.intValue, size <= limit else { return nil }
         return try? Data(contentsOf: url)
     }
 
