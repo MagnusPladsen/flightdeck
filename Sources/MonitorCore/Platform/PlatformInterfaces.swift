@@ -58,6 +58,7 @@ public protocol ProcessInspector: Sendable {
     func listProcesses() -> [RawProcess]
     func arguments(of pid: Int32) -> [String]
     func workingDirectory(of pid: Int32) -> String?
+    func startTime(of pid: Int32) -> Date?
 }
 
 public protocol ListeningSocketScanner: Sendable {

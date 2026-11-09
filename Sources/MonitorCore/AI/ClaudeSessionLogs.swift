@@ -19,7 +19,8 @@ public struct ClaudeSessionLogs: Sendable {
         let tail = Self.tailWithLastTurn(of: newest.path)
         let block = Self.lastAssistantBlock(inTranscriptTail: tail)
         return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action),
-                               pendingTool: block?.type == "tool_use" ? block?.name : nil, repeatedToolCall: Self.repeatedToolCall(inTranscriptTail: tail))
+                               pendingTool: block?.type == "tool_use" ? block?.name : nil, repeatedToolCall: Self.repeatedToolCall(inTranscriptTail: tail),
+                               lastMessage: Self.lastMessage(inTranscriptTail: tail))
     }
 
     /// Attachments such as skill lists and CLAUDE.md can push the last prompt or reply past a small tail,
@@ -238,7 +239,10 @@ public final class CodexSessionLogs: @unchecked Sendable {
 
     public func latestActivity(forWorkingDirectory workingDirectory: String) -> SessionActivity? {
         let match = recentRollouts().first { cachedWorkingDirectory(ofRolloutAt: $0.path) == workingDirectory }
-        return match.map { SessionActivity(lastWrite: $0.modified, lastTurn: .unknown) }
+        return match.map { rollout in
+            let tail = LogFiles.readTail(of: rollout.path, maxBytes: Self.messageTailBytes)
+            return SessionActivity(lastWrite: rollout.modified, lastTurn: .unknown, lastMessage: Self.lastMessage(inRolloutTail: tail))
+        }
     }
 
     private func cachedWorkingDirectory(ofRolloutAt path: String) -> String? {

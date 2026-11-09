@@ -35,6 +35,13 @@ public struct DarwinProcessInspector: ProcessInspector {
         return path.isEmpty ? nil : path
     }
 
+    public func startTime(of pid: Int32) -> Date? {
+        var info = proc_bsdinfo()
+        let expectedSize = Int32(MemoryLayout<proc_bsdinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, expectedSize) == expectedSize else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(info.pbi_start_tvsec) + TimeInterval(info.pbi_start_tvusec) / 1_000_000)
+    }
+
     /// KERN_PROCARGS2 layout: argc (Int32), exec path, NUL padding, then argc NUL-terminated args.
     static func parseProcArgs(_ buffer: [UInt8]) -> [String] {
         guard buffer.count > 4 else { return [] }

@@ -24,6 +24,17 @@ public struct LinuxProcessInspector: ProcessInspector {
         try? FileManager.default.destinationOfSymbolicLink(atPath: "/proc/\(pid)/cwd")
     }
 
+    /// Field 22 of `/proc/<pid>/stat` counts clock ticks from boot; `btime` in `/proc/stat` is the boot time.
+    public func startTime(of pid: Int32) -> Date? {
+        guard let stat = try? String(contentsOfFile: "/proc/\(pid)/stat", encoding: .utf8),
+              let close = stat.lastIndex(of: ")"),
+              let ticks = stat[stat.index(after: close)...].split(separator: " ").dropFirst(19).first.flatMap({ UInt64($0) }),
+              let system = try? String(contentsOfFile: "/proc/stat", encoding: .utf8),
+              let bootLine = system.split(separator: "\n").first(where: { $0.hasPrefix("btime ") }),
+              let bootTime = TimeInterval(bootLine.dropFirst(6)) else { return nil }
+        return Date(timeIntervalSince1970: bootTime + TimeInterval(ticks) / TimeInterval(Self.clockTicksPerSecond))
+    }
+
     /// `/proc/<pid>/stat`: "pid (comm) state ppid ... utime(14) stime(15) ... rss(24)".
     static func parseStat(_ stat: String, pid: Int32) -> RawProcess? {
         guard let open = stat.firstIndex(of: "("), let close = stat.lastIndex(of: ")") else { return nil }
