@@ -125,6 +125,8 @@ final class AppSettings {
     var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
     /// Treats any macOS Focus as quiet hours.
     var quietDuringFocus: Bool { didSet { defaults.set(quietDuringFocus, forKey: "quietDuringFocus") } }
+    /// Off by default: holds a system sleep assertion while an agent works.
+    var keepAwakeWhileAgentsWork: Bool { didSet { defaults.set(keepAwakeWhileAgentsWork, forKey: "keepAwakeWhileAgentsWork") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -167,6 +169,7 @@ final class AppSettings {
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
         quietDuringFocus = defaults.bool(forKey: "quietDuringFocus")
+        keepAwakeWhileAgentsWork = defaults.bool(forKey: "keepAwakeWhileAgentsWork")
         migrateLegacyCustomColors()
     }
 

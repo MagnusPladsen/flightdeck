@@ -29,6 +29,7 @@ struct OverviewHeader: View {
             HStack {
                 Text(greeting)
                 Spacer()
+                KeepAwakePill()
                 StatusDot(color: theme.success, size: 6)
                 Text("Live")
             }

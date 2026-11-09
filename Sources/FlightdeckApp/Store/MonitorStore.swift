@@ -26,6 +26,7 @@ final class MonitorStore {
     let worktreeOverview: WorktreeOverview
     let nowPlaying = NowPlayingMonitor()
     let focusStatus = FocusStatusMonitor()
+    let sleepAssertion = SleepAssertion()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -123,6 +124,7 @@ final class MonitorStore {
         hasCollectedAgents = true
         focusStatus.refresh()
         alertAboutChanges(since: previous)
+        updateKeepAwake()
         if previous == nil { await refreshWorktrees() }
     }
 
