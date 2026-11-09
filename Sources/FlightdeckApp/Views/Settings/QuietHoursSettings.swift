@@ -17,6 +17,7 @@ struct QuietHoursSettings: View {
                 LabeledContent("On") { weekdayToggles }
             }
             .disabled(!settings.quietHours.isEnabled)
+            FocusQuietSettings()
             Picker("Alerts while quiet", selection: $settings.quietAlertHandling) {
                 Text("Send one summary afterwards").tag(QuietAlertHandling.summarize)
                 Text("Don't send them").tag(QuietAlertHandling.drop)
@@ -25,7 +26,7 @@ struct QuietHoursSettings: View {
         } header: {
             Text("Quiet hours")
         } footer: {
-            Text("A schedule that ends before it starts runs past midnight. Pause alerts for a while from the bell in the menu bar panel. During a macOS Focus, macOS itself holds Flightdeck's banners unless you allow Flightdeck in that Focus.")
+            Text("A schedule that ends before it starts runs past midnight. The schedule and Focus can both be on; either keeps alerts quiet. Pause alerts for a while from the bell in the menu bar panel. During a macOS Focus, macOS itself holds Flightdeck's banners unless you allow Flightdeck in that Focus.")
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

@@ -40,12 +40,16 @@ struct AlertBellMenu: View {
 
     private var symbolName: String {
         if !settings.alertsEnabled { return "bell.slash" }
-        return settings.isQuietForAlerts() ? "moon.fill" : "bell.fill"
+        return store.alertQuietReason == nil ? "bell.fill" : "moon.fill"
     }
 
     private var helpText: String {
         if !settings.alertsEnabled { return "Alerts off" }
-        if let pausedUntil = settings.alertsPausedUntil, settings.isAlertPaused() { return "Alerts paused \(AlertPauseText.until(pausedUntil))" }
-        return settings.quietHours.contains(Date()) ? "Quiet hours" : "Alerts on"
+        switch store.alertQuietReason {
+        case .paused: return settings.alertsPausedUntil.map { "Alerts paused \(AlertPauseText.until($0))" } ?? "Alerts paused"
+        case .schedule: return "Quiet hours"
+        case .focus: return "Quiet during Focus"
+        case nil: return "Alerts on"
+        }
     }
 }
