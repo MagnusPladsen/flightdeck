@@ -64,8 +64,8 @@ const FEATURE_ROWS = [
   {
     label: "Office",
     title: "Walk around your agents.",
-    body: "A pixel-art office with a room per repo, where every agent is posed by what it's doing. Agents that need you wait as bouncing avatars along the top, and a jukebox plays what's on. Walk up to an agent to go to its terminal or stop it.",
-    image: { src: "/screenshots/office.png", alt: "Office with a room per repo, waiting agents as avatars at the top and a jukebox", width: 1180, height: 860 },
+    body: "A pixel-art office with a room per repo, where every agent is posed by what it's doing. Agents that need you wait as bouncing avatars along the top, and a jukebox plays what's on. When music plays it turns into a party in your visualiser colours, with a flashing dance floor, lasers, pumping speakers and every agent nodding to the beat. Walk up to the jukebox to skip or pause. Walk up to an agent to go to its terminal or stop it.",
+    image: { src: "/screenshots/office.png", alt: "Office party with a dance floor, lasers, speaker stacks and the jukebox panel", width: 1194, height: 760 },
   },
   {
     label: "Now playing",
