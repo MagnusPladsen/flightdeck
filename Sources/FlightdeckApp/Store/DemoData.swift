@@ -83,7 +83,28 @@ enum DemoData {
             ListeningPort(port: 8000, pid: 5104, processName: "python3", isLocalOnly: true, project: project("payments-api", branch: "fix/token-refresh", worktree: "token-refresh"), framework: fastAPI),
             ListeningPort(port: 5432, pid: 5105, processName: "com.docker.backend", isLocalOnly: false, framework: docker, containerName: "storefront-postgres-1"),
             ListeningPort(port: 6379, pid: 5106, processName: "com.docker.backend", isLocalOnly: false, framework: docker, containerName: "storefront-redis-1"),
+            ListeningPort(port: 3002, pid: 5107, processName: "node", isLocalOnly: true, commandLine: "node node_modules/.bin/next dev", project: project("admin", branch: "main"), framework: nextJS),
         ]
+    }
+
+    private static var crashedAnalytics: ListeningPort {
+        let arguments = ["uvicorn", "app.main:app", "--reload", "--port", "8010"]
+        return ListeningPort(port: 8010, pid: 5108, processName: "python3", isLocalOnly: true, commandLine: arguments.joined(separator: " "), arguments: arguments,
+                             workingDirectory: worktreePath("analytics", nil), project: project("analytics", branch: "feat/export"), framework: fastAPI)
+    }
+
+    static var crashedServers: [CrashedServer] {
+        [CrashedServer(id: ServerIdentity(folder: worktreePath("analytics", nil), port: 8010), server: crashedAnalytics, stoppedAt: Date().addingTimeInterval(-3 * 60))]
+    }
+
+    static var serverLogs: [ServerIdentity: [String]] {
+        [ServerIdentity(folder: worktreePath("analytics", nil), port: 8010): [
+            "INFO:     Application startup complete.",
+            "INFO:     127.0.0.1:52114 - \"GET /export?format=csv HTTP/1.1\" 200 OK",
+            "WARNING:  WatchFiles detected changes in 'app/export.py'. Reloading...",
+            "  File \"/Users/alex/code/analytics/app/export.py\", line 41",
+            "SyntaxError: unexpected indent",
+        ]]
     }
 
     static var usage: [ProviderUsage] {

@@ -9,6 +9,7 @@ struct PortRow: View {
 
     @State private var isHovering = false
     @State private var isConfirmingStop = false
+    @State private var isConfirmingRestart = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -30,6 +31,11 @@ struct PortRow: View {
         .confirmationDialog("Stop \(port.processName) (pid \(String(port.pid)))?", isPresented: $isConfirmingStop) {
             Button("Stop process", role: .destructive) { store.stopProcess(port.pid) }
         }
+        .confirmationDialog("Restart \(port.title) on :\(String(port.port))?", isPresented: $isConfirmingRestart) {
+            Button("Restart in terminal") { store.restartServer(port) }
+        } message: {
+            Text("Stops the process, then runs \(ServerRelaunch.commandLine(port.arguments)) again in a new terminal tab.")
+        }
     }
 
     @ViewBuilder
@@ -45,6 +51,9 @@ struct PortRow: View {
             }
             if !port.isLocalOnly && !isCompact {
                 Chip(text: "exposed", systemImage: "network")
+            }
+            if let conflict = store.serverHealth.conflicts[port.id] {
+                Chip(text: isCompact ? "conflict" : conflict.summary, systemImage: "exclamationmark.triangle").foregroundStyle(theme.warning).help(conflict.summary)
             }
         }
         .foregroundStyle(.secondary)
@@ -68,6 +77,10 @@ struct PortRow: View {
                     IconButton(systemImage: "terminal", help: "Open in terminal") { store.openInTerminal(path) }
                     IconButton(systemImage: "folder", help: "Reveal in Finder") { store.revealInFinder(path) }
                 }
+            }
+            if !isCompact, let id = port.serverIdentity, store.serverHealth.hasLog(for: id) { ServerLogButton(id: id) }
+            if store.canRestart(port) {
+                IconButton(systemImage: "arrow.clockwise.circle", help: "Restart in terminal") { isConfirmingRestart = true }
             }
             IconButton(systemImage: "stop.circle", help: "Stop process") { isConfirmingStop = true }
         }

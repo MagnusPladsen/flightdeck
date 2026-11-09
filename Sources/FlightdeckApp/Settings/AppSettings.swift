@@ -96,6 +96,7 @@ final class AppSettings {
     var alertsOnYourTurn: Bool { didSet { defaults.set(alertsOnYourTurn, forKey: "alertsOnYourTurn") } }
     var alertsOnStuck: Bool { didSet { defaults.set(alertsOnStuck, forKey: "alertsOnStuck") } }
     var alertSound: Bool { didSet { defaults.set(alertSound, forKey: "alertSound") } }
+    var serverCrashAlertsEnabled: Bool { didSet { defaults.set(serverCrashAlertsEnabled, forKey: "serverCrashAlertsEnabled") } }
     /// Raw values of the agent tools the user turned alerts off for.
     var mutedAlertTools: [String] { didSet { defaults.set(mutedAlertTools, forKey: "mutedAlertTools") } }
     var nextAgentHotkeyEnabled: Bool { didSet { defaults.set(nextAgentHotkeyEnabled, forKey: "nextAgentHotkeyEnabled") } }
@@ -147,6 +148,7 @@ final class AppSettings {
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
         alertsOnStuck = defaults.object(forKey: "alertsOnStuck") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
+        serverCrashAlertsEnabled = defaults.object(forKey: "serverCrashAlertsEnabled") as? Bool ?? true
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
         nextAgentHotkeyEnabled = defaults.object(forKey: "nextAgentHotkeyEnabled") as? Bool ?? true
         nextAgentHotkey = Self.load(HotkeyShortcut.self, forKey: "nextAgentHotkey", from: defaults) ?? .nextAgentDefault

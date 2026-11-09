@@ -25,6 +25,7 @@ final class MonitorStore {
     let notifier = AgentNotifier()
     let worktreeOverview: WorktreeOverview
     let nowPlaying = NowPlayingMonitor()
+    let serverHealth = ServerHealthMonitor()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -121,6 +122,7 @@ final class MonitorStore {
         self.agents = applyingClearedTurns(to: collected)
         hasCollectedAgents = true
         alertAboutChanges(since: previous)
+        refreshServerHealth()
         if previous == nil { await refreshWorktrees() }
     }
 
@@ -248,6 +250,7 @@ final class MonitorStore {
         worktreeOverview.showDemo(DemoData.worktrees)
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         nowPlaying.showDemo(DemoData.nowPlaying)
+        serverHealth.showDemo(ports: DemoData.ports, crashed: DemoData.crashedServers, logs: DemoData.serverLogs)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)
@@ -262,6 +265,7 @@ final class MonitorStore {
     // MARK: - Actions
 
     func stopProcess(_ pid: Int32) {
+        serverHealth.noteStoppedByUser(pid)
         kill(pid, SIGTERM)
         Task {
             try? await Task.sleep(for: .milliseconds(600))
