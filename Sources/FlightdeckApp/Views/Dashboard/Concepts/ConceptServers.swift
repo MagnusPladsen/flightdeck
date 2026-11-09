@@ -353,6 +353,7 @@ struct LayoutUsageLimits: View {
                         Text("\(item.tool.displayName) \(item.window.label)".uppercased()).font(.system(size: 10, weight: .semibold)).tracking(1.2).foregroundStyle(theme.muted).lineLimit(1)
                         Text("\(Int(transform(item.window.usedPercent).rounded()))%\(suffix)").font(.system(size: size, weight: layout == .mission ? .ultraLight : .bold).monospacedDigit()).foregroundStyle(color).lineLimit(1).minimumScaleFactor(0.5)
                         Text(Formatters.resetCountdown(item.window.resetsAt) ?? "").font(.system(size: 11)).foregroundStyle(theme.muted).lineLimit(1)
+                        if let forecast = store.limitForecast(for: item.tool, window: item.window) { ForecastText(forecast: forecast).font(.system(size: 11)) }
                     }
                     .padding(layout == .bento ? 14 : 0)
                     .frame(maxWidth: .infinity, alignment: .leading)

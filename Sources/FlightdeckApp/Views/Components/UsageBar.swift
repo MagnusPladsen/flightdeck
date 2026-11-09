@@ -4,6 +4,7 @@ import SwiftUI
 struct UsageBar: View {
     @Environment(\.theme) private var theme
     var window: UsageWindow
+    var forecast: LimitForecast?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -16,10 +17,14 @@ struct UsageBar: View {
             }
             .font(.caption)
             ProgressBar(fraction: window.usedPercent / 100, color: UsageLevel.color(forPercent: window.usedPercent, in: theme))
-            if let reset = Formatters.resetCountdown(window.resetsAt) {
-                Text(reset)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+            let reset = Formatters.resetCountdown(window.resetsAt)
+            if reset != nil || forecast != nil {
+                HStack {
+                    if let reset { Text(reset).foregroundStyle(.secondary) }
+                    Spacer(minLength: 8)
+                    if let forecast { ForecastText(forecast: forecast) }
+                }
+                .font(.caption2)
             }
         }
     }
@@ -46,6 +51,7 @@ struct ProgressBar: View {
 
 /// Usage windows and token counts for one provider.
 struct ProviderUsageView: View {
+    @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     var usage: ProviderUsage
 
@@ -69,7 +75,7 @@ struct ProviderUsageView: View {
                 }
             }
             .font(.callout)
-            ForEach(usage.windows) { UsageBar(window: $0) }
+            ForEach(usage.windows) { UsageBar(window: $0, forecast: store.limitForecast(for: usage.tool, window: $0)) }
         }
     }
 }

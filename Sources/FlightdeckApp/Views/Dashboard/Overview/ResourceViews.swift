@@ -47,6 +47,9 @@ private struct StripCell: View {
             }
         }
         .padding(.vertical, 20)
+        .overlay(alignment: .bottomLeading) {
+            if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 11)).padding(.bottom, 4) }
+        }
     }
 }
 
@@ -107,6 +110,7 @@ private struct SidebarCell: View {
             if !reading.detail.isEmpty {
                 Text(reading.detail).font(.system(size: 12)).foregroundStyle(theme.muted)
             }
+            if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 12)) }
         }
     }
 }

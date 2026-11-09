@@ -17,6 +17,7 @@ struct ResourceReading: Identifiable {
     var shortTitle: String?
     /// The agent a limit belongs to, shown under the short title.
     var agentName: String?
+    var forecast: LimitForecast?
 
     @MainActor
     static func all(store: MonitorStore, theme: Theme) -> [ResourceReading] {
@@ -61,6 +62,6 @@ struct ResourceReading: Identifiable {
             return ResourceReading(id: resource, title: title, value: "—", detail: hint, fraction: nil, color: theme.success, shortTitle: limit.title, agentName: agent.displayName)
         }
         let color = UsageLevel.color(forPercent: window.usedPercent, in: theme)
-        return ResourceReading(id: resource, title: title, value: "\(Int(window.usedPercent.rounded()))%", detail: Formatters.resetCountdown(window.resetsAt) ?? "", fraction: window.usedPercent / 100, color: color, valueColor: window.usedPercent >= 85 ? color : nil, shortTitle: limit.title, agentName: agent.displayName)
+        return ResourceReading(id: resource, title: title, value: "\(Int(window.usedPercent.rounded()))%", detail: Formatters.resetCountdown(window.resetsAt) ?? "", fraction: window.usedPercent / 100, color: color, valueColor: window.usedPercent >= 85 ? color : nil, shortTitle: limit.title, agentName: agent.displayName, forecast: store.limitForecast(for: agent, window: window))
     }
 }
