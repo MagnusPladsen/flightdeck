@@ -1,3 +1,4 @@
+import Foundation
 import MonitorCore
 import Observation
 
@@ -12,7 +13,13 @@ enum DashboardDestination: Hashable {
 @MainActor
 @Observable
 final class DashboardNavigation {
-    var destination: DashboardDestination = .page(.overview)
+    var destination: DashboardDestination = DashboardNavigation.demoStartPage.map(DashboardDestination.page) ?? .page(.overview)
+
+    /// `FLIGHTDECK_PAGE=agents` with `FLIGHTDECK_DEMO=1` opens the dashboard on that page, for screenshots.
+    private static var demoStartPage: DashboardPage? {
+        guard DemoData.isEnabled else { return nil }
+        return ProcessInfo.processInfo.environment["FLIGHTDECK_PAGE"].flatMap(DashboardPage.init(rawValue:))
+    }
 
     func show(_ page: DashboardPage) {
         destination = .page(page)

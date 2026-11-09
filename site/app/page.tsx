@@ -23,26 +23,26 @@ const PINS = [
   { x: 22, y: 20, title: "Who needs you", body: "The agent waiting on you leads, with a count of the others." },
   {
     x: 22,
-    y: 37.5,
+    y: 44.5,
     title: "Go to terminal",
     body: "Focuses that agent's own Ghostty, iTerm2, Terminal or tmux tab. Later sets it aside, Stop interrupts it. ⌃⌥N jumps to the next agent that needs you from any app.",
   },
-  { x: 73, y: 21, title: "A big clock", body: "Readable from across the room on a second screen." },
+  { x: 73, y: 23, title: "A big clock", body: "Readable from across the room on a second screen." },
   {
     x: 22,
-    y: 51.5,
+    y: 58.5,
     title: "System and limits",
     body: "CPU and memory, plus your default agent's 5h and week limits. Add disk, network, battery or Claude Code and Codex limits side by side.",
   },
   {
     x: 22,
-    y: 62,
+    y: 68,
     title: "Now playing",
     body: "What's playing in any player, with previous, play/pause, next and a volume slider for Spotify and Music. Collapse it, or System, when you need the room.",
   },
   {
     x: 22,
-    y: 80.5,
+    y: 86.5,
     title: "Needs you",
     body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new.",
   },
@@ -59,7 +59,7 @@ const FEATURE_ROWS = [
     label: "AI agents",
     title: "Every agent, one glance.",
     body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on.",
-    image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1180, height: 917 },
+    image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1194, height: 1085 },
   },
   {
     label: "Office",
@@ -77,13 +77,13 @@ const FEATURE_ROWS = [
     label: "Worktrees",
     title: "Clear out old worktrees.",
     body: "Every git worktree with its changes, ahead/behind, PR and the agent working in it. Clean ones with no agent, no open PR and no recent commits are marked stale, and one click cleans them up.",
-    image: { src: "/screenshots/worktrees.png", alt: "Worktrees page with stale worktrees and Clean up", width: 1180, height: 720 },
+    image: { src: "/screenshots/worktrees.png", alt: "Worktrees page with stale worktrees and Clean up", width: 1194, height: 1085 },
   },
   {
     label: "Dev servers",
     title: "Know what's on :3000.",
     body: "Every listening port mapped to its git project, branch and worktree, with the framework detected. Open it in the browser, editor or terminal, or stop it.",
-    image: { src: "/screenshots/ports.png", alt: "Servers and ports page grouped by project", width: 1180, height: 780 },
+    image: { src: "/screenshots/ports.png", alt: "Servers and ports page grouped by project", width: 1194, height: 1085 },
   },
   {
     label: "Menu bar",
@@ -169,8 +169,8 @@ export default function Home() {
               className="shot"
               src="/screenshots/overview.png"
               alt="Flightdeck overview with numbered labels: search and ask, who needs you, go to terminal, clock, system and limits, now playing, the Needs you list and pages"
-              width={1180}
-              height={1060}
+              width={1194}
+              height={1085}
               priority
             />
             {PINS.map((pin, index) => (
