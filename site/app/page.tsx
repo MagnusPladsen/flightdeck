@@ -44,7 +44,7 @@ const PINS = [
     x: 22,
     y: 86.5,
     title: "Needs you",
-    body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new.",
+    body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new. Each card shows what the agent changed since it started, with a Diff button.",
   },
   {
     x: 10,
@@ -58,7 +58,7 @@ const FEATURE_ROWS = [
   {
     label: "AI agents",
     title: "Every agent, one glance.",
-    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on.",
+    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on. Cards show the files and lines each agent changed, with a diff one click away, and New agent starts Claude Code or Codex in a fresh worktree. Limits come with a forecast of when they run out, and Today sums up agent time and time spent waiting on you.",
     image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1194, height: 1085 },
   },
   {
@@ -76,13 +76,13 @@ const FEATURE_ROWS = [
   {
     label: "Worktrees",
     title: "Clear out old worktrees.",
-    body: "Every git worktree with its changes, ahead/behind, PR and the agent working in it. Clean ones with no agent, no open PR and no recent commits are marked stale, and one click cleans them up.",
+    body: "Every git worktree with its changes, ahead/behind, PR and the agent working in it. Clean ones with no agent, no open PR and no recent commits are marked stale, and one click cleans them up. Open pull requests show CI and review status, and you get an alert when CI fails on a branch an agent is working in.",
     image: { src: "/screenshots/worktrees.png", alt: "Worktrees page with stale worktrees and Clean up", width: 1194, height: 1085 },
   },
   {
     label: "Dev servers",
     title: "Know what's on :3000.",
-    body: "Every listening port mapped to its git project, branch and worktree, with the framework detected. Open it in the browser, editor or terminal, or stop it.",
+    body: "Every listening port mapped to its git project, branch and worktree, with the framework detected. Open it in the browser, editor or terminal, or stop it. Stopped servers stay listed with Run again, port conflicts are flagged, and Restart reruns a server in a terminal tab.",
     image: { src: "/screenshots/ports.png", alt: "Servers and ports page grouped by project", width: 1194, height: 1085 },
   },
   {
@@ -95,7 +95,7 @@ const FEATURE_ROWS = [
   {
     label: "Settings",
     title: "Settings, in the dashboard.",
-    body: "Settings is a page in the dashboard, not a separate window. Set quiet hours, and alerts held back arrive as one summary afterwards. Change the next-agent shortcut, or turn on token spend with a daily budget alert.",
+    body: "Settings is a page in the dashboard, not a separate window. Set quiet hours, and alerts held back arrive as one summary afterwards. Change the next-agent shortcut, or turn on token spend with a daily budget alert. Alerts can follow macOS Focus, Keep awake stops the Mac sleeping while agents work, and the flightdeck command feeds SketchyBar and tmux.",
     image: { src: "/screenshots/settings.png", alt: "Settings page in the dashboard", width: 1180, height: 917 },
   },
   {
