@@ -3,8 +3,8 @@ import Foundation
 /// Asks gh for a repository's pull requests on the cadence `PullRequestRefreshPolicy` sets.
 /// Blocks on git and gh, so call it off the main thread.
 final class PullRequestSource: @unchecked Sendable {
-    private static let historyFields = "number,state,headRefName,url"
-    private static let openFields = "number,state,headRefName,url,isDraft,reviewDecision,statusCheckRollup"
+    private static let historyFields = "number,state,headRefName,url,isCrossRepository"
+    private static let openFields = "number,state,headRefName,url,isCrossRepository,isDraft,reviewDecision,statusCheckRollup"
 
     private struct Cached {
         var fetchedAt: Date

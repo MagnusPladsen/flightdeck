@@ -48,6 +48,11 @@ struct PullRequestChecksTests {
         #expect(history?["old"] == PullRequestInfo(number: 4, state: .merged, url: "u"))
     }
 
+    @Test func forkPullRequestsDoNotClaimOurBranches() {
+        let json = #"[{"number":9,"state":"OPEN","headRefName":"main","url":"fork","isCrossRepository":true},{"number":3,"state":"MERGED","headRefName":"main","url":"ours","isCrossRepository":false}]"#
+        #expect(GitOutputParser.pullRequestsByBranch(json)?["main"]?.url == "ours")
+    }
+
     @Test func pendingStatusContextsAndUnfinishedRunsArePending() {
         #expect(CheckRollup.summarize([CheckRollupEntry(state: "PENDING")]) == .pending)
         #expect(CheckRollup.summarize([CheckRollupEntry(status: "WAITING", conclusion: "")]) == .pending)

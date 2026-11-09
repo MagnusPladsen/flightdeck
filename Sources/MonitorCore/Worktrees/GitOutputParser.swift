@@ -48,10 +48,11 @@ public enum GitOutputParser {
 
     /// `gh pr list --json number,state,headRefName,url`, newest first, optionally with
     /// `isDraft,reviewDecision,statusCheckRollup`. Keeps the newest pull request for each branch.
+    /// Pull requests from forks are left out: their branch names belong to someone else's repository.
     public static func pullRequestsByBranch(_ json: String) -> [String: PullRequestInfo]? {
         guard let rows = try? JSONDecoder().decode([PullRequestRow].self, from: Data(json.utf8)) else { return nil }
         var byBranch: [String: PullRequestInfo] = [:]
-        for row in rows where byBranch[row.headRefName] == nil {
+        for row in rows where byBranch[row.headRefName] == nil && row.isCrossRepository != true {
             byBranch[row.headRefName] = row.info
         }
         return byBranch
@@ -68,6 +69,7 @@ public enum GitOutputParser {
         var state: PullRequestState
         var headRefName: String
         var url: String
+        var isCrossRepository: Bool?
         var isDraft: Bool?
         var reviewDecision: String?
         var statusCheckRollup: [CheckRollupEntry]?
