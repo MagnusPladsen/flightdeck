@@ -8,17 +8,19 @@ public struct ListeningPort: Sendable, Identifiable, Hashable {
     public var processName: String
     public var isLocalOnly: Bool
     public var commandLine: String
+    public var arguments: [String]
     public var workingDirectory: String?
     public var project: DevProject?
     public var framework: Framework?
     public var containerName: String?
 
-    public init(port: Int, pid: Int32, processName: String, isLocalOnly: Bool, commandLine: String = "", workingDirectory: String? = nil, project: DevProject? = nil, framework: Framework? = nil, containerName: String? = nil) {
+    public init(port: Int, pid: Int32, processName: String, isLocalOnly: Bool, commandLine: String = "", arguments: [String] = [], workingDirectory: String? = nil, project: DevProject? = nil, framework: Framework? = nil, containerName: String? = nil) {
         self.port = port
         self.pid = pid
         self.processName = processName
         self.isLocalOnly = isLocalOnly
         self.commandLine = commandLine
+        self.arguments = arguments
         self.workingDirectory = workingDirectory
         self.project = project
         self.framework = framework

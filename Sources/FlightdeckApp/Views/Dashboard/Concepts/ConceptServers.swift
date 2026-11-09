@@ -7,10 +7,17 @@ struct LayoutDevServers: View {
 
     var body: some View {
         switch layout {
-        case .terminal, .cockpit, .mission: PortTable()
-        case .macOS, .bento: ServerCards()
-        case .editorial: ServerSentenceList()
+        case .terminal, .cockpit, .mission: withCrashedServers { PortTable() }
+        case .macOS, .bento: withCrashedServers { ServerCards() }
+        case .editorial: withCrashedServers { ServerSentenceList() }
         default: DevServersSection()
+        }
+    }
+
+    private func withCrashedServers(@ViewBuilder _ servers: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            servers()
+            CrashedServerRows()
         }
     }
 }
@@ -99,6 +106,9 @@ private struct ServerCards: View {
                 HStack(spacing: 6) {
                     if let framework = port.framework { FrameworkBadge(framework: framework) }
                     if let branch = port.project?.branch { Chip(text: branch, systemImage: "arrow.triangle.branch") }
+                }
+                if let conflict = store.serverHealth.conflicts[port.id] {
+                    Chip(text: conflict.summary, systemImage: "exclamationmark.triangle").foregroundStyle(theme.warning)
                 }
             }
             .padding(14)

@@ -8,6 +8,7 @@ struct DevServersSection: View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeading(title: "Dev servers", count: store.devServers.count)
             HairlineRows(items: store.devServers, emptyText: "No dev servers running") { PortRow(port: $0) }
+            CrashedServerRows()
         }
     }
 }

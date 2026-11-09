@@ -30,6 +30,7 @@ final class MonitorStore {
     let sleepAssertion = SleepAssertion()
     let dailyRecap = DailyRecapTracker()
     private let statusPublisher = StatusPublisher()
+    let serverHealth = ServerHealthMonitor()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -131,6 +132,7 @@ final class MonitorStore {
         dailyRecap.record(self.agents)
         dailyRecap.announceYesterdayIfDue(settings: settings, notifier: notifier, spend: spend)
         statusPublisher.publish(from: self)
+        refreshServerHealth()
         if previous == nil { await refreshWorktrees() }
     }
 
@@ -261,6 +263,7 @@ final class MonitorStore {
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         nowPlaying.showDemo(DemoData.nowPlaying)
         dailyRecap.showDemo(DemoData.recap)
+        serverHealth.showDemo(ports: DemoData.ports, crashed: DemoData.crashedServers, logs: DemoData.serverLogs)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)
@@ -275,6 +278,7 @@ final class MonitorStore {
     // MARK: - Actions
 
     func stopProcess(_ pid: Int32) {
+        serverHealth.noteStoppedByUser(pid)
         kill(pid, SIGTERM)
         Task {
             try? await Task.sleep(for: .milliseconds(600))
