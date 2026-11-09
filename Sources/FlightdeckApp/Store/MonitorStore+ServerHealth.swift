@@ -6,10 +6,6 @@ import MonitorCore
 extension MonitorStore {
     private static let portReleaseTimeout: Duration = .seconds(10)
     private static let portReleasePollInterval: Duration = .milliseconds(500)
-    private static let terminalScriptTimeout: TimeInterval = 30
-    private static let launchTerminals: [(bundleID: String, host: TerminalHost)] = [
-        ("com.mitchellh.ghostty", .ghostty), ("com.googlecode.iterm2", .iTerm), ("com.apple.Terminal", .terminalApp),
-    ]
 
     func refreshServerHealth() {
         let quiet = settings.isQuietForAlerts()
@@ -41,12 +37,12 @@ extension MonitorStore {
 
     private func relaunch(_ server: ListeningPort) {
         guard let id = server.serverIdentity, let folder = server.workingDirectory else { return }
-        let command = ServerRelaunch.shellCommand(arguments: server.arguments, workingDirectory: folder, logPath: serverHealth.logURL(for: id).path)
-        guard let terminal = Self.launchTerminals.first(where: { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0.bundleID) != nil }),
-              let script = TerminalLaunchScript.source(for: terminal.host, command: command) else { return NSSound.beep() }
-        let timeout = Self.terminalScriptTimeout
+        let command = ServerRelaunch.shellCommand(arguments: server.arguments, logPath: serverHealth.logURL(for: id).path)
+        let choice = settings.launchTerminal
+        let agentPIDs = agents.map(\.pid)
         Task {
-            await Task.detached { _ = CommandRunner.run("/usr/bin/osascript", ["-e", script], timeout: timeout) }.value
+            let outcome = await Task.detached { TerminalCommandLauncher.run(command, in: folder, choice: choice, agentPIDs: agentPIDs) }.value
+            guard case .success = outcome else { return NSSound.beep() }
             try? await Task.sleep(for: .seconds(2))
             await refreshPortsAndAgents()
         }

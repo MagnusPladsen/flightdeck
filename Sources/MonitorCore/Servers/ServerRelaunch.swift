@@ -13,7 +13,7 @@ public enum ServerRelaunch {
     /// Single-quotes anything that isn't plainly safe, so the shell passes each argument through unchanged.
     public static func quote(_ argument: String) -> String {
         if !argument.isEmpty, argument.unicodeScalars.allSatisfy(safeCharacters.contains) { return argument }
-        return "'" + argument.replacingOccurrences(of: "'", with: #"'\''"#) + "'"
+        return ShellQuoting.quote(argument)
     }
 
     public static func commandLine(_ arguments: [String]) -> String {
@@ -21,8 +21,8 @@ public enum ServerRelaunch {
     }
 
     /// `script` keeps the server on a real terminal, so colours and key shortcuts still work, while copying its output to the log.
-    public static func shellCommand(arguments: [String], workingDirectory: String, logPath: String) -> String {
-        "cd \(quote(workingDirectory)) && /usr/bin/script -q -F \(quote(logPath)) \(commandLine(arguments))"
+    public static func shellCommand(arguments: [String], logPath: String) -> String {
+        "/usr/bin/script -q -F \(quote(logPath)) \(commandLine(arguments))"
     }
 
     public static func logFileName(for id: ServerIdentity) -> String {

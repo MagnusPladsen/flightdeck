@@ -15,9 +15,9 @@ struct ServerRelaunchTests {
         #expect(ServerRelaunch.quote("`whoami`") == "'`whoami`'")
     }
 
-    @Test func shellCommandChangesFolderAndRecordsTheOutput() {
-        let command = ServerRelaunch.shellCommand(arguments: ["bun", "run", "dev"], workingDirectory: "/code/my shop", logPath: "/logs/shop-3000.log")
-        #expect(command == "cd '/code/my shop' && /usr/bin/script -q -F /logs/shop-3000.log bun run dev")
+    @Test func shellCommandRecordsTheOutput() {
+        let command = ServerRelaunch.shellCommand(arguments: ["bun", "run", "dev"], logPath: "/logs/my shop-3000.log")
+        #expect(command == "/usr/bin/script -q -F '/logs/my shop-3000.log' bun run dev")
     }
 
     @Test func rewrittenProcessTitlesAndOddArgvCannotBeRelaunched() {
@@ -29,13 +29,6 @@ struct ServerRelaunchTests {
 
     @Test func logFileNameUsesTheFolderAndPort() {
         #expect(ServerRelaunch.logFileName(for: ServerIdentity(folder: "/code/my shop", port: 3000)) == "my_shop-3000.log")
-    }
-
-    @Test func terminalScriptsEscapeTheCommandForAppleScript() {
-        let script = TerminalLaunchScript.source(for: .terminalApp, command: #"cd '/a "b"' && echo \x"#)
-        #expect(script?.contains(#"do script "cd '/a \"b\"' && echo \\x""#) == true)
-        #expect(TerminalLaunchScript.source(for: .ghostty, command: "ls")?.contains("new tab in front window") == true)
-        #expect(TerminalLaunchScript.source(for: .otherApp, command: "ls") == nil)
     }
 
     @Test func logTailStripsColoursAndRedraws() {
