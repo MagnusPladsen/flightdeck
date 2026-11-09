@@ -54,7 +54,7 @@ struct ProjectsList: View {
     var projects: [ProjectSummary]
     var totalPorts: Int
     var navigate: (DashboardPage) -> Void
-    private static let rowLimit = 8
+    private static let rowLimit = 4
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {

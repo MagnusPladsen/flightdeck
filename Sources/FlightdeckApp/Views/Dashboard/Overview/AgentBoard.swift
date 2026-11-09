@@ -86,7 +86,7 @@ struct AgentColumnSection: View {
     var column: AgentBoardColumn
     var agents: [AgentGroup]
     var navigate: (DashboardPage) -> Void
-    private static let rowLimit = 4
+    private static let rowLimit = 2
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
