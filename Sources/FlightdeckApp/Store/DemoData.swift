@@ -57,14 +57,15 @@ enum DemoData {
                         lastCommitDate: Date().addingTimeInterval(-daysAgo * 86_400), pullRequest: pullRequest)
     }
 
-    private static func pullRequest(_ number: Int, _ state: PullRequestState) -> PullRequestLookup {
-        .found(PullRequestInfo(number: number, state: state, url: "https://github.com/alex/storefront/pull/\(number)"))
+    private static func pullRequest(_ number: Int, _ state: PullRequestState, checks: CheckStatus? = nil, review: ReviewState? = nil, isDraft: Bool = false) -> PullRequestLookup {
+        .found(PullRequestInfo(number: number, state: state, url: "https://github.com/alex/storefront/pull/\(number)", isDraft: isDraft, checks: checks, review: review))
     }
 
     static var worktrees: [Worktree] {
         [
-            worktree("storefront", nil, branch: "feat/checkout", changes: 2, ahead: 1, daysAgo: 0.1, pullRequest: pullRequest(479, .open)),
-            worktree("storefront", "search", branch: "feat/search", changes: 4, ahead: 2, daysAgo: 0.02, pullRequest: pullRequest(482, .open)),
+            worktree("storefront", nil, branch: "feat/checkout", changes: 2, ahead: 1, daysAgo: 0.1, pullRequest: pullRequest(479, .open, checks: .passing, review: .approved)),
+            worktree("storefront", "search", branch: "feat/search", changes: 4, ahead: 2, daysAgo: 0.02, pullRequest: pullRequest(482, .open, checks: .failing, review: .changesRequested)),
+            worktree("storefront", "cart-totals", branch: "fix/cart-totals", ahead: 1, daysAgo: 0.2, pullRequest: pullRequest(484, .open, checks: .pending, review: .reviewRequired, isDraft: true)),
             worktree("storefront", "brave-turing-1a2b3c", branch: "claude/brave-turing", daysAgo: 23, pullRequest: pullRequest(451, .merged)),
             worktree("storefront", "holiday-banner", branch: "feat/holiday-banner", isPushed: false, daysAgo: 41),
             worktree("payments-api", nil, branch: "main", behind: 3, daysAgo: 2),

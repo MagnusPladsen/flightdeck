@@ -37,8 +37,12 @@ public enum TmuxTargets {
     /// The most recently used client on the pane's session, else the most recent client of any
     /// session (which the caller switches over).
     public static func client(showing pane: Pane, among clients: [Client]) -> Client? {
+        client(inSession: pane.sessionName, among: clients)
+    }
+
+    public static func client(inSession sessionName: String, among clients: [Client]) -> Client? {
         let mostRecent: (Client, Client) -> Bool = { $0.lastActivity < $1.lastActivity }
-        return clients.filter { $0.sessionName == pane.sessionName }.max(by: mostRecent) ?? clients.max(by: mostRecent)
+        return clients.filter { $0.sessionName == sessionName }.max(by: mostRecent) ?? clients.max(by: mostRecent)
     }
 
     private static func fields(of output: String, count: Int) -> [[String]] {

@@ -25,6 +25,11 @@ final class WorktreeOverview {
         StaleWorktreePolicy(minimumAgeDays: settings.staleWorktreeDays)
     }
 
+    /// Each repository once, in the order its worktrees are listed.
+    var repositoryRoots: [String] {
+        worktrees.map(\.repositoryRoot).reduce(into: []) { roots, root in if !roots.contains(root) { roots.append(root) } }
+    }
+
     func agentsByWorktree(_ agents: [AgentSession]) -> [String: [AgentSession]] {
         WorktreeAgentMatcher.agents(in: worktrees, from: agents)
     }

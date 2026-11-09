@@ -133,6 +133,9 @@ final class AppSettings {
     var dailyRecapNotificationEnabled: Bool { didSet { defaults.set(dailyRecapNotificationEnabled, forKey: "dailyRecapNotificationEnabled") } }
     /// Start of the last day the recap notification summed up, so each day is summed up once.
     var dailyRecapAnnouncedDay: Date? { didSet { defaults.set(dailyRecapAnnouncedDay, forKey: "dailyRecapAnnouncedDay") } }
+    var launchTerminal: LaunchTerminalChoice { didSet { defaults.set(launchTerminal.rawValue, forKey: "launchTerminal") } }
+    var newWorktreeLocation: WorktreeLocation { didSet { defaults.set(newWorktreeLocation.rawValue, forKey: "newWorktreeLocation") } }
+    var alertsOnFailingChecks: Bool { didSet { defaults.set(alertsOnFailingChecks, forKey: "alertsOnFailingChecks") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -180,6 +183,9 @@ final class AppSettings {
         keepAwakeWhileAgentsWork = defaults.bool(forKey: "keepAwakeWhileAgentsWork")
         dailyRecapNotificationEnabled = defaults.bool(forKey: "dailyRecapNotificationEnabled")
         dailyRecapAnnouncedDay = defaults.object(forKey: "dailyRecapAnnouncedDay") as? Date
+        launchTerminal = defaults.string(forKey: "launchTerminal").flatMap(LaunchTerminalChoice.init(rawValue:)) ?? .automatic
+        newWorktreeLocation = defaults.string(forKey: "newWorktreeLocation").flatMap(WorktreeLocation.init(rawValue:)) ?? .automatic
+        alertsOnFailingChecks = defaults.object(forKey: "alertsOnFailingChecks") as? Bool ?? true
         migrateLegacyCustomColors()
     }
 

@@ -10,19 +10,15 @@ public enum WorktreeRemovalResult: Sendable, Hashable {
 /// Lists the worktrees of the repositories Flightdeck has seen and removes stale ones.
 /// Methods block on git and gh, so call them off the main thread.
 public final class WorktreeCollector: @unchecked Sendable {
-    public static let pullRequestCacheLifetime: TimeInterval = 600
-
     private let git: String?
-    private let gh: String?
     private let lock = NSLock()
     /// Any folder inside a repository -> that repository's main worktree.
     private var repositoryRoots: [String: String] = [:]
-    /// Pull requests by branch per repository; nil when gh can't answer for it.
-    private var pullRequestCache: [String: (fetchedAt: Date, byBranch: [String: PullRequestInfo]?)] = [:]
+    private let pullRequests: PullRequestSource
 
     public init(git: String? = CommandRunner.locate("git"), gh: String? = CommandRunner.locate("gh")) {
         self.git = git
-        self.gh = gh
+        pullRequests = PullRequestSource(git: git, gh: gh)
     }
 
     /// Worktrees of every repository containing one of `folders`, main checkout first.
@@ -50,7 +46,7 @@ public final class WorktreeCollector: @unchecked Sendable {
 
     private func worktrees(ofRepositoryAt root: String, now: Date) -> [Worktree] {
         let entries = listEntries(in: root).filter { !$0.isBare && !$0.isPrunable }
-        let pullRequests = pullRequestsByBranch(in: root, now: now)
+        let pullRequests = pullRequests.pullRequestsByBranch(in: root, now: now)
         let name = (root as NSString).lastPathComponent
         return entries.map { entry in
             Worktree(repositoryName: name, repositoryRoot: root, path: entry.path, branch: entry.branch, head: entry.head, isMain: entry.path == root,
@@ -78,25 +74,6 @@ public final class WorktreeCollector: @unchecked Sendable {
     private func lastCommitDate(of path: String) -> Date? {
         guard let git else { return nil }
         return GitOutputParser.commitDate(CommandRunner.run(git, ["-C", path, "log", "-1", "--format=%ct"]).output)
-    }
-
-    /// Asks gh at most once per `pullRequestCacheLifetime` per repository.
-    private func pullRequestsByBranch(in root: String, now: Date) -> [String: PullRequestInfo]? {
-        if let cached = withLock({ pullRequestCache[root] }), now.timeIntervalSince(cached.fetchedAt) < Self.pullRequestCacheLifetime {
-            return cached.byBranch
-        }
-        let fetched = fetchPullRequests(in: root)
-        withLock { pullRequestCache[root] = (now, fetched) }
-        return fetched
-    }
-
-    private func fetchPullRequests(in root: String) -> [String: PullRequestInfo]? {
-        guard let git, let gh else { return nil }
-        let remote = CommandRunner.run(git, ["-C", root, "remote", "get-url", "origin"])
-        guard remote.exitCode == 0, GitOutputParser.isGitHubRemote(remote.output) else { return nil }
-        let arguments = ["pr", "list", "--state", "all", "--limit", "200", "--json", "number,state,headRefName,url"]
-        let result = CommandRunner.run(gh, arguments, timeout: 20, in: root)
-        return result.exitCode == 0 ? GitOutputParser.pullRequestsByBranch(result.output) : nil
     }
 
     private func withLock<Value>(_ body: () -> Value) -> Value {

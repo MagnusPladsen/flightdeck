@@ -19,6 +19,7 @@ struct AlertSettings: View {
                 Toggle("An agent finishes and waits for your next prompt", isOn: $settings.alertsOnYourTurn)
                 Toggle("An agent seems stuck", isOn: $settings.alertsOnStuck)
                 Toggle("A dev server stops unexpectedly", isOn: $settings.serverCrashAlertsEnabled)
+                Toggle("CI starts failing on a pull request an agent is working on", isOn: $settings.alertsOnFailingChecks)
                 Toggle("Play a sound", isOn: $settings.alertSound)
             }
             .disabled(!settings.alertsEnabled)

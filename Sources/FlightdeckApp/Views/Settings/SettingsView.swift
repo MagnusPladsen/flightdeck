@@ -144,6 +144,7 @@ private struct AISettings: View {
                 Toggle("Show idle agent sessions", isOn: $settings.showIdleAgents)
             }
             KeepAwakeSettings()
+            AgentLaunchSettings()
             Section {
                 Toggle("Show Claude usage limit percentages", isOn: $settings.claudeLimitsEnabled)
                     .onChange(of: settings.claudeLimitsEnabled) { Task { await store.refreshUsage() } }

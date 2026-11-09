@@ -46,13 +46,13 @@ public enum GitOutputParser {
         TimeInterval(output.trimmingCharacters(in: .whitespacesAndNewlines)).map(Date.init(timeIntervalSince1970:))
     }
 
-    /// `gh pr list --state all --json number,state,headRefName,url`, newest first.
-    /// Keeps the newest pull request for each branch.
+    /// `gh pr list --json number,state,headRefName,url`, newest first, optionally with
+    /// `isDraft,reviewDecision,statusCheckRollup`. Keeps the newest pull request for each branch.
     public static func pullRequestsByBranch(_ json: String) -> [String: PullRequestInfo]? {
         guard let rows = try? JSONDecoder().decode([PullRequestRow].self, from: Data(json.utf8)) else { return nil }
         var byBranch: [String: PullRequestInfo] = [:]
         for row in rows where byBranch[row.headRefName] == nil {
-            byBranch[row.headRefName] = PullRequestInfo(number: row.number, state: row.state, url: row.url)
+            byBranch[row.headRefName] = row.info
         }
         return byBranch
     }
@@ -68,6 +68,14 @@ public enum GitOutputParser {
         var state: PullRequestState
         var headRefName: String
         var url: String
+        var isDraft: Bool?
+        var reviewDecision: String?
+        var statusCheckRollup: [CheckRollupEntry]?
+
+        var info: PullRequestInfo {
+            PullRequestInfo(number: number, state: state, url: url, isDraft: isDraft ?? false,
+                            checks: statusCheckRollup.flatMap(CheckRollup.summarize), review: reviewDecision.flatMap(ReviewState.init(rawValue:)))
+        }
     }
 
     private static func splitKey(_ line: String) -> (String, String?) {
