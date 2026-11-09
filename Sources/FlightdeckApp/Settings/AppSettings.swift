@@ -123,6 +123,10 @@ final class AppSettings {
     /// Nil follows the theme's colours.
     var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
     var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
+    /// Treats any macOS Focus as quiet hours.
+    var quietDuringFocus: Bool { didSet { defaults.set(quietDuringFocus, forKey: "quietDuringFocus") } }
+    /// Off by default: holds a system sleep assertion while an agent works.
+    var keepAwakeWhileAgentsWork: Bool { didSet { defaults.set(keepAwakeWhileAgentsWork, forKey: "keepAwakeWhileAgentsWork") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -164,6 +168,8 @@ final class AppSettings {
         visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
+        quietDuringFocus = defaults.bool(forKey: "quietDuringFocus")
+        keepAwakeWhileAgentsWork = defaults.bool(forKey: "keepAwakeWhileAgentsWork")
         migrateLegacyCustomColors()
     }
 
@@ -190,9 +196,13 @@ final class AppSettings {
         AlertPause.isPaused(until: alertsPausedUntil, at: now)
     }
 
-    /// Paused from the bell or inside the quiet hours schedule.
-    func isQuietForAlerts(at now: Date = Date()) -> Bool {
-        isAlertPaused(at: now) || quietHours.contains(now)
+    /// Paused from the bell, inside the quiet hours schedule, or in a Focus when following it.
+    func isQuietForAlerts(at now: Date = Date(), isFocused: Bool? = nil) -> Bool {
+        quietReason(at: now, isFocused: isFocused) != nil
+    }
+
+    func quietReason(at now: Date = Date(), isFocused: Bool?) -> AlertQuietReason? {
+        AlertQuietness.reason(isPaused: isAlertPaused(at: now), isInSchedule: quietHours.contains(now), followsFocus: quietDuringFocus, isFocused: isFocused)
     }
 
     func setAlerts(_ isEnabled: Bool, for tool: AgentTool) {

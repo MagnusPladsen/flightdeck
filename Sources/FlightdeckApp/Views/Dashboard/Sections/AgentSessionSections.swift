@@ -8,6 +8,7 @@ struct AgentSessionsSection: View {
         @Bindable var settings = store.settings
         VStack(alignment: .leading, spacing: 0) {
             SectionHeading(title: "Sessions", count: store.visibleAgents.count) {
+                KeepAwakePill()
                 Toggle("Show idle", isOn: $settings.showIdleAgents).toggleStyle(.checkbox).font(.system(size: 13))
             }
             if store.visibleAgents.isEmpty {

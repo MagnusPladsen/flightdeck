@@ -26,6 +26,8 @@ final class MonitorStore {
     let notifier = AgentNotifier()
     let worktreeOverview: WorktreeOverview
     let nowPlaying = NowPlayingMonitor()
+    let focusStatus = FocusStatusMonitor()
+    let sleepAssertion = SleepAssertion()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -121,7 +123,9 @@ final class MonitorStore {
         let previous = hasCollectedAgents ? self.agents : nil
         self.agents = applyingClearedTurns(to: collected)
         hasCollectedAgents = true
+        focusStatus.refresh()
         alertAboutChanges(since: previous)
+        updateKeepAwake()
         if previous == nil { await refreshWorktrees() }
     }
 
@@ -143,7 +147,7 @@ final class MonitorStore {
         notifier.withdraw(folders: AgentAlerts.stoppedWaiting(previous: previous, current: agents))
         guard settings.alertsEnabled else { return }
         let newAlerts = AgentAlerts.newlyWaiting(previous: previous, current: agents, states: settings.alertStates, tools: settings.alertTools)
-        let delivery = alertBatcher.deliver(newAlerts, current: agents, isQuiet: settings.isQuietForAlerts(), handling: settings.quietAlertHandling)
+        let delivery = alertBatcher.deliver(newAlerts, current: agents, isQuiet: settings.isQuietForAlerts(isFocused: focusStatus.isFocused), handling: settings.quietAlertHandling)
         for agent in delivery.individual {
             notifier.post(about: agent, playsSound: settings.alertSound)
         }
