@@ -46,7 +46,7 @@ enum DemoData {
             agent(.gemini, 4106, project("infra", branch: "main"), .working, minutesAgo: 1, "Reading", "main.tf"),
             agent(.claude, 4107, project("blog", branch: "main"), .idle, minutesAgo: 95, "Said", "Published the draft."),
             agent(.aider, 4108, project("scripts", branch: "main"), .idle, minutesAgo: 240, "Said", "Done."),
-        ]
+        ].map(withDemoMessage)
     }
 
     private static func worktree(_ repository: String, _ folder: String?, branch: String, changes: Int = 0, ahead: Int = 0, behind: Int = 0,

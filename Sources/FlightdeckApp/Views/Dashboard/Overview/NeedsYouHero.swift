@@ -35,6 +35,8 @@ struct NeedsYouHero: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
+            AgentWaitingMessage(agent: agent, size: 17)
+            AgentChangesPeek(agent: agent, size: 14)
             HStack(spacing: 12) {
                 Button("Go to terminal") { store.openTerminal(for: agent) }
                     .buttonStyle(PillButtonStyle(isProminent: true, size: 15))

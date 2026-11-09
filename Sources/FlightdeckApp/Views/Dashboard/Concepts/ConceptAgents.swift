@@ -72,11 +72,13 @@ private struct KanbanCard: View {
             }
             (Text(agent.actionLine.verb).foregroundStyle(column.color(in: theme)).bold() + Text(" " + agent.actionLine.detail))
                 .font(.system(size: 13)).lineLimit(3)
+            AgentWaitingMessage(agent: agent, size: 12)
             HStack(spacing: 6) {
                 Chip(text: agent.tool.displayName, systemImage: agent.tool.symbolName)
                 if let checkout = agent.checkoutLabel { Chip(text: checkout) }
             }
             Text(agent.abbreviatedPath).font(.system(size: 11, design: .monospaced)).foregroundStyle(theme.muted).lineLimit(1).truncationMode(.middle)
+            AgentChangesPeek(agent: agent, size: 11)
             Button(column == .yourTurn ? "Reply" : "Open terminal") { store.openTerminal(for: agent) }
                 .buttonStyle(KanbanActionStyle(color: column.color(in: theme)))
         }
@@ -149,6 +151,8 @@ private struct FeedPost: View {
                     Text("@\(agent.tool.rawValue) · \(agent.ageText())").font(.system(size: 15)).foregroundStyle(theme.muted).lineLimit(1)
                 }
                 message
+                AgentWaitingMessage(agent: agent, size: 14)
+                AgentChangesPeek(agent: agent, size: 13)
                 HStack(spacing: 10) {
                     if agent.state.needsYou {
                         Button("Reply") { store.openTerminal(for: agent) }.buttonStyle(PillButtonStyle(isProminent: true))
@@ -199,7 +203,9 @@ private struct AgentStatusTable: View {
                         badge(agent.state)
                         Text(agent.displayName).fontWeight(.bold).frame(width: 160, alignment: .leading).lineLimit(1)
                         Text("\(agent.actionLine.verb.lowercased()) \(agent.actionLine.detail)").lineLimit(1)
+                            .help(agent.waitingMessage ?? "")
                         Spacer(minLength: 8)
+                        if let summary = store.agentChanges.summary(for: agent) { ChangeSummaryText(summary: summary, size: 12, showsFiles: false) }
                         Text(agent.tool.rawValue.uppercased()).foregroundStyle(theme.muted)
                         Text(agent.ageText()).foregroundStyle(theme.muted).frame(width: 50, alignment: .trailing)
                     }
@@ -208,6 +214,7 @@ private struct AgentStatusTable: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .contextMenu { ShowChangesButton(agent: agent) }
                 .overlay(alignment: .bottom) { Rectangle().fill(theme.overlay).frame(height: 1) }
             }
         }

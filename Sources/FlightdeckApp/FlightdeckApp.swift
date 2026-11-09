@@ -55,6 +55,12 @@ struct FlightdeckApp: App {
                 .keyboardShortcut("k", modifiers: .command)
             }
         }
+
+        WindowGroup("Changes", id: AgentChangesWindow.windowID, for: Int32.self) { $pid in
+            if let pid { AgentChangesWindow(pid: pid).environment(store).themedRoot(store.settings) }
+        }
+        .defaultSize(width: 1000, height: 640)
+        .commandsRemoved()
     }
 }
 
