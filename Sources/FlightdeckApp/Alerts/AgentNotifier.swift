@@ -36,6 +36,10 @@ final class AgentNotifier: NSObject {
         Task { await refreshAuthorization() }
     }
 
+    var canDeliver: Bool {
+        isAvailable && (authorization == .authorized || authorization == .provisional)
+    }
+
     func requestAuthorization() async {
         guard isAvailable else { return }
         _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])

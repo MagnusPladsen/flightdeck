@@ -132,7 +132,7 @@ final class MonitorStore {
         alertAboutChanges(since: previous)
         updateKeepAwake()
         dailyRecap.record(self.agents)
-        dailyRecap.announceYesterdayIfDue(settings: settings, notifier: notifier, spend: spend)
+        dailyRecap.announceYesterdayIfDue(settings: settings, isQuiet: isQuietForAlerts, notifier: notifier, spend: spend)
         statusPublisher.publish(from: self)
         refreshServerHealth()
         Task { [agentChanges, agents = self.agents] in await agentChanges.refresh(agents: agents) }
@@ -157,7 +157,7 @@ final class MonitorStore {
         notifier.withdraw(folders: AgentAlerts.stoppedWaiting(previous: previous, current: agents))
         guard settings.alertsEnabled else { return }
         let newAlerts = AgentAlerts.newlyWaiting(previous: previous, current: agents, states: settings.alertStates, tools: settings.alertTools)
-        let delivery = alertBatcher.deliver(newAlerts, current: agents, isQuiet: settings.isQuietForAlerts(isFocused: focusStatus.isFocused), handling: settings.quietAlertHandling)
+        let delivery = alertBatcher.deliver(newAlerts, current: agents, isQuiet: isQuietForAlerts, handling: settings.quietAlertHandling)
         for agent in delivery.individual {
             notifier.post(about: agent, playsSound: settings.alertSound)
         }
@@ -215,8 +215,9 @@ final class MonitorStore {
         Task { await refreshSpend() }
     }
 
+    /// Held while alerts are quiet; it goes out on a later poll the same day once they aren't.
     private func alertIfOverBudget() {
-        guard let today = spend?.today else { return }
+        guard let today = spend?.today, !isQuietForAlerts else { return }
         let budget = settings.dailySpendBudget
         guard SpendBudget.shouldAlert(todayCost: today.estimatedCost, budget: budget, lastAlertedDay: settings.spendBudgetAlertedDay, today: today.day) else { return }
         settings.spendBudgetAlertedDay = today.day
@@ -234,7 +235,7 @@ final class MonitorStore {
 
     func refreshWorktrees() async {
         await worktreeOverview.refresh(projectFolders: projectFolders)
-        ciFailureAlerter.check(worktreeOverview.worktrees, agents: worktreeOverview.agentsByWorktree(agents), settings: settings, notifier: notifier)
+        ciFailureAlerter.check(worktreeOverview.worktrees, agents: worktreeOverview.agentsByWorktree(agents), settings: settings, isQuiet: isQuietForAlerts, notifier: notifier)
     }
 
     /// Opens a terminal running the plan's agent; returns what went wrong, if anything.

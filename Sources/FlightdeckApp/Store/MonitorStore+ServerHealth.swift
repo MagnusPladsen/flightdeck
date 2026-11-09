@@ -8,8 +8,7 @@ extension MonitorStore {
     private static let portReleasePollInterval: Duration = .milliseconds(500)
 
     func refreshServerHealth() {
-        let quiet = settings.isQuietForAlerts()
-        let crashes = serverHealth.update(ports: ports, isQuiet: quiet, handling: settings.quietAlertHandling)
+        let crashes = serverHealth.update(ports: ports, isQuiet: isQuietForAlerts, handling: settings.quietAlertHandling)
         guard settings.alertsEnabled, settings.serverCrashAlertsEnabled else { return serverHealth.discardHeldAlerts() }
         notifier.postServerCrashes(crashes, playsSound: settings.alertSound)
     }

@@ -213,7 +213,7 @@ final class AppSettings {
     }
 
     /// Paused from the bell, inside the quiet hours schedule, or in a Focus when following it.
-    func isQuietForAlerts(at now: Date = Date(), isFocused: Bool? = nil) -> Bool {
+    func isQuietForAlerts(at now: Date = Date(), isFocused: Bool?) -> Bool {
         quietReason(at: now, isFocused: isFocused) != nil
     }
 

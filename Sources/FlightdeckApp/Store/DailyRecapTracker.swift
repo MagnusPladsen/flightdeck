@@ -27,9 +27,11 @@ final class DailyRecapTracker {
         Task.detached { try? ledger.save(to: Self.fileURL) }
     }
 
-    /// Posts yesterday's recap once, the first poll of a new day, when the setting is on and alerts aren't quiet.
-    func announceYesterdayIfDue(settings: AppSettings, notifier: AgentNotifier, spend: SpendReport?) {
-        guard settings.dailyRecapNotificationEnabled, !settings.isQuietForAlerts(),
+    /// Posts yesterday's recap once, the first poll of a new day it can be delivered on, when alerts and the setting are on,
+    /// alerts aren't quiet and, with spend tracking on, the spend has been read.
+    func announceYesterdayIfDue(settings: AppSettings, isQuiet: Bool, notifier: AgentNotifier, spend: SpendReport?) {
+        guard settings.alertsEnabled, settings.dailyRecapNotificationEnabled, !isQuiet, notifier.canDeliver,
+              !settings.spendTrackingEnabled || spend != nil,
               let recap = ledger.dayToAnnounce(lastAnnounced: settings.dailyRecapAnnouncedDay) else { return }
         settings.dailyRecapAnnouncedDay = recap.day
         notifier.postDailyRecap(recap, estimatedCost: spend?.days.first { $0.day == recap.day }?.estimatedCost)

@@ -6,6 +6,10 @@ extension MonitorStore {
         settings.quietReason(isFocused: focusStatus.isFocused)
     }
 
+    var isQuietForAlerts: Bool {
+        settings.isQuietForAlerts(isFocused: focusStatus.isFocused)
+    }
+
     /// Asks for permission to read the Focus state the first time it's turned on.
     func setQuietDuringFocus(_ isEnabled: Bool) {
         settings.quietDuringFocus = isEnabled
