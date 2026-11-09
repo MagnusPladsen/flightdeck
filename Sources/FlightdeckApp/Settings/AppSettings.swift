@@ -123,6 +123,10 @@ final class AppSettings {
     /// Nil follows the theme's colours.
     var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
     var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
+    /// Off by default: a notification the next day summing up the agents' day.
+    var dailyRecapNotificationEnabled: Bool { didSet { defaults.set(dailyRecapNotificationEnabled, forKey: "dailyRecapNotificationEnabled") } }
+    /// Start of the last day the recap notification summed up, so each day is summed up once.
+    var dailyRecapAnnouncedDay: Date? { didSet { defaults.set(dailyRecapAnnouncedDay, forKey: "dailyRecapAnnouncedDay") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -164,6 +168,8 @@ final class AppSettings {
         visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
+        dailyRecapNotificationEnabled = defaults.bool(forKey: "dailyRecapNotificationEnabled")
+        dailyRecapAnnouncedDay = defaults.object(forKey: "dailyRecapAnnouncedDay") as? Date
         migrateLegacyCustomColors()
     }
 

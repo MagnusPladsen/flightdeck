@@ -17,6 +17,7 @@ One Swift package with two targets.
 - **Projects/** — `ProjectResolver` maps a working directory to its git repo, branch and worktree; `FrameworkDetector` recognises dev servers from the command line and `package.json`.
 - **Layout/** — `PageLayouts` (which sections sit on which dashboard page, their column spans and the hidden ones), `SectionKind` and `GridPacking` (12-column row packing with spans of 3, 4, 6, 8 or 12).
 - **AI/** — `AgentCollector` finds Claude, Codex and other agent processes and derives their state from CPU and session logs. `ClaudeTokenTracker` and `CodexUsageReader` read local logs; `ClaudeLimitsClient` optionally calls Anthropic's unofficial usage endpoint.
+- **Recap/** — `RecapLedger` adds up agent time per project and day from the 5s agent polls (working, waiting on you, longest wait, finished turns, sessions); gaps over 30s are left out. `DailyRecapTracker` in the app saves it to `~/Library/Application Support/Flightdeck/recap.json` about once a minute and keeps 14 days.
 
 ## FlightdeckApp
 

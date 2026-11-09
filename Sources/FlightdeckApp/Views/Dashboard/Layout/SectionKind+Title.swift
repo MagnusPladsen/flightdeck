@@ -18,6 +18,7 @@ extension SectionKind {
         case .usageLimits: "Usage limits"
         case .worktrees: "Worktrees"
         case .spend: "Token spend"
+        case .dailyRecap: "Today"
         case .processTable: "Process table"
         case .widget(let id): settings.customWidgets.first { $0.id == id }?.title ?? "Widget"
         }

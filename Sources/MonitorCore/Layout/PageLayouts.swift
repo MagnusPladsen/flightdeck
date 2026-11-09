@@ -15,13 +15,15 @@ public enum SectionKind: Codable, Hashable, Sendable {
     case worktrees
     /// Token and estimated spend tracking; only available while it is turned on in Settings.
     case spend
+    /// Today's agent hours, waits and turns per project, from Flightdeck's own polls.
+    case dailyRecap
     case processTable
     case widget(UUID)
 
     /// Every kind except widgets, which come from the user's widget list.
     public static let builtIn: [SectionKind] = [
         .needsYou, .clock, .resources, .nowPlaying, .yourTurn, .workingAgents, .idleAgents, .projects,
-        .devServers, .otherPorts, .agentSessions, .usageLimits, .spend, .worktrees, .processTable,
+        .devServers, .otherPorts, .agentSessions, .usageLimits, .spend, .dailyRecap, .worktrees, .processTable,
     ]
 
     /// Where the kind goes when it is new or re-added without a page.
@@ -29,7 +31,7 @@ public enum SectionKind: Codable, Hashable, Sendable {
         switch self {
         case .needsYou, .clock, .resources, .nowPlaying, .yourTurn, .workingAgents, .idleAgents, .projects: .overview
         case .devServers, .otherPorts: .ports
-        case .agentSessions, .usageLimits, .spend: .agents
+        case .agentSessions, .usageLimits, .spend, .dailyRecap: .agents
         case .worktrees: .worktrees
         case .processTable: .processes
         case .widget: .widgets
