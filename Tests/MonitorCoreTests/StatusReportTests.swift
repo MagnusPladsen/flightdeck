@@ -56,6 +56,24 @@ struct StatusReportTests {
         #expect(!first.hasSameContent(as: Self.report(agents: [Self.agent(1, .yourTurn)])))
     }
 
+    @Test func sameContentIgnoresSystemReadingsAndLastActivity() {
+        let first = Self.report(agents: [Self.agent(1, .working)])
+        var later = first
+        later.system = StatusSystem(cpuPercent: 90, memoryPercent: 75)
+        later.agents[0].lastActivity = Self.now
+        #expect(first.hasSameContent(as: later))
+        later.agents[0].lastAction = "Running swift build"
+        #expect(!first.hasSameContent(as: later))
+    }
+
+    @Test func rewritesChangedContentAndOtherwiseOnceAMinute() {
+        let published = Self.report(agents: [Self.agent(1, .working)])
+        #expect(published.needsRewrite(after: nil))
+        #expect(!Self.report(agents: [Self.agent(1, .working)], now: Self.now.addingTimeInterval(55)).needsRewrite(after: published))
+        #expect(Self.report(agents: [Self.agent(1, .working)], now: Self.now.addingTimeInterval(60)).needsRewrite(after: published))
+        #expect(Self.report(agents: [Self.agent(1, .yourTurn)], now: Self.now.addingTimeInterval(5)).needsRewrite(after: published))
+    }
+
     @Test func jsonRoundTripsWithSchemaVersion() throws {
         let report = Self.report(agents: [Self.agent(1, .needsApproval)])
         let data = try StatusFile.encode(report)

@@ -30,7 +30,8 @@ The reason goes to stderr, so `$(flightdeck status)` is empty when the app is no
 ## The status file
 
 `~/Library/Application Support/Flightdeck/status.json`, rewritten atomically after each agents and ports poll (every 5
-seconds) when something in it changed. When nothing changed only its modification time is refreshed, which is what the
+seconds) when something in it changed, and at least once a minute so `system` and `lastActivity` stay roughly current;
+changes to those two alone don't count. Otherwise only its modification time is refreshed, which is what the
 30-second staleness check reads. Set `FLIGHTDECK_STATUS_FILE` to point the command at another file.
 
 ```json
@@ -58,7 +59,7 @@ seconds) when something in it changed. When nothing changed only its modificatio
 ```
 
 - `version` is the schema version; it goes up only when fields change meaning or disappear.
-- `updatedAt` is when the content last changed.
+- `updatedAt` is when the file was last rewritten.
 - `state` is one of `working`, `needsApproval`, `yourTurn`, `possiblyStuck`, `idle`. `needsYou` counts
   `needsApproval`, `yourTurn` and `possiblyStuck`, and only those agents have `waitingSince`.
 - `servers` lists dev servers only, not system ports. `project`, `framework`, `branch`, `lastAction`, `lastActivity`,

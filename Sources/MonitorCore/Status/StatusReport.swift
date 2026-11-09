@@ -6,7 +6,7 @@ public struct StatusReport: Codable, Sendable, Equatable {
 
     public var version: Int
     public var appVersion: String?
-    /// When the content last changed. The file's modification time says when the app last confirmed it.
+    /// When the file was last rewritten. The file's modification time says when the app last confirmed it.
     public var updatedAt: Date
     public var counts: StatusCounts
     public var agents: [StatusAgent]
@@ -25,11 +25,31 @@ public struct StatusReport: Codable, Sendable, Equatable {
         self.limits = limits
     }
 
-    /// True when everything but `updatedAt` matches, so an unchanged poll doesn't rewrite the file.
+    /// Even unchanged content is rewritten this often, so the system readings stay roughly current.
+    public static let rewriteInterval: TimeInterval = 60
+
+    /// True when everything but `updatedAt`, the system readings and the agents' last activity matches,
+    /// so a poll where only those moved doesn't rewrite the file.
     public func hasSameContent(as other: StatusReport) -> Bool {
-        var aligned = other
-        aligned.updatedAt = updatedAt
-        return self == aligned
+        withoutVolatileFields == other.withoutVolatileFields
+    }
+
+    /// Rewrite when the content changed or the last write is a minute old; otherwise touching the file is enough.
+    public func needsRewrite(after published: StatusReport?) -> Bool {
+        guard let published else { return true }
+        return !hasSameContent(as: published) || updatedAt.timeIntervalSince(published.updatedAt) >= Self.rewriteInterval
+    }
+
+    private var withoutVolatileFields: StatusReport {
+        var stable = self
+        stable.updatedAt = .distantPast
+        stable.system = nil
+        stable.agents = agents.map { agent in
+            var stableAgent = agent
+            stableAgent.lastActivity = nil
+            return stableAgent
+        }
+        return stable
     }
 }
 
