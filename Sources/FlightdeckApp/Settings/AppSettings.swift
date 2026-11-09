@@ -77,6 +77,7 @@ final class AppSettings {
     var showSystemPorts: Bool { didSet { defaults.set(showSystemPorts, forKey: "showSystemPorts") } }
     var showIdleAgents: Bool { didSet { defaults.set(showIdleAgents, forKey: "showIdleAgents") } }
     var claudeLimitsEnabled: Bool { didSet { defaults.set(claudeLimitsEnabled, forKey: "claudeLimitsEnabled") } }
+    var notifiesSketchyBar: Bool { didSet { defaults.set(notifiesSketchyBar, forKey: "notifiesSketchyBar") } }
     var customWidgets: [CustomWidget] { didSet { save(customWidgets, forKey: "customWidgets") } }
     var menuBarLabelStyle: MenuBarLabelStyle { didSet { defaults.set(menuBarLabelStyle.rawValue, forKey: "menuBarLabelStyle") } }
     var themeID: String { didSet { defaults.set(themeID, forKey: "themeID") } }
@@ -131,6 +132,7 @@ final class AppSettings {
         showSystemPorts = defaults.bool(forKey: "showSystemPorts")
         showIdleAgents = defaults.bool(forKey: "showIdleAgents")
         claudeLimitsEnabled = defaults.bool(forKey: "claudeLimitsEnabled")
+        notifiesSketchyBar = defaults.bool(forKey: "notifiesSketchyBar")
         customWidgets = Self.load([CustomWidget].self, forKey: "customWidgets", from: defaults) ?? []
         menuBarLabelStyle = defaults.string(forKey: "menuBarLabelStyle").flatMap(MenuBarLabelStyle.init(rawValue:)) ?? .text
         themeID = defaults.string(forKey: "themeID") ?? Theme.ignition.id

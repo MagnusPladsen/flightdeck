@@ -94,6 +94,7 @@ private struct GeneralSettings: View {
             }
             NowPlayingSettings()
             NextAgentHotkeySection()
+            CommandLineSettings()
             Section("Startup") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, isEnabled in setLaunchAtLogin(isEnabled) }

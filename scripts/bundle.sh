@@ -19,6 +19,11 @@ PUBLIC_ED_KEY="82pqZdpi9TYcG4s3WUBLTVDP2WfoIugrkuZhbk5Xjvo="
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 cp "$BIN_PATH/Flightdeck" "$APP/Contents/MacOS/Flightdeck"
+# The flightdeck command reads status.json; Settings links it into the user's PATH
+swift build -c release --product flightdeck-cli ${BUILD_FLAGS[@]+"${BUILD_FLAGS[@]}"}
+mkdir -p "$APP/Contents/Helpers"
+cp "$BIN_PATH/flightdeck-cli" "$APP/Contents/Helpers/flightdeck"
+codesign --force --sign - "$APP/Contents/Helpers/flightdeck"
 ditto "$BIN_PATH/Sparkle.framework" "$APP/Contents/Frameworks/Sparkle.framework"
 install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/Flightdeck"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"

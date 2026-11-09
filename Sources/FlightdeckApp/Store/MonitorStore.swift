@@ -25,6 +25,7 @@ final class MonitorStore {
     let notifier = AgentNotifier()
     let worktreeOverview: WorktreeOverview
     let nowPlaying = NowPlayingMonitor()
+    private let statusPublisher = StatusPublisher()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -121,6 +122,7 @@ final class MonitorStore {
         self.agents = applyingClearedTurns(to: collected)
         hasCollectedAgents = true
         alertAboutChanges(since: previous)
+        statusPublisher.publish(from: self)
         if previous == nil { await refreshWorktrees() }
     }
 

@@ -5,12 +5,14 @@ let languageMode: [SwiftSetting] = [.swiftLanguageMode(.v5)]
 
 var products: [Product] = [
     .library(name: "MonitorCore", targets: ["MonitorCore"]),
+    .executable(name: "flightdeck-cli", targets: ["FlightdeckCLI"]),
 ]
 
 var dependencies: [Package.Dependency] = []
 
 var targets: [Target] = [
     .target(name: "MonitorCore", swiftSettings: languageMode),
+    .executableTarget(name: "FlightdeckCLI", dependencies: ["MonitorCore"], swiftSettings: languageMode),
     .testTarget(name: "MonitorCoreTests", dependencies: ["MonitorCore"], swiftSettings: languageMode),
 ]
 
