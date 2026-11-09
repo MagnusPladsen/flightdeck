@@ -3,13 +3,17 @@ import SwiftUI
 
 struct AgentSessionsSection: View {
     @Environment(MonitorStore.self) private var store
+    @State private var newAgentRequest: NewAgentRequest?
 
     var body: some View {
         @Bindable var settings = store.settings
         VStack(alignment: .leading, spacing: 0) {
             SectionHeading(title: "Sessions", count: store.visibleAgents.count) {
                 Toggle("Show idle", isOn: $settings.showIdleAgents).toggleStyle(.checkbox).font(.system(size: 13))
+                Button { newAgentRequest = NewAgentRequest() } label: { Label("New agent", systemImage: "play.circle") }
+                    .disabled(store.worktreeOverview.repositoryRoots.isEmpty)
             }
+            .newAgentSheet($newAgentRequest)
             if store.visibleAgents.isEmpty {
                 HairlineRows(items: store.visibleAgents, emptyText: "No agent sessions found") { AgentRow(agent: $0) }
             }

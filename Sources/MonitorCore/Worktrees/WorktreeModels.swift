@@ -47,11 +47,18 @@ public struct PullRequestInfo: Sendable, Hashable {
     public var number: Int
     public var state: PullRequestState
     public var url: String
+    public var isDraft: Bool
+    /// Nil when the pull request has no checks or they weren't asked for.
+    public var checks: CheckStatus?
+    public var review: ReviewState?
 
-    public init(number: Int, state: PullRequestState, url: String) {
+    public init(number: Int, state: PullRequestState, url: String, isDraft: Bool = false, checks: CheckStatus? = nil, review: ReviewState? = nil) {
         self.number = number
         self.state = state
         self.url = url
+        self.isDraft = isDraft
+        self.checks = checks
+        self.review = review
     }
 }
 

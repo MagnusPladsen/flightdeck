@@ -6,12 +6,15 @@ struct WorktreesSection: View {
     @Environment(MonitorStore.self) private var store
     @Environment(\.theme) private var theme
     @State private var pendingCleanup: [Worktree] = []
+    @State private var newAgentRequest: NewAgentRequest?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeading(title: "Worktrees", count: overview.worktrees.count) {
                 staleAfterStepper
                 cleanUpButton
+                Button { newAgentRequest = NewAgentRequest() } label: { Label("New agent", systemImage: "play.circle") }
+                    .disabled(overview.repositoryRoots.isEmpty)
             }
             if let summary = overview.cleanupSummary {
                 Text(summary).font(.caption).foregroundStyle(theme.muted).padding(.bottom, 6)
@@ -19,10 +22,11 @@ struct WorktreesSection: View {
             if overview.worktrees.isEmpty {
                 HairlineRows(items: overview.worktrees, emptyText: emptyText) { _ in EmptyView() }
             }
-            ForEach(repositoryRoots, id: \.self) { root in
-                WorktreeRepositoryGroup(worktrees: overview.worktrees.filter { $0.repositoryRoot == root }, agents: agents, stalePaths: stalePaths)
+            ForEach(overview.repositoryRoots, id: \.self) { root in
+                WorktreeRepositoryGroup(worktrees: overview.worktrees.filter { $0.repositoryRoot == root }, agents: agents, stalePaths: stalePaths) { newAgentRequest = $0 }
             }
         }
+        .newAgentSheet($newAgentRequest)
         .confirmationDialog(cleanupTitle, isPresented: isConfirmingCleanup) {
             Button("Remove \(pendingCleanup.count) worktree\(pendingCleanup.count == 1 ? "" : "s")", role: .destructive) { cleanUp() }
         } message: {
@@ -33,10 +37,6 @@ struct WorktreesSection: View {
     private var overview: WorktreeOverview { store.worktreeOverview }
     private var agents: [String: [AgentSession]] { overview.agentsByWorktree(store.agents) }
     private var stalePaths: Set<String> { Set(store.staleWorktrees.map(\.path)) }
-
-    private var repositoryRoots: [String] {
-        overview.worktrees.map(\.repositoryRoot).reduce(into: []) { roots, root in if !roots.contains(root) { roots.append(root) } }
-    }
 
     private var emptyText: String {
         overview.hasLoaded ? "No repositories yet. They appear once a dev server or agent runs in one." : "Looking for worktrees…"
@@ -86,6 +86,7 @@ private struct WorktreeRepositoryGroup: View {
     var worktrees: [Worktree]
     var agents: [String: [AgentSession]]
     var stalePaths: Set<String>
+    var onNewAgent: (NewAgentRequest) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -93,11 +94,16 @@ private struct WorktreeRepositoryGroup: View {
                 Image(systemName: "folder").foregroundStyle(theme.muted)
                 Text(worktrees.first?.repositoryName ?? "").font(.system(size: 13, weight: .bold))
                 Text("\(worktrees.count)").font(.system(size: 13)).foregroundStyle(theme.muted)
+                IconButton(systemImage: "plus.circle", help: "Start an agent in a new worktree") {
+                    onNewAgent(NewAgentRequest(repositoryRoot: worktrees.first?.repositoryRoot))
+                }
             }
             .padding(.top, 18)
             .padding(.bottom, 6)
             HairlineRows(items: worktrees, emptyText: "") { worktree in
-                WorktreeRow(worktree: worktree, agents: agents[worktree.path] ?? [], isStale: stalePaths.contains(worktree.path))
+                WorktreeRow(worktree: worktree, agents: agents[worktree.path] ?? [], isStale: stalePaths.contains(worktree.path)) {
+                    onNewAgent(NewAgentRequest(repositoryRoot: worktree.repositoryRoot, folder: worktree.path))
+                }
             }
         }
     }

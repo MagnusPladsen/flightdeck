@@ -37,6 +37,7 @@ final class MonitorStore {
     /// True when another app already owns the chosen next-agent shortcut.
     private(set) var isNextAgentHotkeyTaken = false
     private var alertBatcher = AlertBatcher()
+    private let ciFailureAlerter = CIFailureAlerter()
 
     init(settings: AppSettings) {
         self.settings = settings
@@ -218,6 +219,15 @@ final class MonitorStore {
 
     func refreshWorktrees() async {
         await worktreeOverview.refresh(projectFolders: projectFolders)
+        ciFailureAlerter.check(worktreeOverview.worktrees, agents: worktreeOverview.agentsByWorktree(agents), settings: settings, notifier: notifier)
+    }
+
+    /// Opens a terminal running the plan's agent; returns what went wrong, if anything.
+    func launchAgent(_ plan: AgentLaunchPlan) async -> AgentLaunchError? {
+        guard !DemoData.isEnabled else { return nil }
+        let error = await AgentLauncher.launch(plan, choice: settings.launchTerminal, agentPIDs: agents.map(\.pid))
+        if case .newWorktree = plan.target { await refreshWorktrees() }
+        return error
     }
 
     func cleanUpWorktrees(_ targets: [Worktree]) async {

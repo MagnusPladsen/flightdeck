@@ -123,6 +123,9 @@ final class AppSettings {
     /// Nil follows the theme's colours.
     var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
     var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
+    var launchTerminal: LaunchTerminalChoice { didSet { defaults.set(launchTerminal.rawValue, forKey: "launchTerminal") } }
+    var newWorktreeLocation: WorktreeLocation { didSet { defaults.set(newWorktreeLocation.rawValue, forKey: "newWorktreeLocation") } }
+    var alertsOnFailingChecks: Bool { didSet { defaults.set(alertsOnFailingChecks, forKey: "alertsOnFailingChecks") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -164,6 +167,9 @@ final class AppSettings {
         visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
+        launchTerminal = defaults.string(forKey: "launchTerminal").flatMap(LaunchTerminalChoice.init(rawValue:)) ?? .automatic
+        newWorktreeLocation = defaults.string(forKey: "newWorktreeLocation").flatMap(WorktreeLocation.init(rawValue:)) ?? .automatic
+        alertsOnFailingChecks = defaults.object(forKey: "alertsOnFailingChecks") as? Bool ?? true
         migrateLegacyCustomColors()
     }
 

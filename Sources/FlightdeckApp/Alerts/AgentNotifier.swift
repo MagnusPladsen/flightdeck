@@ -7,11 +7,11 @@ import UserNotifications
 @MainActor
 @Observable
 final class AgentNotifier: NSObject {
-    nonisolated private static let categoryID = "agent"
+    nonisolated static let categoryID = "agent"
     nonisolated private static let openTerminalActionID = "openTerminal"
     nonisolated private static let showDashboardActionID = "showDashboard"
-    nonisolated private static let folderKey = "folder"
-    nonisolated private static let pidKey = "pid"
+    nonisolated static let folderKey = "folder"
+    nonisolated static let pidKey = "pid"
     nonisolated private static let summaryIdentifier = "agent-summary"
 
     private(set) var authorization: UNAuthorizationStatus = .notDetermined

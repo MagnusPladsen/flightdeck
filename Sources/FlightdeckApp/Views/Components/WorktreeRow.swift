@@ -9,6 +9,7 @@ struct WorktreeRow: View {
     var worktree: Worktree
     var agents: [AgentSession]
     var isStale: Bool
+    var onNewAgent: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 10) {
@@ -19,9 +20,11 @@ struct WorktreeRow: View {
             }
             Spacer(minLength: 8)
             if let agent = agents.first { agentLabel(agent) }
+            if let pullRequest = worktree.pullRequest.pullRequest, pullRequest.state == .open { PullRequestStatusBadges(pullRequest: pullRequest) }
             pullRequestBadge
             Text(syncText).font(.caption.monospacedDigit()).foregroundStyle(theme.muted).frame(width: 64, alignment: .trailing)
             changesText.frame(width: 76, alignment: .trailing)
+            IconButton(systemImage: "play.circle", help: "Start an agent here", action: onNewAgent)
             IconButton(systemImage: "terminal", help: "Open in terminal") { store.openInTerminal(worktree.path) }
             IconButton(systemImage: "chevron.left.forwardslash.chevron.right", help: "Open in editor") { store.openInEditor(worktree.path) }
         }
@@ -55,7 +58,7 @@ struct WorktreeRow: View {
     private var pullRequestBadge: some View {
         if let pullRequest = worktree.pullRequest.pullRequest {
             Button { openPullRequest(pullRequest) } label: {
-                Text("#\(String(pullRequest.number)) \(pullRequest.state.title)")
+                Text("#\(String(pullRequest.number)) \(pullRequest.isDraft && pullRequest.state == .open ? "draft" : pullRequest.state.title)")
                     .font(.caption.weight(.semibold).monospacedDigit())
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
@@ -83,6 +86,7 @@ struct WorktreeRow: View {
 
     @ViewBuilder
     private var contextMenu: some View {
+        Button("Start an agent here…", action: onNewAgent)
         Button("Reveal in Finder") { store.revealInFinder(worktree.path) }
         Button("Copy path") { copyPath() }
         if let pullRequest = worktree.pullRequest.pullRequest {
