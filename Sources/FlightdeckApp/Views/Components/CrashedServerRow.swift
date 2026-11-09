@@ -13,7 +13,7 @@ struct CrashedServerRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                StatusDot(color: theme.error)
+                StatusDot(color: theme.warning)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(server.title).fontWeight(.medium).lineLimit(1)
                     details
@@ -32,7 +32,7 @@ struct CrashedServerRow: View {
 
     private var details: some View {
         HStack(spacing: 4) {
-            Text("Stopped unexpectedly \(Formatters.relative(crashed.stoppedAt))").foregroundStyle(theme.error)
+            Text("Stopped \(Formatters.relative(crashed.stoppedAt))").foregroundStyle(theme.warning)
             Text(verbatim: server.commandLine).lineLimit(1).truncationMode(.middle).foregroundStyle(.secondary).help(server.workingDirectory ?? crashed.id.folder)
         }
         .font(.caption)

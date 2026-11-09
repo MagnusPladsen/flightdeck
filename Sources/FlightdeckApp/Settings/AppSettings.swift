@@ -161,7 +161,7 @@ final class AppSettings {
         alertsOnYourTurn = defaults.object(forKey: "alertsOnYourTurn") as? Bool ?? true
         alertsOnStuck = defaults.object(forKey: "alertsOnStuck") as? Bool ?? true
         alertSound = defaults.object(forKey: "alertSound") as? Bool ?? true
-        serverCrashAlertsEnabled = defaults.object(forKey: "serverCrashAlertsEnabled") as? Bool ?? true
+        serverCrashAlertsEnabled = defaults.object(forKey: "serverCrashAlertsEnabled") as? Bool ?? false
         mutedAlertTools = defaults.stringArray(forKey: "mutedAlertTools") ?? []
         nextAgentHotkeyEnabled = defaults.object(forKey: "nextAgentHotkeyEnabled") as? Bool ?? true
         nextAgentHotkey = Self.load(HotkeyShortcut.self, forKey: "nextAgentHotkey", from: defaults) ?? .nextAgentDefault

@@ -7,10 +7,10 @@ extension AgentNotifier {
         guard isAvailable, let first = crashes.first else { return }
         let content = UNMutableNotificationContent()
         if crashes.count == 1 {
-            content.title = "\(first.server.title) stopped unexpectedly"
+            content.title = "\(first.server.title) stopped"
             content.body = [":\(first.id.port)", first.server.framework?.displayName, first.server.project?.branch].compactMap { $0 }.joined(separator: " · ")
         } else {
-            content.title = "\(crashes.count) dev servers stopped unexpectedly"
+            content.title = "\(crashes.count) dev servers stopped"
             content.body = crashes.map { "\($0.server.title) :\($0.id.port)" }.joined(separator: ", ")
         }
         content.sound = playsSound ? .default : nil
