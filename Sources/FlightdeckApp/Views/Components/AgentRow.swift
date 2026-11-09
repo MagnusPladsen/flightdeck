@@ -26,6 +26,8 @@ struct AgentRow: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                AgentWaitingMessage(agent: agent, size: 11)
+                if !isCompact { AgentChangesPeek(agent: agent, size: 11) }
             }
             Spacer(minLength: 4)
             Text(agent.state.label)

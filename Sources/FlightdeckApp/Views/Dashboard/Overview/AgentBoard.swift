@@ -171,6 +171,7 @@ private struct AgentCard: View {
             Button("Go to terminal") { store.openTerminal(for: agent) }
             Button("Open in editor") { store.openInEditor(agent.project?.rootPath ?? agent.workingDirectory) }
             Button("Reveal in Finder") { store.revealInFinder(agent.workingDirectory) }
+            ShowChangesButton(agent: agent)
             Divider()
             Button("Stop Agent…") { isConfirmingStop = true }
         }
@@ -186,6 +187,7 @@ private struct AgentCard: View {
             (Text(action.verb).fontWeight(.bold).foregroundStyle(agent.state.color(in: theme)) + Text(action.detail.isEmpty ? "" : " " + action.detail))
                 .font(.system(size: isFeatured ? 16 : 14))
                 .lineLimit(2)
+            AgentWaitingMessage(agent: agent, size: smallSize)
         }
         if shown.contains(.tool) {
             Text("\(agent.tool.displayName)\(group.count > 1 ? " ×\(group.count)" : "") · \(agent.state.label.lowercased())").font(.system(size: smallSize)).foregroundStyle(theme.muted)
@@ -204,6 +206,7 @@ private struct AgentCard: View {
             Text(resources).font(.system(size: smallSize).monospacedDigit()).foregroundStyle(theme.muted).lineLimit(1)
                 .help("The agent plus the builds, tests and tools it started")
         }
+        AgentChangesPeek(agent: agent, size: smallSize)
     }
 
     private var quickActions: some View {

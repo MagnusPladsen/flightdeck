@@ -31,6 +31,7 @@ final class MonitorStore {
     let dailyRecap = DailyRecapTracker()
     private let statusPublisher = StatusPublisher()
     let serverHealth = ServerHealthMonitor()
+    let agentChanges = AgentChangesTracker()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -133,6 +134,7 @@ final class MonitorStore {
         dailyRecap.announceYesterdayIfDue(settings: settings, notifier: notifier, spend: spend)
         statusPublisher.publish(from: self)
         refreshServerHealth()
+        Task { [agentChanges, agents = self.agents] in await agentChanges.refresh(agents: agents) }
         if previous == nil { await refreshWorktrees() }
     }
 
@@ -264,6 +266,7 @@ final class MonitorStore {
         nowPlaying.showDemo(DemoData.nowPlaying)
         dailyRecap.showDemo(DemoData.recap)
         serverHealth.showDemo(ports: DemoData.ports, crashed: DemoData.crashedServers, logs: DemoData.serverLogs)
+        agentChanges.showDemo(DemoData.agentChanges, diff: DemoData.agentDiff)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
         memoryHistory = DemoData.history(around: 0.61, swing: 0.04)
         networkInHistory = DemoData.history(around: 1_800_000, swing: 900_000)

@@ -63,9 +63,12 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
     public var stuckReason: StuckReason?
     /// CPU and memory of the agent together with the builds, tests and tools it started.
     public var resources: ProcessTreeUsage?
+    public var startedAt: Date?
+    /// The agent's last line to the user, or the question or tool call it is waiting on.
+    public var lastMessage: String?
 
     public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?, lastAction: AgentAction? = nil,
-                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil) {
+                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil, startedAt: Date? = nil, lastMessage: String? = nil) {
         self.tool = tool
         self.pid = pid
         self.workingDirectory = workingDirectory
@@ -76,6 +79,8 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
         self.lastAction = lastAction
         self.stuckReason = stuckReason
         self.resources = resources
+        self.startedAt = startedAt
+        self.lastMessage = lastMessage
     }
 }
 
