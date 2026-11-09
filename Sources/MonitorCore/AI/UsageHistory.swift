@@ -11,13 +11,22 @@ public struct UsageHistory: Sendable {
     }
 
     private var tracks: [String: Track] = [:]
+    private var recordedReadings: [AgentTool: Date] = [:]
 
     public init() {}
 
-    public mutating func record(_ usage: [ProviderUsage], at time: Date) {
-        for provider in usage {
-            for window in provider.windows { record(window, tool: provider.tool, at: time) }
+    /// Records each reading once, stamped with when it was read; a provider without that time is stamped `now`.
+    public mutating func record(_ usage: [ProviderUsage], now: Date) {
+        for provider in usage where isNewReading(provider) {
+            for window in provider.windows { record(window, tool: provider.tool, at: provider.updatedAt ?? now) }
         }
+    }
+
+    private mutating func isNewReading(_ provider: ProviderUsage) -> Bool {
+        guard let updatedAt = provider.updatedAt else { return true }
+        guard recordedReadings[provider.tool] != updatedAt else { return false }
+        recordedReadings[provider.tool] = updatedAt
+        return true
     }
 
     public mutating func record(_ window: UsageWindow, tool: AgentTool, at time: Date) {

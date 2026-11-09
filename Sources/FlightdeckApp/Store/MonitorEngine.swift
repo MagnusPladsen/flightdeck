@@ -12,6 +12,8 @@ final class MonitorEngine: @unchecked Sendable {
     private let codexUsage = CodexUsageReader()
     private let claudeLimits = ClaudeLimitsClient()
     private var claudeLimitsSchedule = ClaudeLimitsSchedule()
+    private var isFetchingClaudeLimits = false
+    private let claudeLimitsLock = NSLock()
     private let worktrees = WorktreeCollector()
     /// Created on first use so nothing reads a week of logs unless spend tracking is on.
     private lazy var spendClaudeTokens = ClaudeTokenTracker(retention: Double(Self.spendDays + 1) * 24 * 60 * 60)
@@ -62,10 +64,22 @@ final class MonitorEngine: @unchecked Sendable {
         }
     }
 
+    /// Overlapping usage polls share one request; the others get the last answer.
     private func latestClaudeLimits() async -> ProviderUsage? {
-        if claudeLimitsSchedule.isDue(at: Date()) {
-            claudeLimitsSchedule.record(await claudeLimits.fetch(), at: Date())
+        guard claimClaudeLimitsFetch() else { return claudeLimitsLock.withLock { claudeLimitsSchedule.lastUsage } }
+        let result = await claudeLimits.fetch()
+        return claudeLimitsLock.withLock {
+            claudeLimitsSchedule.record(result, at: Date())
+            isFetchingClaudeLimits = false
+            return claudeLimitsSchedule.lastUsage
         }
-        return claudeLimitsSchedule.lastUsage
+    }
+
+    private func claimClaudeLimitsFetch() -> Bool {
+        claudeLimitsLock.withLock {
+            guard !isFetchingClaudeLimits, claudeLimitsSchedule.isDue(at: Date()) else { return false }
+            isFetchingClaudeLimits = true
+            return true
+        }
     }
 }

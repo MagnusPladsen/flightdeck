@@ -106,9 +106,27 @@ struct UsageHistoryTests {
 
     @Test func toolsAndWindowsAreTrackedApart() {
         var history = UsageHistory()
-        history.record([ProviderUsage(tool: .claude, windows: [window(10, resetsAt: nil)]), ProviderUsage(tool: .codex, windows: [window(70, resetsAt: nil)])], at: start)
+        history.record([ProviderUsage(tool: .claude, windows: [window(10, resetsAt: nil)]), ProviderUsage(tool: .codex, windows: [window(70, resetsAt: nil)])], now: start)
         #expect(history.samples(tool: .claude, label: "5h").map(\.usedPercent) == [10])
         #expect(history.samples(tool: .codex, label: "5h").map(\.usedPercent) == [70])
         #expect(history.samples(tool: .claude, label: "Weekly").isEmpty)
+    }
+
+    @Test func aReadingIsRecordedOnceAtTheTimeItWasRead() {
+        var history = UsageHistory()
+        let reading = ProviderUsage(tool: .claude, windows: [window(10, resetsAt: nil)], updatedAt: start)
+        history.record([reading], now: start + minute)
+        history.record([reading], now: start + 2 * minute)
+        #expect(history.samples(tool: .claude, label: "5h").map(\.time) == [start])
+        history.record([ProviderUsage(tool: .claude, windows: [window(12, resetsAt: nil)], updatedAt: start + 5 * minute)], now: start + 6 * minute)
+        #expect(history.samples(tool: .claude, label: "5h").map(\.time) == [start, start + 5 * minute])
+    }
+
+    @Test func aReadingWithoutItsTimeIsStampedNow() {
+        var history = UsageHistory()
+        let reading = ProviderUsage(tool: .codex, windows: [window(10, resetsAt: nil)])
+        history.record([reading], now: start)
+        history.record([reading], now: start + minute)
+        #expect(history.samples(tool: .codex, label: "5h").map(\.time) == [start, start + minute])
     }
 }

@@ -136,7 +136,7 @@ final class MonitorStore {
         statusPublisher.publish(from: self)
         refreshServerHealth()
         Task { [agentChanges, agents = self.agents] in await agentChanges.refresh(agents: agents) }
-        if previous == nil { await refreshWorktrees() }
+        if previous == nil { Task { await refreshWorktrees() } }
     }
 
     func setAlertsEnabled(_ isEnabled: Bool) {
@@ -188,7 +188,7 @@ final class MonitorStore {
         let engine = engine
         let includeLimits = settings.claudeLimitsEnabled
         usage = await Task.detached { await engine.collectUsage(includeClaudeLimits: includeLimits) }.value
-        usageHistory.record(usage, at: Date())
+        usageHistory.record(usage, now: Date())
     }
 
     func refreshSpend() async {

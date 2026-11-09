@@ -15,6 +15,7 @@ final class WorktreeOverview {
     private let engine: MonitorEngine
     private let settings: AppSettings
     private var isDemo = false
+    @ObservationIgnored private var isRefreshing = false
 
     init(engine: MonitorEngine, settings: AppSettings) {
         self.engine = engine
@@ -41,7 +42,9 @@ final class WorktreeOverview {
 
     /// Adds the repositories containing `projectFolders` to the remembered ones and lists them all.
     func refresh(projectFolders: [String]) async {
-        guard !isDemo else { return }
+        guard !isDemo, !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         let engine = engine
         let remembered = settings.worktreeRepositoryFolders
         let (roots, worktrees) = await Task.detached {
