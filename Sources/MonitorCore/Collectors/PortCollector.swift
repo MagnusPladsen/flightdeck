@@ -33,6 +33,7 @@ public final class PortCollector: @unchecked Sendable {
                 processName: socket.processName,
                 isLocalOnly: socket.isLocalOnly,
                 commandLine: commandLine,
+                arguments: arguments,
                 workingDirectory: workingDirectory,
                 project: project,
                 framework: framework,
