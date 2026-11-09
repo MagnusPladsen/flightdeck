@@ -17,6 +17,7 @@ final class MonitorStore {
     private(set) var ports: [ListeningPort] = []
     private(set) var agents: [AgentSession] = []
     private(set) var usage: [ProviderUsage] = []
+    private(set) var usageHistory = UsageHistory()
     private(set) var widgetResults: [UUID: CustomWidgetResult] = [:]
     /// Nil while spend tracking is off or before its first read.
     private(set) var spend: SpendReport?
@@ -173,6 +174,7 @@ final class MonitorStore {
         let engine = engine
         let includeLimits = settings.claudeLimitsEnabled
         usage = await Task.detached { await engine.collectUsage(includeClaudeLimits: includeLimits) }.value
+        usageHistory.record(usage, at: Date())
     }
 
     func refreshSpend() async {
@@ -245,6 +247,7 @@ final class MonitorStore {
         ports = DemoData.ports
         agents = DemoData.agents
         usage = DemoData.usage
+        usageHistory = DemoData.usageHistory
         worktreeOverview.showDemo(DemoData.worktrees)
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         nowPlaying.showDemo(DemoData.nowPlaying)

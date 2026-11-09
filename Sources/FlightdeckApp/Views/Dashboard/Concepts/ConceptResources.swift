@@ -156,6 +156,7 @@ private struct RingGauges: View {
                 Group {
                     if let agentName = reading.agentName { Text(agentName).lineLimit(1) }
                     Text(reading.detail).lineLimit(reading.agentName == nil ? 2 : 1)
+                    if let forecast = reading.forecast { ForecastText(forecast: forecast) }
                 }
                 .minimumScaleFactor(0.85)
                 .font(.system(size: 12))
@@ -289,6 +290,7 @@ private struct LEDResources: View {
                         Text(Self.readout(reading)).font(.system(size: 54, weight: .bold, design: .monospaced)).foregroundStyle(reading.valueColor ?? theme.primary).lineLimit(1).minimumScaleFactor(0.5)
                         LEDBar(fraction: reading.fraction ?? 0, color: UsageLevel.color(forFraction: reading.fraction ?? 0, in: theme))
                         Text(reading.detail.uppercased()).font(.system(size: 10, design: .monospaced)).foregroundStyle(theme.muted).lineLimit(1)
+                        if let forecast = reading.forecast { ForecastText(forecast: forecast, isUppercased: true).font(.system(size: 10, design: .monospaced)) }
                     }
                     .padding(12)
                     .overlay(Rectangle().strokeBorder(theme.border))
@@ -459,6 +461,7 @@ private struct NumeralResources: View {
                         Text(reading.title.uppercased()).font(.system(size: 12, weight: .semibold, design: .default)).tracking(1.4).foregroundStyle(theme.muted).lineLimit(1)
                         Text(reading.value).font(.system(size: 88, weight: .heavy, design: .default).monospacedDigit()).tracking(-4).lineLimit(1).minimumScaleFactor(0.4)
                         Text(reading.detail).font(.system(size: 15).italic()).foregroundStyle(theme.muted).lineLimit(1)
+                        if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 13).italic()) }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -516,6 +519,7 @@ private struct TrendList: View {
                     Text("This Mac · \(reading.title)").font(.system(size: 13)).foregroundStyle(theme.muted).lineLimit(1)
                     Text(reading.value).font(.system(size: 17, weight: .heavy)).foregroundStyle(reading.valueColor ?? theme.foreground)
                     if !reading.detail.isEmpty { Text(reading.detail).font(.system(size: 13)).foregroundStyle(theme.muted).lineLimit(1) }
+                    if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 13)) }
                 }
                 .padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
