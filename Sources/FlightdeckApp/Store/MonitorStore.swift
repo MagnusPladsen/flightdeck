@@ -29,6 +29,7 @@ final class MonitorStore {
     let focusStatus = FocusStatusMonitor()
     let sleepAssertion = SleepAssertion()
     let dailyRecap = DailyRecapTracker()
+    private let statusPublisher = StatusPublisher()
     private let engine: MonitorEngine
     private var pollingTasks: [Task<Void, Never>] = []
     private var widgetLastRun: [UUID: Date] = [:]
@@ -129,6 +130,7 @@ final class MonitorStore {
         updateKeepAwake()
         dailyRecap.record(self.agents)
         dailyRecap.announceYesterdayIfDue(settings: settings, notifier: notifier, spend: spend)
+        statusPublisher.publish(from: self)
         if previous == nil { await refreshWorktrees() }
     }
 
