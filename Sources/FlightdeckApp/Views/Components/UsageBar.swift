@@ -28,8 +28,7 @@ struct UsageBar: View {
                 .font(.caption2)
             }
         }
-        .contentShape(Rectangle())
-        .help(ResourceTooltips.limit(agentName: agentName, title: "\(window.label) limit", window: window, forecast: forecast))
+        .hoverDetail(ResourceTooltips.limit(agentName: agentName, title: "\(window.label) limit", window: window, forecast: forecast))
     }
 }
 

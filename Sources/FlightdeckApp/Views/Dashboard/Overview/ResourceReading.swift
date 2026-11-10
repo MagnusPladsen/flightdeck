@@ -18,8 +18,8 @@ struct ResourceReading: Identifiable {
     /// The agent a limit belongs to, shown under the short title.
     var agentName: String?
     var forecast: LimitForecast?
-    /// Hover text: what uses the resource, or when a limit runs out.
-    var tooltip: String?
+    /// Shown on hover: what uses the resource, or when a limit runs out.
+    var tooltip: ResourceDetail?
 
     @MainActor
     static func all(store: MonitorStore, theme: Theme) -> [ResourceReading] {
@@ -74,8 +74,8 @@ struct ResourceReading: Identifiable {
 }
 
 extension View {
-    /// Shows the reading's hover text anywhere over the cell.
+    /// Shows the reading's details when the pointer rests anywhere over the cell.
     func resourceTooltip(_ reading: ResourceReading) -> some View {
-        contentShape(Rectangle()).help(reading.tooltip ?? "")
+        hoverDetail(reading.tooltip)
     }
 }
