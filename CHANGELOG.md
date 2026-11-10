@@ -3,6 +3,14 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.8.0 — 2026-11-10
+
+- Agent cards show which step of its task list Claude is on ("Step 3 of 5"), with a bar per step and the full list on hover.
+- The overview lists your dev servers between the agents and the projects.
+- Context meter: each Claude session on the AI Agents page shows how full its context is, and turns orange when it will compact soon.
+- Agents working in the same checkout get a warning on the AI Agents page, naming the files they both changed, with a shortcut to start the next agent in its own worktree.
+- Worktrees show how much disk their build caches take (node_modules, .build, .venv, target and the like), and Clean up says how much it frees.
+
 ## 1.7.0 — 2026-11-09
 
 - Office party: while music plays the office dims and turns into a rave in your visualiser colours, with a flashing dance floor, spotlights, lasers, a disco ball and a strobe on big beats. With "Visualiser follows the actual audio" on it follows the kick drum. Turn it off in Settings › Now playing; Reduce Motion turns off the strobe.
