@@ -76,4 +76,8 @@ struct MusicBackdropPainter {
     var averageLevel: Double {
         party.levels.isEmpty ? 0 : party.levels.reduce(0, +) / Double(party.levels.count)
     }
+
+    /// How loud it is right now, 0...1: the beat when one is heard, else the overall level,
+    /// so styles keep moving with live audio even when no clear kick drum comes through.
+    var energy: Double { min(1, max(pulse, averageLevel * 1.6)) }
 }

@@ -7,8 +7,8 @@ extension MusicBackdropPainter {
     func drawGlows(strength: Double = 1) {
         for (index, spot) in Self.glowSpots.enumerated() {
             let center = CGPoint(x: size.width * spot.x, y: size.height * spot.y)
-            radialGlow(at: center, radius: max(size.width, size.height) * 0.45 * (1 + 0.08 * pulse),
-                       color: party.color(index + party.beat), opacity: (0.09 + 0.09 * pulse) * strength)
+            radialGlow(at: center, radius: max(size.width, size.height) * 0.45 * (1 + 0.15 * energy),
+                       color: party.color(index + party.beat), opacity: (0.1 + 0.22 * energy) * strength)
         }
     }
 
@@ -20,9 +20,9 @@ extension MusicBackdropPainter {
             let share = Double(x / size.width)
             let level = band(at: share), color = color(at: share)
             for y in stride(from: spacing / 2, to: size.height, by: spacing) {
-                let ripple = max(0, sin(hypot(x - center.x, y - center.y) / 70 - motionTime * 5)) * pulse
-                let radius = 1.1 + 0.9 * ripple
-                dot(at: CGPoint(x: x, y: y), radius: radius, color: color.opacity(0.06 + 0.12 * level + 0.2 * ripple))
+                let ripple = max(0, sin(hypot(x - center.x, y - center.y) / 70 - motionTime * 5)) * energy
+                let radius = 1.4 + 1.2 * ripple + 0.6 * level
+                dot(at: CGPoint(x: x, y: y), radius: radius, color: color.opacity(0.14 + 0.35 * level + 0.35 * ripple))
             }
         }
     }
@@ -40,7 +40,7 @@ extension MusicBackdropPainter {
             curtain.addLine(to: CGPoint(x: size.width, y: 0))
             curtain.closeSubpath()
             let color = party.color(layer + party.beat)
-            context.fill(curtain, with: .linearGradient(Gradient(colors: [color.opacity(0.03), color.opacity(0.1 + 0.08 * pulse)]),
+            context.fill(curtain, with: .linearGradient(Gradient(colors: [color.opacity(0.03), color.opacity(0.14 + 0.16 * energy)]),
                                                          startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height * 0.6)))
         }
     }
@@ -52,15 +52,15 @@ extension MusicBackdropPainter {
         for ring in 0..<6 {
             let progress = (motionTime * 0.12 + Double(ring) / 6).truncatingRemainder(dividingBy: 1)
             let radius = CGFloat(progress) * reach
-            let opacity = (1 - progress) * (0.1 + 0.18 * pulse)
+            let opacity = (1 - progress) * (0.14 + 0.3 * energy)
             context.stroke(Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)),
-                           with: .color(party.color(ring + party.beat).opacity(opacity)), lineWidth: 2 + 3 * pulse)
+                           with: .color(party.color(ring + party.beat).opacity(opacity)), lineWidth: 2 + 4 * energy)
         }
     }
 
     /// A glow round the window's edges that breathes with the bass.
     func drawEdges() {
-        let depth = min(size.width, size.height) * (0.12 + 0.06 * pulse)
+        let depth = min(size.width, size.height) * (0.12 + 0.1 * energy)
         let sides: [(CGRect, UnitPoint, UnitPoint)] = [
             (CGRect(x: 0, y: 0, width: size.width, height: depth), .top, .bottom),
             (CGRect(x: 0, y: size.height - depth, width: size.width, height: depth), .bottom, .top),
@@ -68,7 +68,7 @@ extension MusicBackdropPainter {
             (CGRect(x: size.width - depth, y: 0, width: depth, height: size.height), .trailing, .leading),
         ]
         for (index, side) in sides.enumerated() {
-            let color = party.color(index + party.beat).opacity(0.12 + 0.14 * pulse)
+            let color = party.color(index + party.beat).opacity(0.14 + 0.24 * energy)
             context.fill(Path(side.0), with: .linearGradient(Gradient(colors: [color, .clear]),
                                                              startPoint: point(side.1, in: side.0), endPoint: point(side.2, in: side.0)))
         }
@@ -88,7 +88,7 @@ extension MusicBackdropPainter {
             cone.addLine(to: CGPoint(x: tip.x + spread, y: tip.y))
             cone.closeSubpath()
             let color = party.color(beam + party.beat)
-            context.fill(cone, with: .linearGradient(Gradient(colors: [color.opacity(0.12 + 0.12 * pulse), .clear]), startPoint: base, endPoint: tip))
+            context.fill(cone, with: .linearGradient(Gradient(colors: [color.opacity(0.12 + 0.2 * energy), .clear]), startPoint: base, endPoint: tip))
         }
     }
 
@@ -101,7 +101,7 @@ extension MusicBackdropPainter {
             let height = size.height * (0.04 + 0.35 * band(at: share))
             let rect = CGRect(x: CGFloat(index) * slot + slot * 0.15, y: size.height - height, width: slot * 0.7, height: height)
             let color = color(at: share)
-            context.fill(Path(rect), with: .linearGradient(Gradient(colors: [color.opacity(0.18 + 0.1 * pulse), color.opacity(0)]),
+            context.fill(Path(rect), with: .linearGradient(Gradient(colors: [color.opacity(0.22 + 0.18 * energy), color.opacity(0)]),
                                                           startPoint: CGPoint(x: rect.midX, y: rect.maxY), endPoint: CGPoint(x: rect.midX, y: rect.minY)))
         }
     }
@@ -114,8 +114,8 @@ extension MusicBackdropPainter {
             let y = CGFloat(generator.next()) * size.height
             let share = Double(x / max(size.width, 1))
             let twinkle = sin(motionTime * 2 + Double(star)) * 0.5 + 0.5
-            let brightness = 0.08 + 0.25 * band(at: share) * twinkle + 0.2 * pulse * Double(generator.next())
-            dot(at: CGPoint(x: x, y: y), radius: 0.8 + 1.4 * CGFloat(brightness), color: color(at: share).opacity(brightness))
+            let brightness = min(1, 0.2 + 0.5 * band(at: share) * twinkle + 0.4 * energy * Double(generator.next()))
+            dot(at: CGPoint(x: x, y: y), radius: 1.2 + 2 * CGFloat(brightness), color: color(at: share).opacity(brightness))
         }
     }
 
@@ -125,11 +125,11 @@ extension MusicBackdropPainter {
         for x in stride(from: 0, through: size.width, by: spacing) {
             let share = Double(x / max(size.width, 1))
             context.stroke(Path { $0.move(to: CGPoint(x: x, y: 0)); $0.addLine(to: CGPoint(x: x, y: size.height)) },
-                           with: .color(color(at: share).opacity(0.04 + 0.16 * band(at: share))), lineWidth: 1)
+                           with: .color(color(at: share).opacity(0.08 + 0.3 * band(at: share))), lineWidth: 1.2)
         }
         for y in stride(from: 0, through: size.height, by: spacing) {
             context.stroke(Path { $0.move(to: CGPoint(x: 0, y: y)); $0.addLine(to: CGPoint(x: size.width, y: y)) },
-                           with: .color(party.color(party.beat).opacity(0.04 + 0.08 * pulse)), lineWidth: 1)
+                           with: .color(party.color(party.beat).opacity(0.07 + 0.18 * energy)), lineWidth: 1.2)
         }
     }
 
@@ -146,7 +146,7 @@ extension MusicBackdropPainter {
             }
             wave.addLine(to: CGPoint(x: size.width, y: size.height))
             wave.closeSubpath()
-            context.fill(wave, with: .color(party.color(layer + party.beat).opacity(0.06 + 0.06 * pulse)))
+            context.fill(wave, with: .color(party.color(layer + party.beat).opacity(0.09 + 0.14 * energy)))
         }
     }
 
