@@ -44,7 +44,7 @@ const PINS = [
     x: 22,
     y: 86.5,
     title: "Needs you",
-    body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new. Each card shows what the agent changed since it started, with a Diff button.",
+    body: "Every waiting agent: what it said or wants to run, its folder, branch, CPU and memory. Agents that look stuck get a badge with the reason. Hover a card and clear it until that agent does something new. Each card shows what the agent changed since it started, with a Diff button, and which step of its task list Claude is on.",
   },
   {
     x: 10,
@@ -58,7 +58,7 @@ const FEATURE_ROWS = [
   {
     label: "AI agents",
     title: "Every agent, one glance.",
-    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on. Cards show the files and lines each agent changed, with a diff one click away, and New agent starts Claude Code or Codex in a fresh worktree. Limits come with a forecast of when they run out, and Today sums up agent time and time spent waiting on you.",
+    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on. Cards show which step of its task list each agent is on and the files and lines it changed, with a diff one click away, and New agent starts Claude Code or Codex in a fresh worktree. Limits come with a forecast of when they run out, and Today sums up agent time and time spent waiting on you.",
     image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1194, height: 1085 },
   },
   {
