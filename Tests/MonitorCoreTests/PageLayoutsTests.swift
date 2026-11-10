@@ -8,6 +8,13 @@ struct PageLayoutsTests {
         .agents: [SectionPlacement(kind: .agentSessions)],
     ])
 
+    @Test func networkByAppStartsHiddenOnTheProcessesPage() {
+        let layouts = base.sanitized(available: [.needsYou, .networkByApp])
+        #expect(layouts.hidden == [.networkByApp])
+        #expect(layouts.page(containing: .networkByApp) == nil)
+        #expect(SectionKind.networkByApp.homePage == .processes)
+    }
+
     @Test func rowsWrapWhenTheNextSpanDoesNotFit() {
         #expect(GridPacking.rows(spans: [12, 6, 6, 8, 6, 4]) == [[0], [1, 2], [3], [4, 5]])
     }

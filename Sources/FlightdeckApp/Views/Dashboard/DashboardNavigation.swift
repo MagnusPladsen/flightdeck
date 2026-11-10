@@ -6,6 +6,7 @@ import Observation
 enum DashboardDestination: Hashable {
     case page(DashboardPage)
     case office
+    case achievements
     case settings
 }
 
@@ -19,6 +20,8 @@ final class DashboardNavigation {
     private static var demoStart: DashboardDestination? {
         guard DemoData.isEnabled, let name = ProcessInfo.processInfo.environment["FLIGHTDECK_PAGE"] else { return nil }
         if name == "office" { return .office }
+        if name == "achievements" { return .achievements }
+        if name == "settings" { return .settings }
         return DashboardPage(rawValue: name).map(DashboardDestination.page)
     }
 

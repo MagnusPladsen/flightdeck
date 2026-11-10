@@ -17,6 +17,7 @@ struct RailSidebar: View {
             }
             Spacer()
             RailButton(symbolName: "gamecontroller", title: "Office", count: 0, isSelected: selection == .office) { selection = .office }
+            RailButton(symbolName: "trophy", title: "Achievements", count: 0, isSelected: selection == .achievements) { selection = .achievements }
             RailButton(symbolName: "gearshape", title: "Settings", count: 0, isSelected: selection == .settings) { selection = .settings }
         }
         .padding(.top, 44)
@@ -40,6 +41,7 @@ private struct RailButton: View {
         Button(action: select) {
             Image(systemName: symbolName)
                 .font(.system(size: 16, weight: isSelected ? .bold : .regular))
+                .modifier(SelectedBeat(isSelected: isSelected))
                 .frame(width: 44, height: 40)
                 .background(isSelected ? theme.overlay : (isHovering ? theme.surface : .clear), in: RoundedRectangle(cornerRadius: 10))
                 .overlay(alignment: .topTrailing) {

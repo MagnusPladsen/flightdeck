@@ -9,6 +9,7 @@ struct FlightdeckApp: App {
     @State private var asker = ClaudeAsker()
     @State private var whatsNew = WhatsNew()
     @State private var navigation = DashboardNavigation()
+    @State private var palette = CommandPaletteState()
 
     init() {
         let store = MonitorStore(settings: AppSettings())
@@ -36,6 +37,7 @@ struct FlightdeckApp: App {
                 .environment(asker)
                 .environment(whatsNew)
                 .environment(navigation)
+                .environment(palette)
                 .themedRoot(store.settings)
                 .onAppear { DockPresence.dashboardDidOpen() }
                 .onDisappear { DockPresence.dashboardDidClose() }
@@ -48,11 +50,18 @@ struct FlightdeckApp: App {
                     .keyboardShortcut(",", modifiers: .command)
             }
             CommandGroup(after: .textEditing) {
-                Button("Ask Claude…") {
+                Button("Command Palette…") {
                     DashboardOpener.open()
-                    asker.open()
+                    asker.dismiss()
+                    palette.open()
                 }
                 .keyboardShortcut("k", modifiers: .command)
+                Button("Ask Claude…") {
+                    DashboardOpener.open()
+                    palette.dismiss()
+                    asker.open()
+                }
+                .keyboardShortcut("k", modifiers: [.command, .shift])
             }
         }
 

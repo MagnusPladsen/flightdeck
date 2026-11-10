@@ -20,12 +20,14 @@ public enum SectionKind: Codable, Hashable, Sendable {
     /// Today's agent hours, waits and turns per project, from Flightdeck's own polls.
     case dailyRecap
     case processTable
+    /// Download and upload per app; starts hidden, as reading it runs `nettop` while on screen.
+    case networkByApp
     case widget(UUID)
 
     /// Every kind except widgets, which come from the user's widget list.
     public static let builtIn: [SectionKind] = [
         .needsYou, .clock, .resources, .nowPlaying, .yourTurn, .workingAgents, .idleAgents, .portSummary, .projects,
-        .devServers, .otherPorts, .agentSessions, .usageLimits, .spend, .dailyRecap, .worktrees, .processTable,
+        .devServers, .otherPorts, .agentSessions, .usageLimits, .spend, .dailyRecap, .worktrees, .processTable, .networkByApp,
     ]
 
     /// Where the kind goes when it is new or re-added without a page.
@@ -35,7 +37,7 @@ public enum SectionKind: Codable, Hashable, Sendable {
         case .devServers, .otherPorts: .ports
         case .agentSessions, .usageLimits, .spend, .dailyRecap: .agents
         case .worktrees: .worktrees
-        case .processTable: .processes
+        case .processTable, .networkByApp: .processes
         case .widget: .widgets
         }
     }
@@ -53,6 +55,11 @@ public enum SectionKind: Codable, Hashable, Sendable {
     /// A section that already shows what this one would, so this one starts hidden next to it.
     public var coveredBy: SectionKind? {
         self == .portSummary ? .devServers : nil
+    }
+
+    /// Kinds that start in the tray of hidden sections, for the user to add.
+    public var startsHidden: Bool {
+        self == .networkByApp
     }
 
     /// Plain-text form used when a section is dragged.
@@ -149,7 +156,9 @@ public struct PageLayouts: Codable, Hashable, Sendable {
     /// Puts a kind after its `placedAfter` section wherever that is, else at the end of its home page.
     private mutating func place(_ kind: SectionKind) {
         let placement = SectionPlacement(kind: kind)
-        if let cover = kind.coveredBy, page(containing: cover) == kind.homePage {
+        if kind.startsHidden {
+            hidden.append(kind)
+        } else if let cover = kind.coveredBy, page(containing: cover) == kind.homePage {
             hidden.append(kind)
         } else if let anchor = kind.placedAfter, let page = page(containing: anchor), var placements = pages[page],
            let index = placements.firstIndex(where: { $0.kind == anchor }) {

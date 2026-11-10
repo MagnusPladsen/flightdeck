@@ -16,6 +16,7 @@ struct MenuBarPanel: View {
         VStack(alignment: .leading, spacing: 14) {
             header
             SystemTilesGrid(showsNetworkAndDisk: store.settings.panelShowsNetworkAndDisk)
+            if let track = miniPlayerTrack { MenuBarMiniPlayer(track: track) }
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -78,6 +79,11 @@ struct MenuBarPanel: View {
             }
             Button("Quit") { NSApp.terminate(nil) }.buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(theme.muted)
         }
+    }
+
+    private var miniPlayerTrack: NowPlayingTrack? {
+        guard store.settings.nowPlayingEnabled, store.settings.panelShowsNowPlaying, store.nowPlaying.isVisible else { return nil }
+        return store.nowPlaying.track
     }
 
     private var agentsNeedingYou: [AgentSession] {

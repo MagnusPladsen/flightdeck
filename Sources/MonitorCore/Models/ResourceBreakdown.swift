@@ -32,7 +32,7 @@ public enum ResourceBreakdown {
     }
 
     /// "Google Chrome Helper (Renderer)" and "Code Helper (GPU)" belong to "Google Chrome" and "Code".
-    static func appName(of processName: String) -> String {
+    public static func appName(of processName: String) -> String {
         var name = processName
         if let paren = name.range(of: " (", options: .backwards), name.hasSuffix(")") { name = String(name[..<paren.lowerBound]) }
         if let helper = name.range(of: " Helper") { name = String(name[..<helper.lowerBound]) }

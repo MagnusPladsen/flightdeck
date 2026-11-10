@@ -29,6 +29,11 @@ final class MonitorStore {
     let focusStatus = FocusStatusMonitor()
     let sleepAssertion = SleepAssertion()
     let dailyRecap = DailyRecapTracker()
+    let achievements = AchievementTracker()
+    let officeWeather = OfficeWeatherMonitor()
+    let networkUsage = NetworkUsageMonitor()
+    let artworkColors = ArtworkColorCache()
+    let beatAccent = BeatAccentClock()
     private let statusPublisher = StatusPublisher()
     let serverHealth = ServerHealthMonitor()
     let agentChanges = AgentChangesTracker()
@@ -54,6 +59,10 @@ final class MonitorStore {
         notifier.openTerminal = { [weak self] pid, folder in
             guard let self else { return }
             if let agent = agents.first(where: { $0.pid == pid }) { openTerminal(for: agent) } else { openInTerminal(folder) }
+        }
+        connectAchievementAlerts()
+        networkUsage.processNames = { [weak self] in
+            Dictionary((self?.snapshot?.processes ?? []).map { ($0.pid, $0.name) }, uniquingKeysWith: { first, _ in first })
         }
     }
 
@@ -132,6 +141,7 @@ final class MonitorStore {
         alertAboutChanges(since: previous)
         updateKeepAwake()
         dailyRecap.record(self.agents)
+        recordAchievements()
         dailyRecap.announceYesterdayIfDue(settings: settings, isQuiet: isQuietForAlerts, notifier: notifier, spend: spend)
         statusPublisher.publish(from: self)
         refreshServerHealth()
@@ -242,12 +252,16 @@ final class MonitorStore {
     func launchAgent(_ plan: AgentLaunchPlan) async -> AgentLaunchError? {
         guard !DemoData.isEnabled else { return nil }
         let error = await AgentLauncher.launch(plan, choice: settings.launchTerminal, agentPIDs: agents.map(\.pid))
+        if error == nil { achievements.record(.agentsLaunched) }
         if case .newWorktree = plan.target { await refreshWorktrees() }
         return error
     }
 
     func cleanUpWorktrees(_ targets: [Worktree]) async {
-        await worktreeOverview.cleanUp(targets, projectFolders: projectFolders)
+        let cacheBytes = Dictionary(targets.map { ($0.path, worktreeOverview.cacheBytes(of: [$0])) }, uniquingKeysWith: { first, _ in first })
+        let removed = await worktreeOverview.cleanUp(targets, projectFolders: projectFolders)
+        achievements.record(.worktreesCleaned, by: Double(removed.count))
+        achievements.record(.cacheGigabytesCleaned, by: Double(removed.reduce(0) { $0 + (cacheBytes[$1.path] ?? 0) }) / 1_000_000_000)
     }
 
     private func refreshProjectCache() async {
@@ -276,6 +290,9 @@ final class MonitorStore {
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         nowPlaying.showDemo(DemoData.nowPlaying)
         dailyRecap.showDemo(DemoData.recap)
+        achievements.showDemo(DemoData.achievements)
+        officeWeather.showDemo(DemoData.officeWeather)
+        networkUsage.showDemo(DemoData.networkConsumers)
         serverHealth.showDemo(ports: DemoData.ports, crashed: DemoData.crashedServers, logs: DemoData.serverLogs)
         agentChanges.showDemo(DemoData.agentChanges, diff: DemoData.agentDiff)
         cpuHistory = DemoData.history(around: 0.34, swing: 0.15)
@@ -293,7 +310,7 @@ final class MonitorStore {
 
     func stopProcess(_ pid: Int32) {
         serverHealth.noteStoppedByUser(pid)
-        kill(pid, SIGTERM)
+        if kill(pid, SIGTERM) == 0 { achievements.record(.processesStopped) }
         Task {
             try? await Task.sleep(for: .milliseconds(600))
             await refreshPortsAndAgents()

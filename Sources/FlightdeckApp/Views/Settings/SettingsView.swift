@@ -93,6 +93,7 @@ private struct GeneralSettings: View {
                 Toggle("Show system ports, not just dev servers", isOn: $settings.showSystemPorts)
             }
             NowPlayingSettings()
+            OfficeSettings()
             NextAgentHotkeySection()
             CommandLineSettings()
             Section("Startup") {
@@ -365,10 +366,16 @@ private struct NowPlayingSettings: View {
                 .disabled(!settings.nowPlayingEnabled)
             MusicBackdropToggle()
                 .disabled(!settings.nowPlayingEnabled)
+            MusicColorToggles()
+                .disabled(!settings.nowPlayingEnabled)
+            Toggle("Mini player in the menu bar panel", isOn: Binding(get: { settings.panelShowsNowPlaying }, set: { settings.panelShowsNowPlaying = $0 }))
+                .disabled(!settings.nowPlayingEnabled)
+            Toggle("Music bars in the menu bar", isOn: Binding(get: { settings.menuBarShowsVisualizer }, set: { settings.menuBarShowsVisualizer = $0 }))
+                .disabled(!settings.nowPlayingEnabled)
         } header: {
             Text("Now playing")
         } footer: {
-            Text("Shows the track, artist, artwork and playback controls from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays.\n\nWith \"Visualiser follows the actual audio\" off, the bars are an animation that only follows play and pause, not the beat; the section marks this as Animated. Turn it on for real levels, marked Live audio: it asks for the system audio recording permission and only listens while the visualiser is on screen. Mode, style and colour are in the adjust menu on the section.\n\nThe office party dims the lights, flashes the dance floor in the visualiser's colours and gets the agents nodding to the beat; with the actual audio it follows the kick drum. Reduce Motion turns off the strobe.\n\nThe pulsing background puts soft glows and dots in the same colours behind the dashboard while music plays.")
+            Text("Shows the track, artist, artwork and playback controls from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays.\n\nWith \"Visualiser follows the actual audio\" off, the bars are an animation that only follows play and pause, not the beat; the section marks this as Animated. Turn it on for real levels, marked Live audio: it asks for the system audio recording permission and only listens while the visualiser is on screen. Mode, style and colour are in the adjust menu on the section.\n\nThe office party dims the lights, flashes the dance floor in the visualiser's colours and gets the agents nodding to the beat; with the actual audio it follows the kick drum. Reduce Motion turns off the strobe.\n\nThe pulsing background puts soft glows and dots in the same colours behind the dashboard while music plays.\n\nThe mini player shows the track and its controls in the menu bar panel. Music bars put a tiny live visualiser next to the menu bar readings while something plays.\n\nColours from the cover art paint the visualiser, background and office party in the cover's colours; music playing in a browser keeps the chosen palette, as its artwork is the site's icon. Flash accents on the beat makes status dots and the selected page glow with each beat.")
         }
     }
 }

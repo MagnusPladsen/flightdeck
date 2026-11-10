@@ -3,6 +3,15 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.10.0 — 2026-11-10
+
+- Command palette: press ⌘K in the dashboard to jump to any page, agent, dev server or worktree, start an agent, pause alerts or skip a track. Anything else you type can be asked of Claude. Ask Claude on its own moved to ⇧⌘K.
+- Achievements: 59 to unlock for agent hours, agents at once, streaks, cleaned-up worktrees, tracks heard, office raves and more. A new Achievements page lists them all with your progress, and each unlock gets a card and a notification.
+- The office windows follow the time of day, from daylight through sunset to a starry night with desk lamps on. Type a city in Settings to see its rain, snow or clouds in them.
+- A mini player in the menu bar panel, and optional live music bars in the menu bar itself.
+- Network by app: download and upload per app. Add it from the hidden sections on the Processes page.
+- Optional colours from the cover art (not for music in a browser) and accents that flash on the beat. Both are off by default; turn them on in Settings › Now playing or the adjust menu.
+
 ## 1.9.1 — 2026-11-10
 
 - Hovering CPU, memory, disk or a limit opens a card right away, instead of a tooltip that rarely appeared.

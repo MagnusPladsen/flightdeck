@@ -28,6 +28,11 @@ struct VisualizerColors {
         glow = stops.last ?? theme.accent
     }
 
+    init(stops: [Color]) {
+        self.stops = stops
+        glow = stops.last ?? .white
+    }
+
     var first: Color { stops.first ?? glow }
     var middle: Color { stops.isEmpty ? glow : stops[stops.count / 2] }
 }
@@ -45,7 +50,7 @@ struct NowPlayingVisualizer: View {
     @State private var isSettling = false
 
     var body: some View {
-        let colors = VisualizerColors(palette: store.settings.visualizerPalette, theme: theme)
+        let colors = store.visualizerColors(theme: theme)
         TimelineView(.animation(minimumInterval: 1 / 60, paused: !track.isPlaying && !isSettling)) { context in
             let frame = feed.frame(at: context.date, track: track, audio: store.nowPlaying.audio)
             Canvas { canvas, size in

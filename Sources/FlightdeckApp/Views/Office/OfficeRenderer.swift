@@ -24,6 +24,8 @@ struct OfficeScene {
     var playerFacesLeft: Bool
     /// The agent the player is next to or pointing at; its bubble is always shown in full.
     var spotlightPID: Int32?
+    /// The sky in the windows; nil keeps it noon and the lights on.
+    var outside: OfficeOutside?
 }
 
 /// Draws the office: floors and walls, then furniture and people from back to front, then bubbles.
@@ -33,11 +35,13 @@ struct OfficeRenderer {
     let time: Double
 
     func draw(size: CGSize) {
+        let windows = OfficeWindowsLayer(scene: scene, outside: scene.outside ?? .noon, pen: pen, time: time)
         drawTiles(size: size)
+        windows.drawWindows()
         OfficeWallDecor(scene: scene, pen: pen, time: time).draw()
         OfficePartyGear(scene: scene, pen: pen, time: time).drawPads()
         for item in drawables().sorted(by: { $0.depth < $1.depth }) { item.draw() }
-        if let party = scene.party { OfficePartyLights(scene: scene, party: party, pen: pen, time: time).draw() }
+        if let party = scene.party { OfficePartyLights(scene: scene, party: party, pen: pen, time: time).draw() } else { windows.drawNight() }
         OfficePartyGear(scene: scene, pen: pen, time: time).drawGlow()
         OfficeBubbles(scene: scene, pen: pen, time: time).draw()
     }

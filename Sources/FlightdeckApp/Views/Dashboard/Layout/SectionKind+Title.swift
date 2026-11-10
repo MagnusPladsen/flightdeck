@@ -21,6 +21,7 @@ extension SectionKind {
         case .spend: "Token spend"
         case .dailyRecap: "Today"
         case .processTable: "Process table"
+        case .networkByApp: "Network by app"
         case .widget(let id): settings.customWidgets.first { $0.id == id }?.title ?? "Widget"
         }
     }

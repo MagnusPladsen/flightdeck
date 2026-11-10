@@ -18,7 +18,7 @@ const PINS = [
     x: 22,
     y: 8.5,
     title: "Search and ask",
-    body: "Type to find any agent or project across Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider. Press Return or ⌘K to ask Claude about what's running. The picker sets your default agent, whose limits show below.",
+    body: "Type to find any agent or project across Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider. Press Return to ask Claude about what's running, or ⌘K for a command palette that jumps anywhere. The picker sets your default agent, whose limits show below.",
   },
   { x: 22, y: 20, title: "Who needs you", body: "The agent waiting on you leads, with a count of the others." },
   {
@@ -64,13 +64,13 @@ const FEATURE_ROWS = [
   {
     label: "Office",
     title: "Walk around your agents.",
-    body: "A pixel-art office with a room per repo, where every agent is posed by what it's doing. Agents that need you wait as bouncing avatars along the top, and a jukebox plays what's on. When music plays it turns into a party in your visualiser colours, with a flashing dance floor, lasers, pumping speakers and every agent nodding to the beat. Click the pads in front of the jukebox to skip or pause. Walk up to an agent to go to its terminal or stop it.",
+    body: "A pixel-art office with a room per repo, where every agent is posed by what it's doing. Agents that need you wait as bouncing avatars along the top, and a jukebox plays what's on. When music plays it turns into a party in your visualiser colours, with a flashing dance floor, lasers, pumping speakers and every agent nodding to the beat. Click the pads in front of the jukebox to skip or pause. Walk up to an agent to go to its terminal or stop it. The windows follow the time of day, with lamps on after dark and optional live weather. Unlock 59 achievements as you go.",
     image: { src: "/screenshots/office.png", alt: "Office party with a dance floor, lasers, speaker stacks and the jukebox pads", width: 1194, height: 760 },
   },
   {
     label: "Now playing",
     title: "Music in your theme.",
-    body: "What's playing in any player, with a visualiser in your theme's colours. The adjust menu switches between Minimal and Expanded, ten visualiser styles and six palettes, plus an optional background that pulses to the music in ten styles. Live audio levels are opt-in; otherwise the bars follow play and pause.",
+    body: "What's playing in any player, with a visualiser in your theme's colours. The adjust menu switches between Minimal and Expanded, ten visualiser styles and six palettes, plus an optional background that pulses to the music in ten styles, colours from the cover art and accents that flash on the beat. A mini player sits in the menu bar panel. Live audio levels are opt-in; otherwise the bars follow play and pause.",
     image: { src: "/screenshots/now-playing.png", alt: "Now playing with player controls and the adjust menu open", width: 1024, height: 362 },
   },
   {

@@ -13,7 +13,7 @@ struct PageListSidebar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Label { Text("Flightdeck").font(.system(size: 15, weight: .heavy)) } icon: {
-                FormationMark(lead: theme.accent, wingmen: theme.foreground).frame(width: 20, height: 20)
+                FormationMark(lead: theme.accent, wingmen: theme.foreground).frame(width: 20, height: 20).beatAccent()
             }
             .padding(.horizontal, 14)
             .padding(.bottom, 18)
@@ -22,6 +22,7 @@ struct PageListSidebar: View {
             }
             Spacer()
             FooterButton(title: "Office", systemImage: "gamecontroller", isSelected: selection == .office) { selection = .office }
+            FooterButton(title: "Achievements", systemImage: "trophy", isSelected: selection == .achievements) { selection = .achievements }
             FooterButton(title: "Settings", systemImage: "gearshape", isSelected: selection == .settings) { selection = .settings }
         }
         .padding(.top, 44)
@@ -46,7 +47,7 @@ private struct PageButton: View {
     var body: some View {
         Button(action: select) {
             HStack(spacing: 14) {
-                SidebarIcon(systemName: page.symbolName)
+                SidebarIcon(systemName: page.symbolName).modifier(SelectedBeat(isSelected: isSelected))
                 Text(page.title).font(.system(size: 16, weight: isSelected ? .heavy : .medium)).lineLimit(1).fixedSize()
                 Spacer()
                 if count > 0 {
@@ -87,7 +88,7 @@ private struct FooterButton: View {
     var body: some View {
         Button(action: select) {
             HStack(spacing: 14) {
-                SidebarIcon(systemName: systemImage)
+                SidebarIcon(systemName: systemImage).modifier(SelectedBeat(isSelected: isSelected))
                 Text(title).lineLimit(1)
             }
                 .font(.system(size: 15, weight: isSelected ? .heavy : .medium))
@@ -100,6 +101,15 @@ private struct FooterButton: View {
         .buttonStyle(.plain)
         .foregroundStyle(isSelected ? theme.foreground : theme.muted)
         .onHover { isHovering = $0 }
+    }
+}
+
+/// The selected page's icon flashes with the beat.
+struct SelectedBeat: ViewModifier {
+    var isSelected: Bool
+
+    func body(content: Content) -> some View {
+        if isSelected { content.beatAccent(radius: 8) } else { content }
     }
 }
 

@@ -37,6 +37,8 @@ struct DashboardView: View {
     @State private var layoutEditor = LayoutEditor()
     @Environment(ClaudeAsker.self) private var asker
     @Environment(WhatsNew.self) private var whatsNew
+    @Environment(CommandPaletteState.self) private var palette
+    @State private var newAgentRequest: NewAgentRequest?
 
     var body: some View {
         NavigationSplitView {
@@ -46,7 +48,7 @@ struct DashboardView: View {
             detail(for: navigation.destination)
                 .navigationTitle(title(for: navigation.destination))
                 .toolbar {
-                    if navigation.destination != .settings && navigation.destination != .office { LayoutLockButton() }
+                    if case .page = navigation.destination { LayoutLockButton() }
                     if navigation.destination != .office {
                         Button { navigation.showOffice() } label: { Label("Visualize", systemImage: "gamecontroller") }
                             .help("Show your agents in the office")
@@ -55,17 +57,28 @@ struct DashboardView: View {
                 }
         }
         .overlay {
-            if asker.isPresented {
+            if palette.isPresented {
+                CommandPalette(state: palette, source: paletteSource).transition(.opacity)
+            } else if asker.isPresented {
                 AskPalette(asker: asker).transition(.opacity)
             } else if whatsNew.isPresented {
                 WhatsNewCard(whatsNew: whatsNew).transition(.opacity)
             }
         }
+        .overlay(alignment: .bottomTrailing) { AchievementToast().padding(20) }
+        .animation(.smooth(duration: 0.2), value: palette.isPresented)
         .animation(.smooth(duration: 0.2), value: asker.isPresented)
         .animation(.smooth(duration: 0.2), value: whatsNew.isPresented)
         .toolbarBackground(theme.background, for: .windowToolbar)
         .fontDesign(layout.style.fontDesign)
         .environment(layoutEditor)
+        .environment(store.beatAccent)
+        .background { BeatAccentDriver() }
+        .newAgentSheet($newAgentRequest)
+    }
+
+    private var paletteSource: PaletteCommandSource {
+        PaletteCommandSource(store: store, navigation: navigation, asker: asker) { newAgentRequest = NewAgentRequest() }
     }
 
     /// The page list in the style of the chosen layout.
@@ -89,6 +102,7 @@ struct DashboardView: View {
         case .page(.widgets): WidgetsPage(navigate: navigation.show)
         case .page(let page): GridPage(page: page, navigate: navigation.show)
         case .office: OfficePage()
+        case .achievements: AchievementsPage()
         case .settings: SettingsView()
         }
     }
@@ -97,6 +111,7 @@ struct DashboardView: View {
         switch destination {
         case .page(let page): page.title
         case .office: "Office"
+        case .achievements: "Achievements"
         case .settings: "Settings"
         }
     }

@@ -92,17 +92,21 @@ final class WorktreeOverview {
     }
 
     /// Removes each worktree with `git worktree remove`; dirty ones are skipped, never forced.
-    func cleanUp(_ targets: [Worktree], projectFolders: [String]) async {
+    /// Removes the worktrees and returns the ones that were removed.
+    @discardableResult
+    func cleanUp(_ targets: [Worktree], projectFolders: [String]) async -> [Worktree] {
         isCleaningUp = true
         defer { isCleaningUp = false }
         let results = isDemo ? targets.map { _ in WorktreeRemovalResult.removed } : await remove(targets)
         cleanupSummary = Self.summary(of: results)
+        let removed = zip(targets, results).filter { $0.1 == .removed }.map(\.0)
         if isDemo {
-            let removed = Set(targets.map(\.path))
-            worktrees.removeAll { removed.contains($0.path) }
+            let removedPaths = Set(targets.map(\.path))
+            worktrees.removeAll { removedPaths.contains($0.path) }
         } else {
             await refresh(projectFolders: projectFolders)
         }
+        return removed
     }
 
     func showDemo(_ worktrees: [Worktree], cacheUsage: [String: BuildCacheUsage]) {

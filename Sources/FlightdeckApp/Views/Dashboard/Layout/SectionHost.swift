@@ -44,6 +44,8 @@ struct SectionHost: View {
             DailyRecapSection()
         case .processTable:
             ProcessTableSection()
+        case .networkByApp:
+            NetworkByAppSection()
         case .widget(let id):
             WidgetSection(widgetID: id)
         }

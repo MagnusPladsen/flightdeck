@@ -6,13 +6,14 @@ import SwiftUI
 struct NowPlayingTransport: View {
     @Environment(MonitorStore.self) private var store
     var track: NowPlayingTrack
+    var showsVolume = true
 
     var body: some View {
         HStack(spacing: 2) {
             control("backward.fill", help: "Previous", command: .previousTrack)
             control(track.isPlaying ? "pause.fill" : "play.fill", help: track.isPlaying ? "Pause" : "Play", command: .togglePlayPause)
             control("forward.fill", help: "Next", command: .nextTrack)
-            if let volume = store.nowPlaying.appVolume {
+            if showsVolume, let volume = store.nowPlaying.appVolume {
                 AppVolumeSlider(volume: volume, appName: track.sourceName ?? SourceApp.name(bundleID: track.sourceBundleID)).padding(.leading, 10)
             }
         }
@@ -77,6 +78,7 @@ private struct NowPlayingAdjustments: View {
                 group("Style") { stylePicker }
                 group("Colour") { VisualizerPaletteSwatches() }
                 FollowAudioToggle()
+                MusicColorToggles()
                 MusicBackdropToggle()
             }
             .disabled(settings.nowPlayingMode == .minimal)
@@ -132,6 +134,19 @@ private struct VisualizerPaletteSwatches: View {
 }
 
 /// The opt-in to real audio levels, with what it costs.
+/// Cover-art colours and beat accents, in Settings and the section's adjust menu.
+struct MusicColorToggles: View {
+    @Environment(MonitorStore.self) private var store
+
+    var body: some View {
+        let settings = store.settings
+        Toggle("Colours from the cover art", isOn: Binding(get: { settings.visualizerUsesArtworkColors }, set: { settings.visualizerUsesArtworkColors = $0 }))
+            .help("Not for music playing in a browser, whose artwork is the site's icon")
+        Toggle("Flash accents on the beat", isOn: Binding(get: { settings.beatAccentsEnabled }, set: { settings.beatAccentsEnabled = $0 }))
+            .help("Status dots and the selected page glow on each beat")
+    }
+}
+
 /// Turns the dashboard background that pulses with the music on or off, and picks its style.
 struct MusicBackdropToggle: View {
     @Environment(MonitorStore.self) private var store

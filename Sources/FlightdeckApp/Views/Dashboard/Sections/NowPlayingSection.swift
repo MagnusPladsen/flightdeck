@@ -115,7 +115,7 @@ private struct NowPlayingProgress: View {
 }
 
 /// The track's artwork, else the playing app's icon on a tinted tile.
-private struct NowPlayingArtwork: View {
+struct NowPlayingArtwork: View {
     @Environment(\.theme) private var theme
     var track: NowPlayingTrack
 

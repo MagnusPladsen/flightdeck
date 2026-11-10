@@ -11,6 +11,7 @@ struct StatusDot: View {
         Circle()
             .fill(color)
             .frame(width: size, height: size)
+            .beatAccent(radius: size)
             .background {
                 if isPulsing {
                     Circle()

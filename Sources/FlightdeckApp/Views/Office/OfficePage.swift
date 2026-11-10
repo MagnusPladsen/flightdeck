@@ -77,8 +77,9 @@ private struct OfficeStage: View {
     private func canvas(camera: OfficeCamera) -> some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30)) { timeline in
             let party = partyFrame(at: timeline.date)
+            let outside = outside(at: timeline.date)
             Canvas { context, size in
-                let scene = scene(party: party)
+                let scene = scene(party: party, outside: outside)
                 OfficeRenderer(scene: scene, pen: OfficePen(context: context, camera: camera), time: timeline.date.timeIntervalSinceReferenceDate).draw(size: size)
             }
         }
@@ -90,26 +91,49 @@ private struct OfficeStage: View {
     }
 
     private var partyColors: [Color] {
-        VisualizerColors(palette: store.settings.visualizerPalette, theme: theme).stops
+        store.visualizerColors(theme: theme).stops
     }
 
-    private func scene(party: OfficeParty?) -> OfficeScene {
+    /// Nil keeps the office at noon, when the time of day is turned off.
+    private func outside(at date: Date) -> OfficeOutside? {
+        if let pinned = OfficeOutside.demoOverride { return pinned }
+        guard store.settings.officeFollowsTimeOfDay else { return nil }
+        let weather = store.officeWeather
+        let usesWeather = store.settings.officeWeatherEnabled && weather.placeName != nil
+        return .at(date, sunrise: usesWeather ? weather.sunrise : nil, sunset: usesWeather ? weather.sunset : nil,
+                   condition: usesWeather ? weather.condition : .clear)
+    }
+
+    private func scene(party: OfficeParty?, outside: OfficeOutside?) -> OfficeScene {
         let spotlight: Int32? = if case .agent(let pid) = hovered { pid } else { game.cardPID }
         return OfficeScene(map: game.map, agents: Dictionary(readings.agents.map { ($0.pid, $0) }, uniquingKeysWith: { first, _ in first }),
                            cpuLoad: readings.snapshot?.cpu.total ?? 0, memory: readings.snapshot?.memory, limitsHeadroom: readings.limitsHeadroom,
                            isMusicPlaying: readings.track?.isPlaying == true, track: readings.track, party: party,
                            isAtJukebox: isAtJukebox, pressedPad: recentlyPressedPad,
-                           player: game.player, isPlayerWalking: game.isWalking, playerFacesLeft: game.facesLeft, spotlightPID: spotlight)
+                           player: game.player, isPlayerWalking: game.isWalking, playerFacesLeft: game.facesLeft, spotlightPID: spotlight,
+                           outside: outside)
     }
 
-    /// Steps the player about sixty times a second while the page is on screen.
+    /// Steps the player about sixty times a second while the page is on screen, and counts the
+    /// tiles walked and the party minutes for the achievements every few seconds.
     private func runLoop() async {
+        store.achievements.record(.officeVisits)
         var last = Date()
+        var lastFlush = last
+        var walked = 0.0, partySeconds = 0.0
         while !Task.isCancelled {
             try? await Task.sleep(for: .milliseconds(16))
             let now = Date()
-            game.tick(seconds: min(0.05, now.timeIntervalSince(last)))
+            let seconds = min(0.05, now.timeIntervalSince(last))
+            let before = game.player
+            game.tick(seconds: seconds)
+            walked += game.player.distance(to: before)
+            if partyFrame(at: now) != nil { partySeconds += seconds }
             last = now
+            guard now.timeIntervalSince(lastFlush) >= 5 else { continue }
+            store.achievements.record(.officeTilesWalked, by: walked)
+            store.achievements.record(.partyMinutes, by: partySeconds / 60)
+            (walked, partySeconds, lastFlush) = (0, 0, now)
         }
     }
 
@@ -175,6 +199,7 @@ private struct OfficeStage: View {
 
     private func pressPad(_ command: NowPlayingCommand) {
         store.nowPlaying.send(command)
+        store.achievements.record(.jukeboxPresses)
         pressedPad = (command, Date())
     }
 

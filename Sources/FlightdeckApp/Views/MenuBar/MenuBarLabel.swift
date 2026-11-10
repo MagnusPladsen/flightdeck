@@ -4,17 +4,45 @@ import SwiftUI
 
 /// The menu bar item. Rendered to an image because the menu bar only draws one image and one text.
 struct MenuBarLabel: View {
+    private static let musicBarCount = 5
     var store: MonitorStore
+    @State private var feed = SpectrumFeed()
 
     var body: some View {
-        Image(nsImage: renderedLabel)
+        if let track = visualizedTrack {
+            TimelineView(.periodic(from: .now, by: 1.0 / 8)) { context in
+                Image(nsImage: renderedLabel(musicLevels: musicLevels(at: context.date, track: track)))
+            }
+            .onAppear { store.nowPlaying.visualizerAppeared() }
+            .onDisappear { store.nowPlaying.visualizerDisappeared() }
+        } else {
+            Image(nsImage: renderedLabel(musicLevels: nil))
+        }
+    }
+
+    /// The playing track, while the music bars are turned on.
+    private var visualizedTrack: NowPlayingTrack? {
+        guard store.settings.menuBarShowsVisualizer, store.settings.nowPlayingEnabled, store.nowPlaying.isVisible,
+              let track = store.nowPlaying.track, track.isPlaying else { return nil }
+        return track
+    }
+
+    /// The visualiser's bands folded into a few bars, skipping the empty top end.
+    private func musicLevels(at date: Date, track: NowPlayingTrack) -> [Double] {
+        let levels = feed.frame(at: date, track: track, audio: store.nowPlaying.audio).levels
+        let usable = Array(levels.prefix(levels.count * 3 / 4))
+        let chunk = max(usable.count / Self.musicBarCount, 1)
+        return (0..<Self.musicBarCount).map { index in
+            let slice = usable.dropFirst(index * chunk).prefix(chunk)
+            return slice.isEmpty ? 0 : slice.reduce(0, +) / Double(slice.count)
+        }
     }
 
     // Not a template image, so the yellow dot keeps its colour; the drawing handler picks the
     // black or white rendering from the appearance of the menu bar it is drawn into.
-    private var renderedLabel: NSImage {
-        let lightBar = render(foreground: .black)
-        let darkBar = render(foreground: .white)
+    private func renderedLabel(musicLevels: [Double]?) -> NSImage {
+        let lightBar = render(foreground: .black, musicLevels: musicLevels)
+        let darkBar = render(foreground: .white, musicLevels: musicLevels)
         let image = NSImage(size: lightBar.size, flipped: false) { rect in
             let isDark = NSAppearance.currentDrawing().bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
             (isDark ? darkBar : lightBar).draw(in: rect)
@@ -24,8 +52,9 @@ struct MenuBarLabel: View {
         return image
     }
 
-    private func render(foreground: Color) -> NSImage {
-        let content = MenuBarLabelContent(items: items, statusSymbol: statusSymbol, style: store.settings.menuBarLabelStyle, foreground: foreground)
+    private func render(foreground: Color, musicLevels: [Double]?) -> NSImage {
+        let content = MenuBarLabelContent(items: items, statusSymbol: statusSymbol, style: store.settings.menuBarLabelStyle, foreground: foreground,
+                                          musicLevels: musicLevels)
         let renderer = ImageRenderer(content: content)
         renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
         return renderer.nsImage ?? NSImage()
@@ -95,10 +124,12 @@ private struct MenuBarLabelContent: View {
     var statusSymbol: String?
     var style: MenuBarLabelStyle
     var foreground: Color
+    var musicLevels: [Double]?
 
     var body: some View {
         HStack(spacing: 8) {
             if let statusSymbol { Image(systemName: statusSymbol) }
+            if let musicLevels { musicBars(musicLevels) }
             if style == .bars {
                 HStack(spacing: 2) { ForEach(barItems) { bar($0.fraction ?? 0) } }
                 ForEach(items.filter { $0.fraction == nil }) { inline($0) }
@@ -119,6 +150,16 @@ private struct MenuBarLabelContent: View {
     }
 
     private var barItems: [Item] { items.filter { $0.fraction != nil } }
+
+    /// Bars that grow up and down from the middle, like a tiny equaliser.
+    private func musicBars(_ levels: [Double]) -> some View {
+        HStack(spacing: 1.5) {
+            ForEach(levels.indices, id: \.self) { index in
+                Capsule().frame(width: 2.5, height: 3 + 11 * min(max(levels[index], 0), 1))
+            }
+        }
+        .frame(height: 14)
+    }
 
     private func bar(_ fraction: Double) -> some View {
         ZStack(alignment: .bottom) {

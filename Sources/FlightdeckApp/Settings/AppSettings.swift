@@ -127,6 +127,20 @@ final class AppSettings {
     var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
     /// The office turns into a rave while music plays.
     var officePartyEnabled: Bool { didSet { defaults.set(officePartyEnabled, forKey: "officePartyEnabled") } }
+    /// The office windows and lights follow the clock: daylight, dusk and night.
+    var officeFollowsTimeOfDay: Bool { didSet { defaults.set(officeFollowsTimeOfDay, forKey: "officeFollowsTimeOfDay") } }
+    /// Off by default: it looks up the weather for `officeWeatherCity` on Open-Meteo.
+    var officeWeatherEnabled: Bool { didSet { defaults.set(officeWeatherEnabled, forKey: "officeWeatherEnabled") } }
+    var officeWeatherCity: String { didSet { defaults.set(officeWeatherCity, forKey: "officeWeatherCity") } }
+    /// The playing track with its controls in the menu bar panel.
+    var panelShowsNowPlaying: Bool { didSet { defaults.set(panelShowsNowPlaying, forKey: "panelShowsNowPlaying") } }
+    /// Off by default: a few live music bars next to the menu bar readings while music plays.
+    var menuBarShowsVisualizer: Bool { didSet { defaults.set(menuBarShowsVisualizer, forKey: "menuBarShowsVisualizer") } }
+    /// Off by default: the visualiser, backdrop and party take their colours from the cover art.
+    var visualizerUsesArtworkColors: Bool { didSet { defaults.set(visualizerUsesArtworkColors, forKey: "visualizerUsesArtworkColors") } }
+    /// Off by default: status dots and the selected page glow on each beat.
+    var beatAccentsEnabled: Bool { didSet { defaults.set(beatAccentsEnabled, forKey: "beatAccentsEnabled") } }
+    var achievementAlertsEnabled: Bool { didSet { defaults.set(achievementAlertsEnabled, forKey: "achievementAlertsEnabled") } }
     /// Glows and dots behind the dashboard that pulse with the music.
     var musicBackdropEnabled: Bool { didSet { defaults.set(musicBackdropEnabled, forKey: "musicBackdropEnabled") } }
     var musicBackdropStyle: MusicBackdropStyle { didSet { defaults.set(musicBackdropStyle.rawValue, forKey: "musicBackdropStyle") } }
@@ -186,6 +200,14 @@ final class AppSettings {
         visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
         officePartyEnabled = defaults.object(forKey: "officePartyEnabled") as? Bool ?? true
+        officeFollowsTimeOfDay = defaults.object(forKey: "officeFollowsTimeOfDay") as? Bool ?? true
+        officeWeatherEnabled = defaults.bool(forKey: "officeWeatherEnabled")
+        officeWeatherCity = defaults.string(forKey: "officeWeatherCity") ?? ""
+        panelShowsNowPlaying = defaults.object(forKey: "panelShowsNowPlaying") as? Bool ?? true
+        menuBarShowsVisualizer = defaults.bool(forKey: "menuBarShowsVisualizer")
+        visualizerUsesArtworkColors = defaults.bool(forKey: "visualizerUsesArtworkColors")
+        beatAccentsEnabled = defaults.bool(forKey: "beatAccentsEnabled")
+        achievementAlertsEnabled = defaults.object(forKey: "achievementAlertsEnabled") as? Bool ?? true
         musicBackdropEnabled = defaults.bool(forKey: "musicBackdropEnabled")
         musicBackdropStyle = defaults.string(forKey: "musicBackdropStyle").flatMap(MusicBackdropStyle.init(rawValue:)) ?? .dots
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []

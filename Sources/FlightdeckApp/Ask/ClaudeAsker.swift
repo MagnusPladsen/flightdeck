@@ -29,6 +29,7 @@ final class ClaudeAsker {
         let question = question.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty else { return }
         task?.cancel()
+        store.achievements.record(.questionsAsked)
         self.question = question
         isPresented = true
         status = .asking

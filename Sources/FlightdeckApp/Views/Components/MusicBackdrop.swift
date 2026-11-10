@@ -31,7 +31,7 @@ struct MusicBackdrop: View {
     }
 
     private var colors: [Color] {
-        VisualizerColors(palette: store.settings.visualizerPalette, theme: theme).stops
+        store.visualizerColors(theme: theme).stops
     }
 }
 
