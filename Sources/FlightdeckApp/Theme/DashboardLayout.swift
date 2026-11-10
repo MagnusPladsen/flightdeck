@@ -81,7 +81,7 @@ enum DashboardLayout: String, CaseIterable, Identifiable {
     private var overviewPlacements: [(SectionKind, Int)] {
         switch self {
         case .ignition:
-            [(.needsYou, 8), (.clock, 4), (.resources, 12), (.nowPlaying, 12), (.yourTurn, 12), (.workingAgents, 6), (.idleAgents, 6), (.projects, 12)]
+            [(.needsYou, 8), (.clock, 4), (.resources, 12), (.nowPlaying, 12), (.yourTurn, 12), (.workingAgents, 6), (.idleAgents, 6), (.portSummary, 12), (.projects, 12)]
         case .macOS:
             [(.needsYou, 8), (.clock, 4), (.resources, 12), (.nowPlaying, 12), (.yourTurn, 12), (.devServers, 8), (.usageLimits, 4), (.workingAgents, 6), (.idleAgents, 6)]
         case .terminal:
@@ -97,7 +97,7 @@ enum DashboardLayout: String, CaseIterable, Identifiable {
         case .neon:
             [(.resources, 12), (.nowPlaying, 12), (.needsYou, 8), (.clock, 4), (.devServers, 6), (.usageLimits, 6), (.yourTurn, 12)]
         case .agentFocus:
-            [(.resources, 12), (.nowPlaying, 12), (.needsYou, 12), (.yourTurn, 4), (.workingAgents, 4), (.idleAgents, 4), (.usageLimits, 12)]
+            [(.resources, 12), (.nowPlaying, 12), (.needsYou, 12), (.yourTurn, 4), (.workingAgents, 4), (.idleAgents, 4), (.portSummary, 12), (.usageLimits, 12)]
         case .projects:
             [(.needsYou, 12), (.projects, 12), (.resources, 12), (.nowPlaying, 12)]
         case .zen:

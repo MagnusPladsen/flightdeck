@@ -11,6 +11,7 @@ extension SectionKind {
         case .yourTurn: "Needs you"
         case .workingAgents: "Working"
         case .idleAgents: "Idle"
+        case .portSummary: "Ports"
         case .projects: "Projects"
         case .devServers: "Dev servers"
         case .otherPorts: "Other listening ports"

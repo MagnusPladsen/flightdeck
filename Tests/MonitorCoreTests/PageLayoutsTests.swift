@@ -75,6 +75,19 @@ struct PageLayoutsTests {
         #expect(clean.placements(on: .agents).last?.span == GridPacking.columns)
     }
 
+    @Test func sanitizePutsPortsBetweenIdleAgentsAndProjects() {
+        let clean = base.sanitized(available: [.needsYou, .workingAgents, .idleAgents, .agentSessions, .projects, .portSummary])
+        #expect(clean.placements(on: .overview).map(\.kind) == [.needsYou, .workingAgents, .idleAgents, .portSummary, .projects])
+    }
+
+    @Test func sanitizeHidesPortsWhenTheOverviewAlreadyListsDevServers() {
+        var layouts = base
+        layouts.move(.devServers, to: .overview)
+        let clean = layouts.sanitized(available: [.needsYou, .workingAgents, .idleAgents, .agentSessions, .projects, .devServers, .portSummary])
+        #expect(!clean.placements(on: .overview).contains { $0.kind == .portSummary })
+        #expect(clean.hidden.contains(.portSummary))
+    }
+
     @Test func roundTripsThroughJSON() throws {
         var layouts = base
         layouts.pages[.widgets] = [SectionPlacement(kind: .widget(UUID()))]

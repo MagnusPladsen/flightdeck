@@ -24,6 +24,8 @@ struct SectionHost: View {
             LayoutAgentColumn(column: .working, groups: AgentBoardColumn.working.groups(from: agents), navigate: context.navigate)
         case .idleAgents:
             LayoutAgentColumn(column: .idle, groups: AgentBoardColumn.idle.groups(from: agents), navigate: context.navigate)
+        case .portSummary:
+            PortSummaryList(ports: store.devServers, navigate: context.navigate)
         case .projects:
             LayoutProjects(searchQuery: context.searchQuery, navigate: context.navigate)
         case .devServers:
