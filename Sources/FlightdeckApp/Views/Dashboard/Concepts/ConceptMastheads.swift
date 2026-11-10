@@ -26,7 +26,8 @@ struct LayoutFooter: View {
     var body: some View {
         if layout == .terminal {
             HStack(spacing: 18) {
-                hint("⌘K", "ask claude")
+                hint("⌘K", "commands")
+                hint("⇧⌘K", "ask claude")
                 hint("⌘,", "settings")
                 hint("click", "open")
                 Spacer()

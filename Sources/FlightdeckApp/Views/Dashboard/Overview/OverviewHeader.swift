@@ -12,7 +12,7 @@ struct OverviewHeader: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme.muted)
-                TextField("Search, or press Return to ask Claude (⌘K)", text: $searchText)
+                TextField("Search, or press Return to ask Claude (⇧⌘K) · ⌘K for commands", text: $searchText)
                     .textFieldStyle(.plain)
                     .font(.system(size: 15))
                     .onSubmit(askClaude)

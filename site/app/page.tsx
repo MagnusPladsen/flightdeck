@@ -68,6 +68,18 @@ const FEATURE_ROWS = [
     image: { src: "/screenshots/office.png", alt: "Office party with a dance floor, lasers, speaker stacks and the jukebox pads", width: 1194, height: 760 },
   },
   {
+    label: "After dark",
+    title: "The office keeps your hours.",
+    body: "Windows along the outer walls follow the time of day, from daylight through sunset to a starry night. After dark the rooms dim and every desk with an agent keeps its lamp on. Type a city in Settings and the windows show its rain, snow or clouds.",
+    image: { src: "/screenshots/office-night.png", alt: "The office at night with dimmed rooms, starry windows and desk lamps on", width: 1194, height: 1085 },
+  },
+  {
+    label: "Achievements",
+    title: "Unlock 59 achievements.",
+    body: "Agent hours, agents working at once, streaks, night-owl sessions, cleaned-up worktrees, tracks heard, office raves and more. The Achievements page lists every one with your progress, and each unlock gets a card and a notification.",
+    image: { src: "/screenshots/achievements.png", alt: "Achievements page with unlocked gold badges and progress on locked ones", width: 1194, height: 1085 },
+  },
+  {
     label: "Now playing",
     title: "Music in your theme.",
     body: "What's playing in any player, with a visualiser in your theme's colours. The adjust menu switches between Minimal and Expanded, ten visualiser styles and six palettes, plus an optional background that pulses to the music in ten styles, colours from the cover art and accents that flash on the beat. A mini player sits in the menu bar panel. Live audio levels are opt-in; otherwise the bars follow play and pause.",

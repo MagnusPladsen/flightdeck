@@ -53,6 +53,10 @@ brew install --cask magnuspladsen/tap/flightdeck
 |---|---|
 | <img src="docs/screenshots/office.png" alt="Office party: dimmed rooms, dance floor, lasers, speaker stacks and the jukebox pads" width="420"> | <img src="docs/screenshots/now-playing.png" alt="Now playing with player controls and the adjust menu" width="420"> |
 
+| The office after dark | Achievements |
+|---|---|
+| <img src="docs/screenshots/office-night.png" alt="The office at night with starry windows and desk lamps on" width="420"> | <img src="docs/screenshots/achievements.png" alt="Achievements page" width="420"> |
+
 Screenshots use demo data: start the app with `FLIGHTDECK_DEMO=1` to see the same.
 
 ## Features
