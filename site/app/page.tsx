@@ -32,7 +32,7 @@ const PINS = [
     x: 22,
     y: 58.5,
     title: "System and limits",
-    body: "CPU and memory, plus your default agent's 5h and week limits. Add disk, network, battery or Claude Code and Codex limits side by side.",
+    body: "CPU and memory, plus your default agent's 5h and week limits. Add disk, network, battery or Claude Code and Codex limits side by side. Hover CPU or memory to see which apps use it, or a limit to see when you'll hit it.",
   },
   {
     x: 22,
@@ -70,7 +70,7 @@ const FEATURE_ROWS = [
   {
     label: "Now playing",
     title: "Music in your theme.",
-    body: "What's playing in any player, with a visualiser in your theme's colours. The adjust menu switches between Minimal and Expanded, five visualiser styles and six palettes. Live audio levels are opt-in; otherwise the bars follow play and pause.",
+    body: "What's playing in any player, with a visualiser in your theme's colours. The adjust menu switches between Minimal and Expanded, ten visualiser styles and six palettes, plus an optional background that pulses to the music in ten styles. Live audio levels are opt-in; otherwise the bars follow play and pause.",
     image: { src: "/screenshots/now-playing.png", alt: "Now playing with player controls and the adjust menu open", width: 1024, height: 362 },
   },
   {
