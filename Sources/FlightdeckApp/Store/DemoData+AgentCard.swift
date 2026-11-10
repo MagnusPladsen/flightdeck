@@ -20,10 +20,14 @@ extension DemoData {
             + pending.map { AgentPlan.Step(title: $0, status: .pending) })
     }
 
+    /// Share of the context used, for Claude sessions.
+    private static let contextFractions: [Int32: Double] = [4101: 0.42, 4109: 0.63, 4102: 0.31, 4104: 0.88, 4107: 0.12]
+
     static func withDemoMessage(_ agent: AgentSession) -> AgentSession {
         var agent = agent
         agent.lastMessage = lastMessages[agent.pid]
         agent.plan = plans[agent.pid]
+        agent.context = contextFractions[agent.pid].map { ContextUsage(usedTokens: Int(368_000 * $0), compactsAtTokens: 368_000, isMeasured: true) }
         return agent
     }
 
@@ -45,7 +49,8 @@ extension DemoData {
                 FileChange(path: "tests/test_refresh.py", added: 60, removed: 7),
             ]),
             4103: changes("docs-site", [FileChange(path: "guides/getting-started.md", added: 142, removed: 0, isUntracked: true), FileChange(path: "guides/deploy.md", added: 96, removed: 0, isUntracked: true)]),
-            4104: changes("storefront", [FileChange(path: "src/search/SearchResults.tsx", added: 71, removed: 12), FileChange(path: "src/search/useSearch.ts", added: 17, removed: 0)]),
+            4106: changes("storefront", [FileChange(path: "src/checkout/session.ts", added: 9, removed: 3)]),
+            4104: changes("storefront/.claude/worktrees/search", [FileChange(path: "src/search/SearchResults.tsx", added: 71, removed: 12), FileChange(path: "src/search/useSearch.ts", added: 17, removed: 0)]),
         ]
     }
 

@@ -70,18 +70,18 @@ struct AgentPlanTests {
     }
 }
 
-struct AgentPlanTrackerTests {
+struct TranscriptTrackerTests {
     @Test func followsAPlanAcrossAppends() throws {
         let path = FileManager.default.temporaryDirectory.appendingPathComponent("plan-\(UUID().uuidString).jsonl").path
         defer { try? FileManager.default.removeItem(atPath: path) }
         let start = call("mcp__ccd_turn__update_plan", #"{"items":[{"content":"A","status":"in_progress"},{"content":"B","status":"pending"}]}"#) + "\n"
         try start.write(toFile: path, atomically: true, encoding: .utf8)
-        let tracker = AgentPlanTracker()
-        #expect(tracker.plan(forTranscript: path)?.current?.step.title == "A")
+        let tracker = TranscriptTracker()
+        #expect(tracker.progress(ofTranscript: path)?.plan?.current?.step.title == "A")
         let handle = try #require(FileHandle(forWritingAtPath: path))
         handle.seekToEndOfFile()
         handle.write(Data((String(repeating: userLine + "\n", count: 2000) + call("mcp__ccd_turn__update_plan", #"{"advance":true}"#) + "\n").utf8))
         try handle.close()
-        #expect(tracker.plan(forTranscript: path)?.current?.step.title == "B")
+        #expect(tracker.progress(ofTranscript: path)?.plan?.current?.step.title == "B")
     }
 }

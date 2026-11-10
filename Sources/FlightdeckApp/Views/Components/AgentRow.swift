@@ -6,6 +6,8 @@ struct AgentRow: View {
     @Environment(\.theme) private var theme
     var agent: AgentSession
     var isCompact = false
+    var clash: CheckoutClash?
+    var onUseWorktree: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 8) {
@@ -28,8 +30,10 @@ struct AgentRow: View {
                     .truncationMode(.middle)
                 AgentWaitingMessage(agent: agent, size: 11)
                 if !isCompact { AgentChangesPeek(agent: agent, size: 11) }
+                if let clash { CheckoutClashNote(clash: clash, onUseWorktree: onUseWorktree) }
             }
             Spacer(minLength: 4)
+            if !isCompact, let context = agent.context { ContextMeter(context: context) }
             Text(agent.state.label)
                 .font(.caption.weight(.medium))
                 .foregroundStyle(agent.state.color(in: theme))

@@ -58,7 +58,8 @@ public final class AgentCollector: @unchecked Sendable {
             resources: ProcessTreeUsage.of(pid: sample.pid, childrenByParent: childrenByParent, samplesByPID: samplesByPID),
             startedAt: processes.startTime(of: sample.pid),
             lastMessage: activity?.lastMessage,
-            plan: activity?.plan
+            plan: activity?.plan,
+            context: activity?.context
         )
     }
 
@@ -134,9 +135,10 @@ public struct SessionActivity: Sendable, Equatable {
     public var lastMessage: String?
     /// The agent's task list, while it has one in progress.
     public var plan: AgentPlan?
+    public var context: ContextUsage?
 
     public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil, pendingTool: String? = nil, repeatedToolCall: RepeatedToolCall? = nil,
-                lastMessage: String? = nil, plan: AgentPlan? = nil) {
+                lastMessage: String? = nil, plan: AgentPlan? = nil, context: ContextUsage? = nil) {
         self.lastWrite = lastWrite
         self.lastTurn = lastTurn
         self.lastAction = lastAction
@@ -144,6 +146,7 @@ public struct SessionActivity: Sendable, Equatable {
         self.repeatedToolCall = repeatedToolCall
         self.lastMessage = lastMessage
         self.plan = plan
+        self.context = context
     }
 }
 

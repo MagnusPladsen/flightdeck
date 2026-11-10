@@ -68,9 +68,12 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
     public var lastMessage: String?
     /// The agent's task list and the step it is on, while it has one in progress.
     public var plan: AgentPlan?
+    /// How full a Claude session's context is.
+    public var context: ContextUsage?
 
     public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?, lastAction: AgentAction? = nil,
-                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil, startedAt: Date? = nil, lastMessage: String? = nil, plan: AgentPlan? = nil) {
+                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil, startedAt: Date? = nil, lastMessage: String? = nil, plan: AgentPlan? = nil,
+                context: ContextUsage? = nil) {
         self.tool = tool
         self.pid = pid
         self.workingDirectory = workingDirectory
@@ -84,6 +87,7 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
         self.startedAt = startedAt
         self.lastMessage = lastMessage
         self.plan = plan
+        self.context = context
     }
 }
 
