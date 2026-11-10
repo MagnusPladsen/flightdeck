@@ -3,6 +3,10 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.10.1 — 2026-11-10
+
+- The overview search hint now shows ⌘K for the command palette and ⇧⌘K for Ask Claude.
+
 ## 1.10.0 — 2026-11-10
 
 - Command palette: press ⌘K in the dashboard to jump to any page, agent, dev server or worktree, start an agent, pause alerts or skip a track. Anything else you type can be asked of Claude. Ask Claude on its own moved to ⇧⌘K.
