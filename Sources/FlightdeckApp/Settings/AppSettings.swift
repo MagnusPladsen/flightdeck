@@ -76,6 +76,7 @@ final class AppSettings {
     var panelShowsNetworkAndDisk: Bool { didSet { defaults.set(panelShowsNetworkAndDisk, forKey: "panelShowsNetworkAndDisk") } }
     var showSystemPorts: Bool { didSet { defaults.set(showSystemPorts, forKey: "showSystemPorts") } }
     var showIdleAgents: Bool { didSet { defaults.set(showIdleAgents, forKey: "showIdleAgents") } }
+    var showsProcessBreakdown: Bool { didSet { defaults.set(showsProcessBreakdown, forKey: "showsProcessBreakdown") } }
     var claudeLimitsEnabled: Bool { didSet { defaults.set(claudeLimitsEnabled, forKey: "claudeLimitsEnabled") } }
     var notifiesSketchyBar: Bool { didSet { defaults.set(notifiesSketchyBar, forKey: "notifiesSketchyBar") } }
     var customWidgets: [CustomWidget] { didSet { save(customWidgets, forKey: "customWidgets") } }
@@ -126,6 +127,9 @@ final class AppSettings {
     var visualizerPalette: VisualizerPalette? { didSet { defaults.set(visualizerPalette?.rawValue, forKey: "visualizerPalette") } }
     /// The office turns into a rave while music plays.
     var officePartyEnabled: Bool { didSet { defaults.set(officePartyEnabled, forKey: "officePartyEnabled") } }
+    /// Glows and dots behind the dashboard that pulse with the music.
+    var musicBackdropEnabled: Bool { didSet { defaults.set(musicBackdropEnabled, forKey: "musicBackdropEnabled") } }
+    var musicBackdropStyle: MusicBackdropStyle { didSet { defaults.set(musicBackdropStyle.rawValue, forKey: "musicBackdropStyle") } }
     var collapsedSections: [CollapsibleSection] { didSet { save(collapsedSections, forKey: "collapsedSections") } }
     /// Treats any macOS Focus as quiet hours.
     var quietDuringFocus: Bool { didSet { defaults.set(quietDuringFocus, forKey: "quietDuringFocus") } }
@@ -145,6 +149,7 @@ final class AppSettings {
         panelShowsNetworkAndDisk = defaults.bool(forKey: "panelShowsNetworkAndDisk")
         showSystemPorts = defaults.bool(forKey: "showSystemPorts")
         showIdleAgents = defaults.bool(forKey: "showIdleAgents")
+        showsProcessBreakdown = defaults.object(forKey: "showsProcessBreakdown") as? Bool ?? true
         claudeLimitsEnabled = defaults.bool(forKey: "claudeLimitsEnabled")
         notifiesSketchyBar = defaults.bool(forKey: "notifiesSketchyBar")
         customWidgets = Self.load([CustomWidget].self, forKey: "customWidgets", from: defaults) ?? []
@@ -181,6 +186,8 @@ final class AppSettings {
         visualizerStyle = defaults.string(forKey: "visualizerStyle").flatMap(VisualizerStyle.init(rawValue:))
         visualizerPalette = defaults.string(forKey: "visualizerPalette").flatMap(VisualizerPalette.init(rawValue:))
         officePartyEnabled = defaults.object(forKey: "officePartyEnabled") as? Bool ?? true
+        musicBackdropEnabled = defaults.bool(forKey: "musicBackdropEnabled")
+        musicBackdropStyle = defaults.string(forKey: "musicBackdropStyle").flatMap(MusicBackdropStyle.init(rawValue:)) ?? .dots
         collapsedSections = Self.load([CollapsibleSection].self, forKey: "collapsedSections", from: defaults) ?? []
         quietDuringFocus = defaults.bool(forKey: "quietDuringFocus")
         keepAwakeWhileAgentsWork = defaults.bool(forKey: "keepAwakeWhileAgentsWork")

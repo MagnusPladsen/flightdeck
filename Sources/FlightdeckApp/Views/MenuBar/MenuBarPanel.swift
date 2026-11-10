@@ -128,7 +128,9 @@ struct SystemTilesGrid: View {
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns), spacing: 8) {
             MetricTile(title: "CPU", value: Formatters.percent(snapshot?.cpu.total ?? 0), detail: cpuDetail, history: store.cpuHistory, color: UsageLevel.color(forFraction: snapshot?.cpu.total ?? 0, in: theme), maximum: 1)
+                .help(ResourceTooltips.cpu(snapshot) ?? "")
             MetricTile(title: "Memory", value: Formatters.percent(snapshot?.memory.usedFraction ?? 0), detail: memoryDetail, history: store.memoryHistory, color: memoryColor, maximum: 1)
+                .help(ResourceTooltips.memory(snapshot) ?? "")
             if showsNetworkAndDisk { networkAndDisk }
         }
     }
@@ -137,6 +139,7 @@ struct SystemTilesGrid: View {
     private var networkAndDisk: some View {
         MetricTile(title: "Network", value: "↓ \(Formatters.rate(snapshot?.network.bytesInPerSecond ?? 0))", detail: "↑ \(Formatters.rate(snapshot?.network.bytesOutPerSecond ?? 0))", history: store.networkInHistory, color: theme.info)
         MetricTile(title: "Disk", value: Formatters.percent(primaryDisk?.usedFraction ?? 0), detail: diskDetail, history: [], color: UsageLevel.color(forFraction: primaryDisk?.usedFraction ?? 0, in: theme), gaugeFraction: primaryDisk?.usedFraction ?? 0)
+            .help(ResourceTooltips.disks(snapshot) ?? "")
     }
 
     private var snapshot: SystemSnapshot? { store.snapshot }

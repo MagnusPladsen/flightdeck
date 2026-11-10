@@ -207,6 +207,17 @@ enum DemoData {
                 ProcessSample(pid: 4105, parentPID: 1, name: "codex", cpuPercent: 17.9, memoryBytes: 420 << 20),
                 ProcessSample(pid: 5104, parentPID: 1, name: "python3", cpuPercent: 6.4, memoryBytes: 310 << 20),
                 ProcessSample(pid: 5105, parentPID: 1, name: "com.docker.backend", cpuPercent: 4.1, memoryBytes: 2_300 << 20),
+                ProcessSample(pid: 5106, parentPID: 1, name: "node", cpuPercent: 12.8, memoryBytes: 740 << 20),
+                ProcessSample(pid: 5110, parentPID: 1, name: "Google Chrome", cpuPercent: 3.2, memoryBytes: 420 << 20),
+                ProcessSample(pid: 5111, parentPID: 5110, name: "Google Chrome Helper (Renderer)", cpuPercent: 9.6, memoryBytes: 880 << 20),
+                ProcessSample(pid: 5112, parentPID: 5110, name: "Google Chrome Helper (Renderer)", cpuPercent: 2.1, memoryBytes: 610 << 20),
+                ProcessSample(pid: 5113, parentPID: 5110, name: "Google Chrome Helper (GPU)", cpuPercent: 5.4, memoryBytes: 300 << 20),
+                ProcessSample(pid: 5120, parentPID: 1, name: "Code", cpuPercent: 1.8, memoryBytes: 380 << 20),
+                ProcessSample(pid: 5121, parentPID: 5120, name: "Code Helper (Plugin)", cpuPercent: 6.9, memoryBytes: 720 << 20),
+                ProcessSample(pid: 5122, parentPID: 5120, name: "Code Helper (Renderer)", cpuPercent: 2.7, memoryBytes: 510 << 20),
+                ProcessSample(pid: 5130, parentPID: 1, name: "WindowServer", cpuPercent: 8.3, memoryBytes: 260 << 20),
+                ProcessSample(pid: 5131, parentPID: 1, name: "Slack Helper (Renderer)", cpuPercent: 1.2, memoryBytes: 540 << 20),
+                ProcessSample(pid: 5132, parentPID: 1, name: "Slack", cpuPercent: 0.6, memoryBytes: 210 << 20),
             ])
     }
 

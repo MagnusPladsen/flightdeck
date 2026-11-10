@@ -50,6 +50,8 @@ private struct StripCell: View {
         .overlay(alignment: .bottomLeading) {
             if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 11)).padding(.bottom, 4) }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .resourceTooltip(reading)
     }
 }
 
@@ -112,6 +114,7 @@ private struct SidebarCell: View {
             }
             if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 12)) }
         }
+        .resourceTooltip(reading)
     }
 }
 

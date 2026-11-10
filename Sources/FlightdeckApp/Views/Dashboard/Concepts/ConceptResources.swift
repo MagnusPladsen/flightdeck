@@ -167,7 +167,7 @@ private struct RingGauges: View {
         .padding(chrome == .plain ? 0 : 14)
         .background(theme.overlay.opacity(chrome == .card ? 0.45 : 0), in: RoundedRectangle(cornerRadius: chrome == .glow ? 0 : 12))
         .overlay { if chrome == .glow { Rectangle().strokeBorder(ringColor(reading).opacity(0.6)).shadow(color: ringColor(reading).opacity(0.35), radius: 11) } }
-        .help(reading.agentName.map { "\($0) \(reading.shortTitle ?? ""), \(reading.detail)" } ?? "")
+        .resourceTooltip(reading)
     }
 
     /// Neon gives each gauge its own colour; the others colour limits by how full they are and leave CPU and memory plain.
@@ -232,6 +232,7 @@ private struct TextBarResources: View {
                     Spacer(minLength: 0)
                 }
                 .font(.system(size: 13, design: .monospaced))
+                .resourceTooltip(reading)
             }
         }
     }
@@ -294,6 +295,7 @@ private struct LEDResources: View {
                     }
                     .padding(12)
                     .overlay(Rectangle().strokeBorder(theme.border))
+                    .resourceTooltip(reading)
                 }
             }
         }
@@ -319,7 +321,7 @@ private struct TelemetryResources: View {
             HStack(spacing: 0) {
                 ForEach(Array(readings.enumerated()), id: \.element.id) { index, reading in
                     if index > 0 { Rectangle().fill(theme.border).frame(width: 1) }
-                    cell(reading).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 14)
+                    cell(reading).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 14).resourceTooltip(reading)
                 }
             }
             .padding(.vertical, 12)
@@ -406,6 +408,7 @@ private struct BentoResources: View {
         .padding(22)
         .frame(maxWidth: .infinity, minHeight: 300, alignment: .topLeading)
         .background(theme.primary, in: RoundedRectangle(cornerRadius: 18))
+        .resourceTooltip(reading)
     }
 
     private func tile(_ reading: ResourceReading) -> some View {
@@ -421,6 +424,7 @@ private struct BentoResources: View {
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 144, alignment: .topLeading)
         .background(theme.overlay, in: RoundedRectangle(cornerRadius: 18))
+        .resourceTooltip(reading)
     }
 }
 
@@ -464,6 +468,7 @@ private struct NumeralResources: View {
                         if let forecast = reading.forecast { ForecastText(forecast: forecast).font(.system(size: 13).italic()) }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .resourceTooltip(reading)
                 }
             }
             Rectangle().fill(theme.foreground).frame(height: 2)
@@ -492,6 +497,7 @@ private struct BigNumberResources: View {
                     }
                     .padding(layout == .glass ? 16 : 0)
                     .background(layout == .glass ? theme.foreground.opacity(0.06) : .clear, in: RoundedRectangle(cornerRadius: 16))
+                    .resourceTooltip(reading)
                 }
             }
         }
@@ -524,6 +530,7 @@ private struct TrendList: View {
                 .padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay(alignment: .bottom) { Hairline() }
+                .resourceTooltip(reading)
             }
         }
         .padding(16)

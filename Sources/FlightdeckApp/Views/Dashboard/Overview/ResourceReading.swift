@@ -18,6 +18,8 @@ struct ResourceReading: Identifiable {
     /// The agent a limit belongs to, shown under the short title.
     var agentName: String?
     var forecast: LimitForecast?
+    /// Hover text: what uses the resource, or when a limit runs out.
+    var tooltip: String?
 
     @MainActor
     static func all(store: MonitorStore, theme: Theme) -> [ResourceReading] {
@@ -32,14 +34,17 @@ struct ResourceReading: Identifiable {
         case .cpu:
             let cpu = snapshot?.cpu.total ?? 0
             let load = snapshot?.loadAverage.first.map { String(format: " · load %.2f", $0) } ?? ""
-            return ResourceReading(id: resource, title: title, value: Formatters.percent(cpu), detail: "\(snapshot?.cpu.perCore.count ?? 0) cores\(load)", fraction: cpu, color: theme.foreground, history: store.cpuHistory, historyMaximum: 1)
+            return ResourceReading(id: resource, title: title, value: Formatters.percent(cpu), detail: "\(snapshot?.cpu.perCore.count ?? 0) cores\(load)", fraction: cpu, color: theme.foreground, history: store.cpuHistory, historyMaximum: 1,
+                                   tooltip: ResourceTooltips.cpu(snapshot))
         case .memory:
             let memory = snapshot?.memory ?? .zero
-            return ResourceReading(id: resource, title: title, value: Formatters.percent(memory.usedFraction), detail: "\(Formatters.bytes(memory.usedBytes)) of \(Formatters.bytes(memory.totalBytes))", fraction: memory.usedFraction, color: theme.foreground, valueColor: memory.pressure == .normal ? nil : memory.pressure.color(in: theme), history: store.memoryHistory, historyMaximum: 1)
+            return ResourceReading(id: resource, title: title, value: Formatters.percent(memory.usedFraction), detail: "\(Formatters.bytes(memory.usedBytes)) of \(Formatters.bytes(memory.totalBytes))", fraction: memory.usedFraction, color: theme.foreground, valueColor: memory.pressure == .normal ? nil : memory.pressure.color(in: theme), history: store.memoryHistory, historyMaximum: 1,
+                                   tooltip: ResourceTooltips.memory(snapshot))
         case .disk:
             let disk = snapshot?.disks.first { $0.mountPath == "/" } ?? snapshot?.disks.first
             let used = disk?.usedFraction ?? 0
-            return ResourceReading(id: resource, title: title, value: Formatters.percent(used), detail: disk.map { "\(Formatters.bytes($0.availableBytes)) free" } ?? "—", fraction: used, color: UsageLevel.color(forFraction: used, in: theme), valueColor: used >= 0.6 ? UsageLevel.color(forFraction: used, in: theme) : nil)
+            return ResourceReading(id: resource, title: title, value: Formatters.percent(used), detail: disk.map { "\(Formatters.bytes($0.availableBytes)) free" } ?? "—", fraction: used, color: UsageLevel.color(forFraction: used, in: theme), valueColor: used >= 0.6 ? UsageLevel.color(forFraction: used, in: theme) : nil,
+                                   tooltip: ResourceTooltips.disks(snapshot))
         case .agentFiveHour, .agentWeek, .claudeFiveHour, .claudeWeek, .codexFiveHour, .codexWeek:
             return usageReading(resource, title: title, store: store, theme: theme)
         case .network:
@@ -62,6 +67,15 @@ struct ResourceReading: Identifiable {
             return ResourceReading(id: resource, title: title, value: "—", detail: hint, fraction: nil, color: theme.success, shortTitle: limit.title, agentName: agent.displayName)
         }
         let color = UsageLevel.color(forPercent: window.usedPercent, in: theme)
-        return ResourceReading(id: resource, title: title, value: "\(Int(window.usedPercent.rounded()))%", detail: Formatters.resetCountdown(window.resetsAt) ?? "", fraction: window.usedPercent / 100, color: color, valueColor: window.usedPercent >= 85 ? color : nil, shortTitle: limit.title, agentName: agent.displayName, forecast: store.limitForecast(for: agent, window: window))
+        let forecast = store.limitForecast(for: agent, window: window)
+        return ResourceReading(id: resource, title: title, value: "\(Int(window.usedPercent.rounded()))%", detail: Formatters.resetCountdown(window.resetsAt) ?? "", fraction: window.usedPercent / 100, color: color, valueColor: window.usedPercent >= 85 ? color : nil, shortTitle: limit.title, agentName: agent.displayName, forecast: forecast,
+                               tooltip: ResourceTooltips.limit(agentName: agent.displayName, title: limit.title, window: window, forecast: forecast))
+    }
+}
+
+extension View {
+    /// Shows the reading's hover text anywhere over the cell.
+    func resourceTooltip(_ reading: ResourceReading) -> some View {
+        contentShape(Rectangle()).help(reading.tooltip ?? "")
     }
 }

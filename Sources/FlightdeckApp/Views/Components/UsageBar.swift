@@ -5,6 +5,7 @@ struct UsageBar: View {
     @Environment(\.theme) private var theme
     var window: UsageWindow
     var forecast: LimitForecast?
+    var agentName = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -27,6 +28,8 @@ struct UsageBar: View {
                 .font(.caption2)
             }
         }
+        .contentShape(Rectangle())
+        .help(ResourceTooltips.limit(agentName: agentName, title: "\(window.label) limit", window: window, forecast: forecast))
     }
 }
 
@@ -75,7 +78,7 @@ struct ProviderUsageView: View {
                 }
             }
             .font(.callout)
-            ForEach(usage.windows) { UsageBar(window: $0, forecast: store.limitForecast(for: usage.tool, window: $0)) }
+            ForEach(usage.windows) { UsageBar(window: $0, forecast: store.limitForecast(for: usage.tool, window: $0), agentName: usage.tool.displayName) }
         }
     }
 }
