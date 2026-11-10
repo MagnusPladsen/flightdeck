@@ -58,8 +58,8 @@ const FEATURE_ROWS = [
   {
     label: "AI agents",
     title: "Every agent, one glance.",
-    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on. Cards show which step of its task list each agent is on and the files and lines it changed, with a diff one click away, and New agent starts Claude Code or Codex in a fresh worktree. Limits come with a forecast of when they run out, and Today sums up agent time and time spent waiting on you.",
-    image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1194, height: 1085 },
+    body: "Which folders Claude Code, Codex, Gemini CLI, Cursor Agent, opencode and Aider are working in, and whether each is working, waiting for approval, waiting for you or looks stuck. Go to terminal or stop any of them from its row. Token spend per project and model is there too if you turn it on. Cards show which step of its task list each agent is on and the files and lines it changed, with a diff one click away. A context meter warns before a session compacts, and agents sharing one checkout get flagged with the files they both touched. New agent starts Claude Code or Codex in a fresh worktree. Limits come with a forecast of when they run out, and Today sums up agent time and time spent waiting on you.",
+    image: { src: "/screenshots/agents.png", alt: "AI agents page with usage limits", width: 1146, height: 1062 },
   },
   {
     label: "Office",
@@ -76,8 +76,8 @@ const FEATURE_ROWS = [
   {
     label: "Worktrees",
     title: "Clear out old worktrees.",
-    body: "Every git worktree with its changes, ahead/behind, PR and the agent working in it. Clean ones with no agent, no open PR and no recent commits are marked stale, and one click cleans them up. Open pull requests show CI and review status, and you get an alert when CI fails on a branch an agent is working in.",
-    image: { src: "/screenshots/worktrees.png", alt: "Worktrees page with stale worktrees and Clean up", width: 1194, height: 1085 },
+    body: "Every git worktree with its changes, ahead/behind, PR and the agent working in it. Clean ones with no agent, no open PR and no recent commits are marked stale, and one click cleans them up, showing how much disk their node_modules and build folders free. Open pull requests show CI and review status, and you get an alert when CI fails on a branch an agent is working in.",
+    image: { src: "/screenshots/worktrees.png", alt: "Worktrees page with stale worktrees and Clean up", width: 1146, height: 1062 },
   },
   {
     label: "Dev servers",
