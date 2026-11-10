@@ -66,9 +66,11 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
     public var startedAt: Date?
     /// The agent's last line to the user, or the question or tool call it is waiting on.
     public var lastMessage: String?
+    /// The agent's task list and the step it is on, while it has one in progress.
+    public var plan: AgentPlan?
 
     public init(tool: AgentTool, pid: Int32, workingDirectory: String, project: DevProject?, state: AgentState, cpuPercent: Double, lastActivity: Date?, lastAction: AgentAction? = nil,
-                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil, startedAt: Date? = nil, lastMessage: String? = nil) {
+                stuckReason: StuckReason? = nil, resources: ProcessTreeUsage? = nil, startedAt: Date? = nil, lastMessage: String? = nil, plan: AgentPlan? = nil) {
         self.tool = tool
         self.pid = pid
         self.workingDirectory = workingDirectory
@@ -81,6 +83,7 @@ public struct AgentSession: Sendable, Identifiable, Hashable {
         self.resources = resources
         self.startedAt = startedAt
         self.lastMessage = lastMessage
+        self.plan = plan
     }
 }
 

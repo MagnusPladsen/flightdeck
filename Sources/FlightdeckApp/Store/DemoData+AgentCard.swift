@@ -1,7 +1,7 @@
 import Foundation
 import MonitorCore
 
-/// Demo last messages and change peeks for the agent cards.
+/// Demo last messages, task lists and change peeks for the agent cards.
 extension DemoData {
     private static let lastMessages: [Int32: String] = [
         4101: "Wants to run bun run db:migrate",
@@ -9,9 +9,21 @@ extension DemoData {
         4103: "I moved the four draft guides into one folder. Should they live under /learn or /docs?",
     ]
 
+    private static let plans: [Int32: AgentPlan] = [
+        4104: plan(done: ["Read the search code", "Add a results hook"], current: "Rework SearchResults.tsx", pending: ["Add tests", "Run the test suite"]),
+        4101: plan(done: ["Add the sessions table", "Create sessions at checkout"], current: "Run the migration", pending: ["Test checkout end to end"]),
+        4109: plan(done: ["Find the export bug"], current: "Fix the CSV encoding", pending: ["Rerun the export tests"]),
+    ]
+
+    private static func plan(done: [String], current: String, pending: [String]) -> AgentPlan {
+        AgentPlan(steps: done.map { AgentPlan.Step(title: $0, status: .completed) } + [AgentPlan.Step(title: current, status: .inProgress)]
+            + pending.map { AgentPlan.Step(title: $0, status: .pending) })
+    }
+
     static func withDemoMessage(_ agent: AgentSession) -> AgentSession {
         var agent = agent
         agent.lastMessage = lastMessages[agent.pid]
+        agent.plan = plans[agent.pid]
         return agent
     }
 

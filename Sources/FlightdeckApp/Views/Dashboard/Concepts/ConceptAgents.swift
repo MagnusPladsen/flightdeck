@@ -73,6 +73,7 @@ private struct KanbanCard: View {
             (Text(agent.actionLine.verb).foregroundStyle(column.color(in: theme)).bold() + Text(" " + agent.actionLine.detail))
                 .font(.system(size: 13)).lineLimit(3)
             AgentWaitingMessage(agent: agent, size: 12)
+            AgentPlanProgress(agent: agent, size: 11)
             HStack(spacing: 6) {
                 Chip(text: agent.tool.displayName, systemImage: agent.tool.symbolName)
                 if let checkout = agent.checkoutLabel { Chip(text: checkout) }
@@ -152,6 +153,7 @@ private struct FeedPost: View {
                 }
                 message
                 AgentWaitingMessage(agent: agent, size: 14)
+                AgentPlanProgress(agent: agent, size: 13)
                 AgentChangesPeek(agent: agent, size: 13)
                 HStack(spacing: 10) {
                     if agent.state.needsYou {

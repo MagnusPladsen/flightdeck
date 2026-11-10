@@ -57,7 +57,8 @@ public final class AgentCollector: @unchecked Sendable {
             stuckReason: stuckReason,
             resources: ProcessTreeUsage.of(pid: sample.pid, childrenByParent: childrenByParent, samplesByPID: samplesByPID),
             startedAt: processes.startTime(of: sample.pid),
-            lastMessage: activity?.lastMessage
+            lastMessage: activity?.lastMessage,
+            plan: activity?.plan
         )
     }
 
@@ -131,15 +132,18 @@ public struct SessionActivity: Sendable, Equatable {
     /// The newest tool call and how many times in a row it was made with the same input.
     public var repeatedToolCall: RepeatedToolCall?
     public var lastMessage: String?
+    /// The agent's task list, while it has one in progress.
+    public var plan: AgentPlan?
 
     public init(lastWrite: Date, lastTurn: LastTurn, lastAction: AgentAction? = nil, pendingTool: String? = nil, repeatedToolCall: RepeatedToolCall? = nil,
-                lastMessage: String? = nil) {
+                lastMessage: String? = nil, plan: AgentPlan? = nil) {
         self.lastWrite = lastWrite
         self.lastTurn = lastTurn
         self.lastAction = lastAction
         self.pendingTool = pendingTool
         self.repeatedToolCall = repeatedToolCall
         self.lastMessage = lastMessage
+        self.plan = plan
     }
 }
 

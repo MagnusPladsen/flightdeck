@@ -141,6 +141,7 @@ struct OfficeAgentCard: View {
             Text(agent.state.label).font(.caption.weight(.semibold)).foregroundStyle(agent.state.color(in: theme))
             Text(actionText).font(.callout).lineLimit(3).fixedSize(horizontal: false, vertical: true)
             AgentWaitingMessage(agent: agent, size: 12)
+            AgentPlanProgress(agent: agent, size: 11)
             AgentChangesPeek(agent: agent, size: 11)
             if let resources = agent.resourceText { Text(resources).font(.caption.monospacedDigit()).foregroundStyle(theme.muted) }
             HStack {

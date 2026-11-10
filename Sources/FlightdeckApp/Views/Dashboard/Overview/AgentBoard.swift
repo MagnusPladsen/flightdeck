@@ -188,6 +188,7 @@ private struct AgentCard: View {
                 .font(.system(size: isFeatured ? 16 : 14))
                 .lineLimit(2)
             AgentWaitingMessage(agent: agent, size: smallSize)
+            AgentPlanProgress(agent: agent, size: smallSize)
         }
         if shown.contains(.tool) {
             Text("\(agent.tool.displayName)\(group.count > 1 ? " ×\(group.count)" : "") · \(agent.state.label.lowercased())").font(.system(size: smallSize)).foregroundStyle(theme.muted)

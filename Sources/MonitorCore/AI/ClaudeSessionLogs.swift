@@ -3,6 +3,7 @@ import Foundation
 /// Reads Claude Code transcripts in `~/.claude/projects/<encoded cwd>/<session>.jsonl`.
 public struct ClaudeSessionLogs: Sendable {
     public let projectsDirectory: String
+    private let plans = AgentPlanTracker()
 
     public init(projectsDirectory: String = NSHomeDirectory() + "/.claude/projects") {
         self.projectsDirectory = projectsDirectory
@@ -20,7 +21,7 @@ public struct ClaudeSessionLogs: Sendable {
         let block = Self.lastAssistantBlock(inTranscriptTail: tail)
         return SessionActivity(lastWrite: newest.modified, lastTurn: Self.lastTurn(inTranscriptTail: tail), lastAction: block.map(Self.action),
                                pendingTool: block?.type == "tool_use" ? block?.name : nil, repeatedToolCall: Self.repeatedToolCall(inTranscriptTail: tail),
-                               lastMessage: Self.lastMessage(inTranscriptTail: tail))
+                               lastMessage: Self.lastMessage(inTranscriptTail: tail), plan: plans.plan(forTranscript: newest.path))
     }
 
     /// Attachments such as skill lists and CLAUDE.md can push the last prompt or reply past a small tail,
