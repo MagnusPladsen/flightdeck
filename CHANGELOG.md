@@ -3,6 +3,14 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.9.0 — 2026-11-10
+
+- Hover CPU or memory to see which apps use the most, with helper processes counted under their app. Hover disk for each volume's free space.
+- Hover a 5h or weekly limit to see when you'll hit it at the current pace, or that it lasts until reset.
+- The Processes page opens with a collapsible "What's using what" breakdown; click an app to filter the list. The process list is restyled to match the rest of the app.
+- An optional background that pulses to the music in your visualiser colours, with ten styles. Turn it on in Settings › Now playing or the adjust menu on Now playing.
+- Five more visualiser styles: Mirror, Dot matrix, Line, Sunburst and Ribbons.
+
 ## 1.8.0 — 2026-11-10
 
 - Agent cards show which step of its task list Claude is on ("Step 3 of 5"), with a bar per step and the full list on hover.
