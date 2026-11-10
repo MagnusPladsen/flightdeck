@@ -49,7 +49,8 @@ struct VisualizerOptionsTests {
     @Test func styleFollowsTheLayoutUntilPicked() {
         #expect(VisualizerStyle.resolved(choice: nil, layoutDefault: .rings) == .rings)
         #expect(VisualizerStyle.resolved(choice: .peaks, layoutDefault: .rings) == .peaks)
-        #expect(VisualizerStyle.allCases.count == 5)
+        #expect(VisualizerStyle.allCases.count == 10)
+        #expect(MusicBackdropStyle.allCases.count == 10)
     }
 
     @Test func fixedPalettesHaveThreeStopsAndThemePalettesNone() {

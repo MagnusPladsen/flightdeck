@@ -83,6 +83,7 @@ struct LayoutBackground: View {
             case .grid: lines(every: 40, color: theme.primary.opacity(0.07), vertical: true)
             case .scanlines: lines(every: 24, color: theme.overlay.opacity(0.7), vertical: false)
             }
+            MusicBackdrop()
         }
         .ignoresSafeArea()
     }

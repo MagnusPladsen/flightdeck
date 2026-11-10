@@ -77,6 +77,7 @@ private struct NowPlayingAdjustments: View {
                 group("Style") { stylePicker }
                 group("Colour") { VisualizerPaletteSwatches() }
                 FollowAudioToggle()
+                MusicBackdropToggle()
             }
             .disabled(settings.nowPlayingMode == .minimal)
         }
@@ -131,6 +132,20 @@ private struct VisualizerPaletteSwatches: View {
 }
 
 /// The opt-in to real audio levels, with what it costs.
+/// Turns the dashboard background that pulses with the music on or off, and picks its style.
+struct MusicBackdropToggle: View {
+    @Environment(MonitorStore.self) private var store
+
+    var body: some View {
+        let settings = store.settings
+        Toggle("Pulse the background to the music", isOn: Binding(get: { settings.musicBackdropEnabled }, set: { settings.musicBackdropEnabled = $0 }))
+        Picker("Background", selection: Binding(get: { settings.musicBackdropStyle }, set: { settings.musicBackdropStyle = $0 })) {
+            ForEach(MusicBackdropStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+        }
+        .disabled(!settings.musicBackdropEnabled)
+    }
+}
+
 struct FollowAudioToggle: View {
     @Environment(MonitorStore.self) private var store
 

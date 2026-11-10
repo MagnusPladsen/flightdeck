@@ -17,7 +17,7 @@ public enum NowPlayingMode: String, CaseIterable, Codable, Sendable {
 
 /// How the visualiser draws. Each layout has its own default; the user can pick any of them.
 public enum VisualizerStyle: String, CaseIterable, Codable, Sendable {
-    case bars, segments, waveform, rings, peaks
+    case bars, segments, waveform, rings, peaks, mirror, dotMatrix, line, sunburst, ribbons
 
     public var title: String {
         switch self {
@@ -26,6 +26,11 @@ public enum VisualizerStyle: String, CaseIterable, Codable, Sendable {
         case .waveform: "Waveform"
         case .rings: "Rings"
         case .peaks: "Peaks"
+        case .mirror: "Mirror"
+        case .dotMatrix: "Dot matrix"
+        case .line: "Line"
+        case .sunburst: "Sunburst"
+        case .ribbons: "Ribbons"
         }
     }
 
@@ -58,6 +63,26 @@ public enum VisualizerPalette: String, CaseIterable, Codable, Sendable {
         case .ocean: ["#00C6FF", "#0072FF", "#7F5AF0"]
         case .aurora: ["#00F5A0", "#00D9F5", "#A05CFF"]
         case .candy: ["#F72585", "#B5179E", "#4CC9F0"]
+        }
+    }
+}
+
+/// The dashboard background that pulses with the music, in the visualiser's colours.
+public enum MusicBackdropStyle: String, CaseIterable, Codable, Sendable {
+    case dots, glow, aurora, ripples, edges, beams, skyline, stars, grid, wave
+
+    public var title: String {
+        switch self {
+        case .dots: "Dot grid"
+        case .glow: "Glow"
+        case .aurora: "Aurora"
+        case .ripples: "Ripples"
+        case .edges: "Edges"
+        case .beams: "Beams"
+        case .skyline: "Skyline"
+        case .stars: "Stars"
+        case .grid: "Grid"
+        case .wave: "Wave"
         }
     }
 }

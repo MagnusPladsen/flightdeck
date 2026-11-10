@@ -92,14 +92,14 @@ final class SpectrumFeed {
 }
 
 /// Draws band levels into a canvas in the visualiser's colours.
-private struct VisualizerDrawing {
+struct VisualizerDrawing {
     var levels: [Double]
     var peaks: [Double]
     var size: CGSize
     var theme: Theme
     var colors: VisualizerColors
 
-    private var shading: GraphicsContext.Shading {
+    var shading: GraphicsContext.Shading {
         .linearGradient(Gradient(colors: colors.stops), startPoint: .zero, endPoint: CGPoint(x: size.width, y: 0))
     }
 
@@ -110,6 +110,11 @@ private struct VisualizerDrawing {
         case .waveform: drawWaveform(in: &canvas)
         case .rings: drawRings(in: &canvas)
         case .peaks: drawPeaks(in: &canvas)
+        case .mirror: drawMirror(in: &canvas)
+        case .dotMatrix: drawDotMatrix(in: &canvas)
+        case .line: drawLine(in: &canvas)
+        case .sunburst: drawSunburst(in: &canvas)
+        case .ribbons: drawRibbons(in: &canvas)
         }
     }
 
@@ -177,7 +182,7 @@ private struct VisualizerDrawing {
     }
 
     /// Rounds the corners between points with quadratic curves through their midpoints.
-    private static func addSmoothLine(through points: [CGPoint], to path: inout Path) {
+    static func addSmoothLine(through points: [CGPoint], to path: inout Path) {
         guard var previous = points.first else { return }
         path.addLine(to: previous)
         for point in points.dropFirst() {

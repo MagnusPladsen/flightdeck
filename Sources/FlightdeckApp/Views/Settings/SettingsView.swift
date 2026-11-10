@@ -363,10 +363,12 @@ private struct NowPlayingSettings: View {
                 .disabled(!settings.nowPlayingEnabled)
             Toggle("Party in the office while music plays", isOn: Binding(get: { settings.officePartyEnabled }, set: { settings.officePartyEnabled = $0 }))
                 .disabled(!settings.nowPlayingEnabled)
+            MusicBackdropToggle()
+                .disabled(!settings.nowPlayingEnabled)
         } header: {
             Text("Now playing")
         } footer: {
-            Text("Shows the track, artist, artwork and playback controls from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays.\n\nWith \"Visualiser follows the actual audio\" off, the bars are an animation that only follows play and pause, not the beat; the section marks this as Animated. Turn it on for real levels, marked Live audio: it asks for the system audio recording permission and only listens while the visualiser is on screen. Mode, style and colour are in the adjust menu on the section.\n\nThe office party dims the lights, flashes the dance floor in the visualiser's colours and gets the agents nodding to the beat; with the actual audio it follows the kick drum. Reduce Motion turns off the strobe.")
+            Text("Shows the track, artist, artwork and playback controls from Spotify, Music, browsers and any other app that plays media, under System on the overview. It hides itself when nothing plays.\n\nWith \"Visualiser follows the actual audio\" off, the bars are an animation that only follows play and pause, not the beat; the section marks this as Animated. Turn it on for real levels, marked Live audio: it asks for the system audio recording permission and only listens while the visualiser is on screen. Mode, style and colour are in the adjust menu on the section.\n\nThe office party dims the lights, flashes the dance floor in the visualiser's colours and gets the agents nodding to the beat; with the actual audio it follows the kick drum. Reduce Motion turns off the strobe.\n\nThe pulsing background puts soft glows and dots in the same colours behind the dashboard while music plays.")
         }
     }
 }
