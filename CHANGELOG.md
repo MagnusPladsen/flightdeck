@@ -3,6 +3,11 @@
 Each release is a `## <version> — <date>` heading followed by `- ` bullets. The app shows the new entries
 once after it updates, the site lists them, and the release workflow uses the entry as the release notes.
 
+## 1.9.1 — 2026-11-10
+
+- Hovering CPU, memory, disk or a limit opens a card right away, instead of a tooltip that rarely appeared.
+- The music backgrounds are easier to see, and every style now follows the audio level as well as the beat, so Glow and the others move with live audio.
+
 ## 1.9.0 — 2026-11-10
 
 - Hover CPU or memory to see which apps use the most, with helper processes counted under their app. Hover disk for each volume's free space.
