@@ -9,6 +9,7 @@ struct WorktreeRow: View {
     var worktree: Worktree
     var agents: [AgentSession]
     var isStale: Bool
+    var cacheUsage: BuildCacheUsage?
     var onNewAgent: () -> Void = {}
 
     var body: some View {
@@ -23,6 +24,7 @@ struct WorktreeRow: View {
             if let agent = agents.first { agentLabel(agent) }
             if let pullRequest = worktree.pullRequest.pullRequest, pullRequest.state == .open { PullRequestStatusBadges(pullRequest: pullRequest) }
             pullRequestBadge
+            cacheText.frame(width: 64, alignment: .trailing)
             Text(syncText).font(.caption.monospacedDigit()).foregroundStyle(theme.muted).frame(width: 64, alignment: .trailing)
             changesText.frame(width: 76, alignment: .trailing)
             IconButton(systemImage: "play.circle", help: "Start an agent here", action: onNewAgent)
@@ -81,6 +83,24 @@ struct WorktreeRow: View {
         guard status.upstream != nil else { return worktree.isMain ? "" : "local only" }
         if status.ahead == 0 && status.behind == 0 { return "in sync" }
         return [status.ahead > 0 ? "↑\(status.ahead)" : nil, status.behind > 0 ? "↓\(status.behind)" : nil].compactMap { $0 }.joined(separator: " ")
+    }
+
+    @ViewBuilder
+    private var cacheText: some View {
+        if let cacheUsage {
+            Text(Formatters.bytes(cacheUsage.totalBytes))
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(cacheUsage.totalBytes >= Self.largeCacheBytes ? theme.warning : theme.muted)
+                .lineLimit(1)
+                .help(cacheHelp(cacheUsage))
+        }
+    }
+
+    private static let largeCacheBytes: UInt64 = 2 << 30
+
+    private func cacheHelp(_ usage: BuildCacheUsage) -> String {
+        let folders = usage.folders.map { "\($0) \(Formatters.bytes(usage.bytesByFolder[$0] ?? 0))" }.joined(separator: ", ")
+        return worktree.isMain ? "Build caches: \(folders)" : "Build caches: \(folders). Removing the worktree frees them."
     }
 
     private var changesText: some View {

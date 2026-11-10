@@ -272,7 +272,7 @@ final class MonitorStore {
         agents = DemoData.agents
         usage = DemoData.usage
         usageHistory = DemoData.usageHistory
-        worktreeOverview.showDemo(DemoData.worktrees)
+        worktreeOverview.showDemo(DemoData.worktrees, cacheUsage: DemoData.worktreeCaches)
         spend = settings.spendTrackingEnabled ? DemoData.spend : nil
         nowPlaying.showDemo(DemoData.nowPlaying)
         dailyRecap.showDemo(DemoData.recap)

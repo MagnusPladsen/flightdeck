@@ -11,12 +11,17 @@ final class WorktreeOverview {
     private(set) var isCleaningUp = false
     /// What the last clean-up did, e.g. "Removed 3 worktrees".
     private(set) var cleanupSummary: String?
+    /// Dependency and build folders per worktree path, e.g. `node_modules`, rescanned every few minutes.
+    private(set) var cacheUsage: [String: BuildCacheUsage] = [:]
+    static let cacheRescanInterval: TimeInterval = 10 * 60
 
     private let engine: MonitorEngine
     private let settings: AppSettings
     private var isDemo = false
     @ObservationIgnored private var isRefreshing = false
     @ObservationIgnored private var hasPendingRefresh = false
+    @ObservationIgnored private var isScanningCaches = false
+    @ObservationIgnored private var cacheScannedAt: [String: Date] = [:]
 
     init(engine: MonitorEngine, settings: AppSettings) {
         self.engine = engine
@@ -39,6 +44,11 @@ final class WorktreeOverview {
     func staleWorktrees(agents: [AgentSession]) -> [Worktree] {
         let busy = agentsByWorktree(agents)
         return worktrees.filter { policy.isStale($0, hasAgent: busy[$0.path] != nil) }
+    }
+
+    /// Build-cache bytes that removing `worktrees` frees along with them.
+    func cacheBytes(of worktrees: [Worktree]) -> UInt64 {
+        worktrees.reduce(0) { $0 + (cacheUsage[$1.path]?.totalBytes ?? 0) }
     }
 
     /// Adds the repositories containing `projectFolders` to the remembered ones and lists them all.
@@ -64,6 +74,21 @@ final class WorktreeOverview {
         if roots != remembered { settings.worktreeRepositoryFolders = roots }
         self.worktrees = worktrees
         hasLoaded = true
+        Task { await scanCaches() }
+    }
+
+    private func scanCaches(now: Date = Date()) async {
+        guard !isScanningCaches else { return }
+        let due = worktrees.map(\.path).filter { now.timeIntervalSince(cacheScannedAt[$0] ?? .distantPast) >= Self.cacheRescanInterval }
+        guard !due.isEmpty else { return }
+        isScanningCaches = true
+        defer { isScanningCaches = false }
+        for path in due { cacheScannedAt[path] = now }
+        let results = await Task.detached { due.map { ($0, BuildCacheScanner.usage(in: $0)) } }.value
+        let current = Set(worktrees.map(\.path))
+        var usage = cacheUsage.filter { current.contains($0.key) }
+        for (path, found) in results { usage[path] = found }
+        if usage != cacheUsage { cacheUsage = usage }
     }
 
     /// Removes each worktree with `git worktree remove`; dirty ones are skipped, never forced.
@@ -80,9 +105,10 @@ final class WorktreeOverview {
         }
     }
 
-    func showDemo(_ worktrees: [Worktree]) {
+    func showDemo(_ worktrees: [Worktree], cacheUsage: [String: BuildCacheUsage]) {
         isDemo = true
         self.worktrees = worktrees
+        self.cacheUsage = cacheUsage
         hasLoaded = true
     }
 

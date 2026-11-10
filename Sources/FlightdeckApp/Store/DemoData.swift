@@ -43,7 +43,7 @@ enum DemoData {
             agent(.codex, 4103, project("docs-site", branch: "main"), .yourTurn, minutesAgo: 12, "Asked", "Should the new guides go under /learn or /docs?"),
             agent(.claude, 4104, project("storefront", branch: "feat/search", worktree: "search"), .working, minutesAgo: 0, "Editing", "SearchResults.tsx"),
             agent(.codex, 4105, project("mobile-app", branch: "release/2.4"), .working, minutesAgo: 0, "Running", "pnpm test --filter checkout"),
-            agent(.gemini, 4106, project("infra", branch: "main"), .working, minutesAgo: 1, "Reading", "main.tf"),
+            agent(.gemini, 4106, project("storefront", branch: "feat/checkout"), .working, minutesAgo: 1, "Editing", "session.ts"),
             agent(.claude, 4107, project("blog", branch: "main"), .idle, minutesAgo: 95, "Said", "Published the draft."),
             agent(.aider, 4108, project("scripts", branch: "main"), .idle, minutesAgo: 240, "Said", "Done."),
         ].map(withDemoMessage)
@@ -59,6 +59,23 @@ enum DemoData {
 
     private static func pullRequest(_ number: Int, _ state: PullRequestState, checks: CheckStatus? = nil, review: ReviewState? = nil, isDraft: Bool = false) -> PullRequestLookup {
         .found(PullRequestInfo(number: number, state: state, url: "https://github.com/alex/storefront/pull/\(number)", isDraft: isDraft, checks: checks, review: review))
+    }
+
+    static var worktreeCaches: [String: BuildCacheUsage] {
+        let megabyte: UInt64 = 1 << 20
+        let caches: [(String, String?, [String: UInt64])] = [
+            ("storefront", nil, ["node_modules": 1_180 * megabyte, ".next": 310 * megabyte]),
+            ("storefront", "search", ["node_modules": 1_160 * megabyte, ".next": 290 * megabyte]),
+            ("storefront", "cart-totals", ["node_modules": 1_150 * megabyte]),
+            ("storefront", "brave-turing-1a2b3c", ["node_modules": 1_140 * megabyte, ".next": 420 * megabyte]),
+            ("storefront", "holiday-banner", ["node_modules": 980 * megabyte]),
+            ("payments-api", nil, [".venv": 410 * megabyte]),
+            ("payments-api", "token-refresh", [".venv": 405 * megabyte]),
+            ("payments-api", "spike-grpc", [".venv": 520 * megabyte]),
+            ("payments-api", "webhook-retry", [".venv": 398 * megabyte]),
+            ("payments-api", "rate-limits", [".venv": 402 * megabyte]),
+        ]
+        return Dictionary(uniqueKeysWithValues: caches.map { (worktreePath($0.0, $0.1), BuildCacheUsage(bytesByFolder: $0.2)) })
     }
 
     static var worktrees: [Worktree] {

@@ -23,7 +23,8 @@ struct WorktreesSection: View {
                 HairlineRows(items: overview.worktrees, emptyText: emptyText) { _ in EmptyView() }
             }
             ForEach(overview.repositoryRoots, id: \.self) { root in
-                WorktreeRepositoryGroup(worktrees: overview.worktrees.filter { $0.repositoryRoot == root }, agents: agents, stalePaths: stalePaths) { newAgentRequest = $0 }
+                WorktreeRepositoryGroup(worktrees: overview.worktrees.filter { $0.repositoryRoot == root }, agents: agents, stalePaths: stalePaths,
+                                        cacheUsage: overview.cacheUsage) { newAgentRequest = $0 }
             }
         }
         .newAgentSheet($newAgentRequest)
@@ -53,10 +54,16 @@ struct WorktreesSection: View {
         Button {
             pendingCleanup = store.staleWorktrees
         } label: {
-            Label(overview.isCleaningUp ? "Cleaning up…" : "Clean up \(store.staleWorktrees.count)", systemImage: "trash")
+            Label(overview.isCleaningUp ? "Cleaning up…" : "Clean up \(store.staleWorktrees.count)\(freedText(store.staleWorktrees))", systemImage: "trash")
         }
         .disabled(store.staleWorktrees.isEmpty || overview.isCleaningUp)
         .help("Remove the worktrees marked stale. Their branches are kept.")
+    }
+
+    /// " · 3.2 GB" when the worktrees hold build caches.
+    private func freedText(_ worktrees: [Worktree]) -> String {
+        let bytes = overview.cacheBytes(of: worktrees)
+        return bytes == 0 ? "" : " · \(Formatters.bytes(bytes))"
     }
 
     private var isConfirmingCleanup: Binding<Bool> {
@@ -70,7 +77,9 @@ struct WorktreesSection: View {
     private var cleanupMessage: String {
         let names = pendingCleanup.prefix(8).map { "\($0.repositoryName)/\($0.folderName)" }
         let more = pendingCleanup.count > names.count ? "\nand \(pendingCleanup.count - names.count) more" : ""
-        return names.joined(separator: "\n") + more + "\n\nRuns git worktree remove. Branches and commits are kept; worktrees with changes are skipped."
+        let bytes = overview.cacheBytes(of: pendingCleanup)
+        let freed = bytes == 0 ? "" : "\n\nFrees \(Formatters.bytes(bytes)) of build caches (node_modules, .build and the like)."
+        return names.joined(separator: "\n") + more + freed + "\n\nRuns git worktree remove. Branches and commits are kept; worktrees with changes are skipped."
     }
 
     private func cleanUp() {
@@ -86,6 +95,7 @@ private struct WorktreeRepositoryGroup: View {
     var worktrees: [Worktree]
     var agents: [String: [AgentSession]]
     var stalePaths: Set<String>
+    var cacheUsage: [String: BuildCacheUsage]
     var onNewAgent: (NewAgentRequest) -> Void
 
     var body: some View {
@@ -101,7 +111,8 @@ private struct WorktreeRepositoryGroup: View {
             .padding(.top, 18)
             .padding(.bottom, 6)
             HairlineRows(items: worktrees, emptyText: "") { worktree in
-                WorktreeRow(worktree: worktree, agents: agents[worktree.path] ?? [], isStale: stalePaths.contains(worktree.path)) {
+                WorktreeRow(worktree: worktree, agents: agents[worktree.path] ?? [], isStale: stalePaths.contains(worktree.path),
+                            cacheUsage: cacheUsage[worktree.path]) {
                     onNewAgent(NewAgentRequest(repositoryRoot: worktree.repositoryRoot, folder: worktree.path))
                 }
             }
